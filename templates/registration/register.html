@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Register — Turnstil{% endblock %}
+
+{% block content %}
+<article>
+    <header><h2>Create Your Account</h2></header>
+
+    {% if errors %}
+        <div class="flash flash-error">
+            {% for field, msgs in errors.items %}
+                {% for msg in msgs %}
+                    <p>{{ field }}: {{ msg }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" required placeholder="Jane Doe">
+
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required placeholder="janedoe">
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="jane@example.com">
+
+        <label for="organization">Organization (optional)</label>
+        <input type="text" id="organization" name="organization" placeholder="Acme Corp">
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="8" placeholder="Minimum 8 characters">
+
+        <button type="submit">Register & Get My QR Code</button>
+    </form>
+
+    <footer>
+        Already have an account? <a href="{% url 'login' %}">Sign in</a>
+    </footer>
+</article>
+{% endblock %}

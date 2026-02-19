@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Login — Turnstil{% endblock %}
+
+{% block content %}
+<article>
+    <header><h2>Sign In</h2></header>
+
+    {% if error %}
+        <div class="flash flash-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Sign In</button>
+    </form>
+
+    <footer>
+        Don't have an account? <a href="{% url 'register' %}">Register</a>
+    </footer>
+</article>
+{% endblock %}

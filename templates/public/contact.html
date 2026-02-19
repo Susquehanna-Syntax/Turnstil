@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ contact.name }} — Turnstil{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <hgroup>
+            <h2>{{ contact.name }}</h2>
+            <p>Contact Card</p>
+        </hgroup>
+    </header>
+
+    {% if contact.organization %}
+        <p>🏢 {{ contact.organization }}</p>
+    {% endif %}
+
+    {% if contact.email %}
+        <p>📧 <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+    {% endif %}
+
+    {% if contact.phone %}
+        <p>📞 <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+    {% endif %}
+
+    {% if contact.links %}
+        <h4>Links</h4>
+        {% for key, url in contact.links.items %}
+            <p>🔗 <strong>{{ key }}:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+        {% endfor %}
+    {% endif %}
+
+    <footer>
+        <small>Shared via Turnstil — <a href="{% url 'home' %}">Get your QR code</a></small>
+    </footer>
+</article>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ event.name }} — Turnstil{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h2>{{ event.name }}</h2>
+    <p>{{ event.start_time|date:"l, M j, Y · g:i A" }} — {{ event.end_time|date:"g:i A" }}</p>
+</hgroup>
+
+{% if event.description %}
+    <p>{{ event.description }}</p>
+{% endif %}
+
+{% if event.location %}
+    <p>📍 {{ event.location }}</p>
+{% endif %}
+
+<!-- Stats -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="number">{{ event.registration_count }}</div>
+        <div class="label">Registered</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ event.checkin_count }}</div>
+        <div class="label">Checked In</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{% if event.capacity %}{{ event.capacity }}{% else %}∞{% endif %}</div>
+        <div class="label">Capacity</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">
+            {% if event.is_active %}🟢{% elif event.is_upcoming %}🟡{% else %}⚫{% endif %}
+        </div>
+        <div class="label">
+            {% if event.is_active %}Live Now{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Register button for attendees -->
+{% if user.is_authenticated and not event.is_full %}
+    <form method="post" style="margin: 1rem 0;">
+        {% csrf_token %}
+        <button type="submit" name="register" value="1">Register for This Event</button>
+    </form>
+{% endif %}
+
+<!-- Attendee List (staff/organizer view) -->
+{% if user.is_staff_or_above %}
+<h3>Attendees</h3>
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Organization</th>
+                <th>Status</th>
+                <th>Checked In At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.person.name }}</td>
+                <td>{{ ticket.person.organization }}</td>
+                <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No registrations yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% endif %}
+
+<a href="{% url 'scanner' %}" role="button" class="outline">Open Scanner</a>
+<a href="{% url 'dashboard' %}" role="button" class="secondary outline">← Dashboard</a>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Scanner — Turnstil{% endblock %}
+
+{% block content %}
+<h2>Scanner</h2>
+
+<div class="grid">
+    <div>
+        <!-- Mode Toggle -->
+        <fieldset role="group">
+            <button id="btn-attendance" class="contrast" onclick="setMode('attendance')">
+                ✓ Attendance
+            </button>
+            <button id="btn-discovery" class="outline" onclick="setMode('discovery')">
+                ↗ Discovery
+            </button>
+        </fieldset>
+
+        <!-- Event Select (attendance mode only) -->
+        <div id="event-select">
+            <label for="event-dropdown">Select Event</label>
+            <select id="event-dropdown" required>
+                <option value="">— Choose event —</option>
+                {% for event in events %}
+                <option value="{{ event.id }}">
+                    {{ event.name }} ({{ event.start_time|date:"M j" }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Camera -->
+        <div id="reader"></div>
+
+        <!-- Manual Entry fallback -->
+        <details>
+            <summary>Manual UUID Entry</summary>
+            <div role="group">
+                <input type="text" id="manual-uuid" placeholder="Paste UUID here">
+                <button onclick="manualScan()">Submit</button>
+            </div>
+        </details>
+    </div>
+
+    <div>
+        <!-- Result Display -->
+        <div id="result" class="scan-result" style="display:none"></div>
+
+        <!-- Scan History -->
+        <article>
+            <header><h3>Recent Scans</h3></header>
+            <div id="scan-history">
+                <p><small>Scans will appear here...</small></p>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+    // ── State ──
+    let mode = 'attendance';
+    let scanning = false;
+    let lastScanTime = 0;
+    const SCAN_COOLDOWN = 2000; // ms between scans
+    const scanHistory = [];
+
+    // CSRF token from Django
+    function getCookie(name) {
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+        }
+        return null;
+    }
+    const csrfToken = getCookie('csrftoken');
+
+    // ── Mode Toggle ──
+    function setMode(newMode) {
+        mode = newMode;
+        document.getElementById('btn-attendance').className = mode === 'attendance' ? 'contrast' : 'outline';
+        document.getElementById('btn-discovery').className = mode === 'discovery' ? 'contrast' : 'outline';
+        document.getElementById('event-select').style.display = mode === 'attendance' ? 'block' : 'none';
+    }
+
+    // ── Result Display ──
+    function showResult(type, message, detail) {
+        const el = document.getElementById('result');
+        el.className = 'scan-result scan-' + type;
+        el.innerHTML = '<strong>' + message + '</strong>' + (detail ? '<br><small>' + detail + '</small>' : '');
+        el.style.display = 'block';
+
+        // Auto-hide after 4 seconds
+        setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    function addToHistory(result, name, time) {
+        const el = document.getElementById('scan-history');
+        const icon = result === 'success' ? '✅' : (result === 'duplicate' ? '🔁' : '❌');
+        const entry = document.createElement('div');
+        entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr>';
+        el.prepend(entry);
+    }
+
+    // ── Check-in API Call ──
+    async function checkIn(personUuid) {
+        const eventUuid = document.getElementById('event-dropdown').value;
+        if (!eventUuid) {
+            showResult('error', 'No event selected', 'Please select an event first.');
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/checkin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    person_uuid: personUuid,
+                    event_uuid: eventUuid,
+                }),
+            });
+
+            const data = await resp.json();
+            const now = new Date().toLocaleTimeString();
+
+            if (data.status === 'success') {
+                showResult('success', '✓ ' + data.data.person_name, 'Checked in at ' + now);
+                addToHistory('success', data.data.person_name, now);
+            } else {
+                showResult('error', data.code || 'Error', data.message);
+                addToHistory(data.code === 'DUPLICATE_CHECKIN' ? 'duplicate' : 'error', data.message, now);
+            }
+        } catch (err) {
+            showResult('error', 'Network Error', 'Could not reach server.');
+        }
+    }
+
+    // ── Contact Fetch (Discovery Mode) ──
+    async function fetchContact(personUuid) {
+        try {
+            const resp = await fetch('/api/people/' + personUuid + '/contact', {
+                headers: { 'X-CSRFToken': csrfToken },
+            });
+            const data = await resp.json();
+
+            if (data.status === 'success') {
+                const c = data.data;
+                let detail = '';
+                if (c.email) detail += '📧 ' + c.email + '<br>';
+                if (c.organization) detail += '🏢 ' + c.organization + '<br>';
+                if (c.phone) detail += '📞 ' + c.phone + '<br>';
+                showResult('info', '👤 ' + c.name, detail || 'No additional info shared.');
+            } else {
+                showResult('error', 'Not Found', 'QR code not recognized.');
+            }
+        } catch (err) {
+            showResult('error', 'Network Error', 'Could not reach server.');
+        }
+    }
+
+    // ── QR Scanner ──
+    function onScanSuccess(decodedText) {
+        // Cooldown to prevent double-scans
+        const now = Date.now();
+        if (now - lastScanTime < SCAN_COOLDOWN) return;
+        lastScanTime = now;
+
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(decodedText)) {
+            showResult('error', 'Invalid QR', 'Not a valid Turnstil QR code.');
+            return;
+        }
+
+        if (mode === 'attendance') {
+            checkIn(decodedText);
+        } else {
+            fetchContact(decodedText);
+        }
+    }
+
+    function manualScan() {
+        const uuid = document.getElementById('manual-uuid').value.trim();
+        if (uuid) onScanSuccess(uuid);
+    }
+
+    // ── Initialize Camera ──
+    const html5QrCode = new Html5Qrcode("reader");
+
+    html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess
+    ).catch(err => {
+        document.getElementById('reader').innerHTML =
+            '<p>📷 Camera access denied or not available.<br>' +
+            '<small>Use the manual UUID entry below, or grant camera permission.</small></p>';
+    });
+</script>
+{% endblock %}
