@@ -48,7 +48,7 @@ class Person(models.Model):
     )
     name = models.CharField(max_length=200)
     email = models.EmailField(blank=True)
-    organization = models.CharField(max_length=200, blank=True, null=True)
+    organization = models.CharField(max_length=200, blank=True)
     phone = models.CharField(max_length=30, blank=True)
     links = models.JSONField(
         default=dict, blank=True,
