@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Create Event — Turnstil{% endblock %}
+
+{% block content %}
+<article>
+    <header><h2>Create Event</h2></header>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Event Name</label>
+        <input type="text" id="name" name="name" required placeholder="Spring Conference 2026">
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3" placeholder="Tell people what this event is about..."></textarea>
+
+        <label for="location">Location</label>
+        <input type="text" id="location" name="location" placeholder="Room 201, Science Building">
+
+        <div class="grid">
+            <div>
+                <label for="start_time">Start</label>
+                <input type="datetime-local" id="start_time" name="start_time" required>
+            </div>
+            <div>
+                <label for="end_time">End</label>
+                <input type="datetime-local" id="end_time" name="end_time" required>
+            </div>
+        </div>
+
+        <label for="capacity">Capacity (0 = unlimited)</label>
+        <input type="number" id="capacity" name="capacity" value="0" min="0">
+
+        <button type="submit">Create Event</button>
+    </form>
+</article>
+{% endblock %}

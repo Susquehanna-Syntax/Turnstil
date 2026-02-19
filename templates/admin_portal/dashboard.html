@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Turnstil{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h2>Dashboard</h2>
+    <p>Event management overview</p>
+</hgroup>
+
+{% if user.is_organizer_or_above %}
+    <a href="{% url 'event-create' %}" role="button">+ Create Event</a>
+{% endif %}
+
+<h3>All Events</h3>
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Registered</th>
+                <th>Checked In</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td><a href="{% url 'event-detail' uuid=event.id %}">{{ event.name }}</a></td>
+                <td>{{ event.start_time|date:"M j, Y g:i A" }}</td>
+                <td>{{ event.location }}</td>
+                <td>
+                    {{ event.registration_count }}{% if event.capacity %} / {{ event.capacity }}{% endif %}
+                </td>
+                <td>{{ event.checkin_count }}</td>
+                <td>
+                    {% if event.is_active %}
+                        <span class="ticket-badge badge-checked_in">Live</span>
+                    {% elif event.is_upcoming %}
+                        <span class="ticket-badge badge-issued">Upcoming</span>
+                    {% else %}
+                        <span class="ticket-badge badge-canceled">Ended</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No events yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% endblock %}

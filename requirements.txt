@@ -1,0 +1,7 @@
+django>=5.0,<6.0
+djangorestframework>=3.15
+djangorestframework-simplejwt>=5.3
+qrcode[pil]>=7.4
+Pillow>=10.0
+psycopg2-binary>=2.9
+python-dotenv>=1.0

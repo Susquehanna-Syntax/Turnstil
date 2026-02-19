@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}My Profile — Turnstil{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div>
+        <article>
+            <header>
+                <hgroup>
+                    <h2>My Profile</h2>
+                    <p>Your QR code: <code>{{ person.id }}</code></p>
+                </hgroup>
+            </header>
+
+            <form method="post">
+                {% csrf_token %}
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="{{ person.name }}" required>
+
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ person.email }}">
+
+                <label for="organization">Organization</label>
+                <input type="text" id="organization" name="organization" value="{{ person.organization }}">
+
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone" value="{{ person.phone }}">
+
+                <fieldset>
+                    <legend>Visible when others scan your QR:</legend>
+                    <label>
+                        <input type="checkbox" name="vis_email" {% if person.visibility.email %}checked{% endif %}>
+                        Email
+                    </label>
+                    <label>
+                        <input type="checkbox" name="vis_organization" {% if person.visibility.organization %}checked{% endif %}>
+                        Organization
+                    </label>
+                    <label>
+                        <input type="checkbox" name="vis_phone" {% if person.visibility.phone %}checked{% endif %}>
+                        Phone
+                    </label>
+                    <label>
+                        <input type="checkbox" name="vis_links" {% if person.visibility.links %}checked{% endif %}>
+                        Links
+                    </label>
+                </fieldset>
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </article>
+    </div>
+
+    <div>
+        <article>
+            <header><h3>My QR Code</h3></header>
+            <div class="qr-container">
+                <img src="{% url 'api-person-qr' uuid=person.id %}" alt="Your QR Code">
+                <p><small>Show this at events for check-in and networking</small></p>
+            </div>
+            <a href="{% url 'qr-display' %}" role="button" class="outline">Full Screen QR</a>
+        </article>
+
+        <article>
+            <header><h3>My Tickets</h3></header>
+            {% if tickets %}
+                <table>
+                    <thead>
+                        <tr><th>Event</th><th>Status</th><th>Date</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in tickets %}
+                        <tr>
+                            <td><a href="{% url 'event-detail' uuid=ticket.event.id %}">{{ ticket.event.name }}</a></td>
+                            <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                            <td>{{ ticket.event.start_time|date:"M j" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No tickets yet. <a href="{% url 'home' %}">Browse events</a></p>
+            {% endif %}
+        </article>
+    </div>
+</div>
+{% endblock %}

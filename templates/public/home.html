@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Turnstil — Event Management{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Welcome to Turnstil</h1>
+    <p>One QR code. Every event. Seamless check-in and networking.</p>
+</hgroup>
+
+{% if not user.is_authenticated %}
+<div class="grid">
+    <div>
+        <article>
+            <h3>For Attendees</h3>
+            <p>Register once, get your personal QR code, and use it at every event — for check-in and sharing your contact info.</p>
+            <a href="{% url 'register' %}" role="button">Get Started</a>
+        </article>
+    </div>
+    <div>
+        <article>
+            <h3>For Organizers</h3>
+            <p>Create events, manage registrations, scan attendees at the door, and track attendance in real time.</p>
+            <a href="{% url 'login' %}" role="button" class="outline">Sign In</a>
+        </article>
+    </div>
+</div>
+{% endif %}
+
+<h2>Upcoming Events</h2>
+{% if events %}
+    {% for event in events %}
+    <article>
+        <header>
+            <hgroup>
+                <h3><a href="{% url 'event-detail' uuid=event.id %}">{{ event.name }}</a></h3>
+                <p>{{ event.start_time|date:"M j, Y g:i A" }} · {{ event.location }}</p>
+            </hgroup>
+        </header>
+        {% if event.description %}
+            <p>{{ event.description|truncatewords:30 }}</p>
+        {% endif %}
+        <footer>
+            {{ event.registration_count }} registered
+            {% if event.capacity %}/ {{ event.capacity }} capacity{% endif %}
+            {% if event.is_full %}<mark>FULL</mark>{% endif %}
+        </footer>
+    </article>
+    {% endfor %}
+{% else %}
+    <p>No upcoming events yet.</p>
+{% endif %}
+{% endblock %}

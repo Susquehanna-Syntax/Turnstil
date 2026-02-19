@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Turnstil{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        :root {
+            --pico-font-size: 16px;
+        }
+        nav {
+            padding: 0.5rem 1rem;
+        }
+        nav ul li a {
+            font-size: 0.9rem;
+        }
+        .brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+        }
+        .scan-result {
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: none;
+        }
+        .scan-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        .scan-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        .scan-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #17a2b8;
+        }
+        .qr-container {
+            text-align: center;
+            padding: 2rem;
+        }
+        .qr-container img {
+            max-width: 300px;
+            border: 3px solid #333;
+            border-radius: 8px;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 1rem;
+            background: var(--pico-card-background-color);
+            border-radius: 8px;
+            border: 1px solid var(--pico-muted-border-color);
+        }
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--pico-primary);
+        }
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: var(--pico-muted-color);
+        }
+        .ticket-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-issued { background: #fff3cd; color: #856404; }
+        .badge-checked_in { background: #d4edda; color: #155724; }
+        .badge-canceled { background: #f8d7da; color: #721c24; }
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        #reader video {
+            border-radius: 8px;
+        }
+        .flash {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .flash-error { background: #f8d7da; color: #721c24; }
+        .flash-success { background: #d4edda; color: #155724; }
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><a href="{% url 'home' %}" class="brand">⎔ Turnstil</a></li>
+        </ul>
+        <ul>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'profile' %}">Profile</a></li>
+                <li><a href="{% url 'scanner' %}">Scanner</a></li>
+                {% if user.is_staff_or_above %}
+                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                {% endif %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}" role="button">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash flash-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container">
+        <hr>
+        <small>Turnstil — Built by Susquehanna Syntax</small>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
