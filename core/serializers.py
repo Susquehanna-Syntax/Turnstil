@@ -16,7 +16,7 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=8)
     name = serializers.CharField(max_length=200)
-    organization = serializers.CharField(max_length=200, required=False, default='')
+    organization = serializers.CharField(max_length=200, required=False, allow_blank = True, default='')
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
