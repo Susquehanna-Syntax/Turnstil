@@ -77,5 +77,18 @@
 {% endif %}
 
 <a href="{% url 'scanner' %}" role="button" class="outline">Open Scanner</a>
+
+{% if user.is_organizer_or_above or event.created_by == user %}
+<form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="display:inline">
+    {% csrf_token %}
+    {% if event.allow_walkins %}
+        <button type="submit" class="secondary">🚶 Walk-ins ON — Click to Disable</button>
+    {% else %}
+        <button type="submit" class="outline secondary">🚶 Enable Walk-ins</button>
+    {% endif %}
+</form>
+{% endif %}
+
 <a href="{% url 'dashboard' %}" role="button" class="secondary outline">← Dashboard</a>
+    
 {% endblock %}

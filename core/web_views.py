@@ -164,3 +164,21 @@ def contact_page(request, uuid):
         'person': person,
         'contact': contact,
     })
+
+@login_required
+def toggle_walkins(request, uuid):
+    """Toggle walk-in mode for an event."""
+    event = get_object_or_404(Event, id=uuid)
+    # Only event creator, staff, or admin can toggle
+    if not (
+        request.user.role == 'admin'
+        or event.created_by == request.user
+        or request.user.is_organizer_or_above()
+    ):
+        return redirect('event-detail', uuid=uuid)
+
+    if request.method == 'POST':
+        event.allow_walkins = not event.allow_walkins
+        event.save(update_fields=['allow_walkins'])
+
+    return redirect('event-detail', uuid=uuid)

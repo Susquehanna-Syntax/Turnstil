@@ -343,20 +343,36 @@ class CheckInView(APIView):
                 'message': 'You are not staff for this event.',
             }, status=status.HTTP_403_FORBIDDEN)
 
-        # --- Check registration ---
+        # --- Check registration (or walk-in) ---
         try:
             ticket = Ticket.objects.get(person=person, event=event)
         except Ticket.DoesNotExist:
-            self._log_scan(
-                event_id=event, person=person, actor=request.user,
-                result=ScanLog.Result.NOT_REGISTERED,
-            )
-            return Response({
-                'status': 'error',
-                'code': 'NOT_REGISTERED',
-                'message': f'{person.name} is not registered for this event.',
-            }, status=status.HTTP_404_NOT_FOUND)
-
+            if event.allow_walkins:
+                # Auto-register walk-in
+                if event.is_full:
+                    self._log_scan(
+                         event_id=event, person=person, actor=request.user,
+                        result=ScanLog.Result.NOT_REGISTERED,
+                        metadata={'reason': 'walkin_capacity_full'},
+                    )
+                    return Response({
+                        'status': 'error',
+                        'code': 'EVENT_FULL',
+                        'message': f'Walk-in denied — event is at capacity.',
+                    }, status=status.HTTP_409_CONFLICT)
+                ticket = Ticket.objects.create(
+                        person=person, event=event, status=Ticket.Status.ISSUED,
+                    )
+            else:
+                self._log_scan(
+                    event_id=event, person=person, actor=request.user,
+                    result=ScanLog.Result.NOT_REGISTERED,
+                )
+                return Response({
+                    'status': 'error',
+                    'code': 'NOT_REGISTERED',
+                    'message': f'{person.name} is not registered for this event.',
+                }, status=status.HTTP_404_NOT_FOUND)
         # --- Check for duplicate ---
         if ticket.status == Ticket.Status.CHECKED_IN:
             self._log_scan(
