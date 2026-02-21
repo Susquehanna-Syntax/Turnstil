@@ -129,6 +129,10 @@ class Event(models.Model):
         related_name='staffed_events',
         help_text='Users who can scan for this event',
     )
+    allow_walkins = models.BooleanField(
+        default=False,
+        help_text='Allow check-in for people not pre-registered',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
