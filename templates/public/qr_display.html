@@ -27,7 +27,7 @@
     {% if person.organization %}<p>{{ person.organization }}</p>{% endif %}
     <p><small>Scan to check in or connect</small></p>
 
-    <a href="{% url ' api-person-qr' uuid=person.id %}" download="{{ person.name }}_qr.png" class="outline">
+    <a href="{% url 'api-person-qr' uuid=person.id %}" download="{{ person.name }}_qr.png" class="outline">
         Download QR Code
     </a>
 
