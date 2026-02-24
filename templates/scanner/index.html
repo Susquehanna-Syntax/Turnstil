@@ -99,10 +99,21 @@
 
     function addToHistory(result, name, time) {
         const el = document.getElementById('scan-history');
-        const icon = result === 'success' ? '✅' : (result === 'duplicate' ? '🔁' : '❌');
+
+        // Remove placeholder text
+        const placeholder = el.querySelector('p');
+        if (placeholder && placeholder.innerText.includes('Scans will appear here')) {
+            placeholder.remove();
+        }
+
+        const icon = result === 'success' ? '✅' : (result === 'duplicate' ? '🔁' : (result === 'info' ? '👤' : '❌'));
+
         const entry = document.createElement('div');
         entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr>';
         el.prepend(entry);
+
+        //update array
+        scanHistroy.unshift({ result, name, time });
     }
 
     // ── Check-in API Call ──
@@ -148,6 +159,7 @@
                 headers: { 'X-CSRFToken': csrfToken },
             });
             const data = await resp.json();
+            const now = new Date().toLocaleTimeString();
 
             if (data.status === 'success') {
                 const c = data.data;
@@ -155,12 +167,16 @@
                 if (c.email) detail += '📧 ' + c.email + '<br>';
                 if (c.organization) detail += '🏢 ' + c.organization + '<br>';
                 if (c.phone) detail += '📞 ' + c.phone + '<br>';
+
                 showResult('info', '👤 ' + c.name, detail || 'No additional info shared.');
+                addToHistory('info', c.name, now);
             } else {
                 showResult('error', 'Not Found', 'QR code not recognized.');
+                addToHistory('error', 'Unknown QR Code', now);
             }
         } catch (err) {
             showResult('error', 'Network Error', 'Could not reach server.');
+            addToHistory('error', 'Network Error', new Date().toLocaleTimeString());
         }
     }
 
