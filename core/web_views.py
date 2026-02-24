@@ -75,6 +75,7 @@ def profile_page(request):
         person.email = request.POST.get('email', person.email)
         person.organization = request.POST.get('organization', person.organization)
         person.phone = request.POST.get('phone', person.phone)
+        person.links = request.POST.get('links', person.links)
 
         # Handle visibility toggles
         visibility = {}
