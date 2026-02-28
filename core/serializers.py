@@ -99,6 +99,7 @@ class EventSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_name',
             'registration_count', 'checkin_count', 'is_full',
             'created_at',
+            'reg_open', 'reg_close',
         ]
         read_only_fields = ['id', 'created_by', 'created_at']
 

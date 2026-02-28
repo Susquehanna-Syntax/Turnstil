@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
@@ -116,6 +117,8 @@ class Event(models.Model):
     location = models.CharField(max_length=300, blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    reg_open = models.DateTimeField()
+    reg_close = models.DateTimeField()
     capacity = models.PositiveIntegerField(default=0, help_text='0 = unlimited')
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -163,6 +166,41 @@ class Event(models.Model):
         if self.capacity == 0:
             return False
         return self.registration_count >= self.capacity
+
+    def save(self, *args, **kwargs):
+        if self.reg_open is None:
+            self.reg_open = timezone.now()
+        if self.reg_close is None:
+            self.reg_close = self.start_time
+
+        self.full_clean()  # now validation sees proper values
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        errors = {}
+
+        if self.reg_open and self.reg_close:
+            if self.reg_open >= self.reg_close:
+                errors['reg_close'] = 'Registration close must be after registration open.'
+
+        if self.start_time and self.end_time:
+            if self.start_time >= self.end_time:
+                errors['end_time'] = 'Event end time must be after start time.'
+
+        if self.reg_close and self.start_time:
+            if self.reg_close > self.start_time:
+                errors['reg_close'] = 'Registration close must be on or before event start time.'
+
+        if self.reg_open and self.end_time:
+            if self.reg_open >= self.end_time:
+                errors['reg_open'] = 'Registration open must be before event end time.'
+
+        if errors:
+            raise ValidationError(errors)
+
+    def registration_is_open(self):
+        now = timezone.now()
+        return self.reg_open <= now <= self.reg_close
 
 
 class Ticket(models.Model):

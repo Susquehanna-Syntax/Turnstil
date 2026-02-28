@@ -8,7 +8,13 @@
 </hgroup>
 
 {% if user.is_organizer_or_above %}
-    <a href="{% url 'event-create' %}" role="button">+ Create Event</a>
+    <a href="{% url 'event-create' %}">Create Event</a>
+{% endif %}
+
+{% if request.user.is_organizer_or_above %}
+    <a href="{% url 'organizer-event-list' %}">My Events</a>
+
+  </a>
 {% endif %}
 
 <h3>All Events</h3>
