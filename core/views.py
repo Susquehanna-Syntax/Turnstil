@@ -194,6 +194,14 @@ class EventRegisterView(APIView):
     def post(self, request, uuid):
         event = get_object_or_404(Event, id=uuid)
 
+        now = timezone.now()
+        if not (event.reg_open <= now <= event.reg_close):
+            return Response({
+                'status': 'error',
+                'code': 'REGISTRATION_CLOSED',
+                'message': 'Registration has closed.',
+            }, status=status.HTTP_403_FORBIDDEN,)
+
         if event.is_full:
             return Response({
                 'status': 'error',
@@ -236,14 +244,52 @@ class EventStaffView(APIView):
 
     def post(self, request, uuid):
         event = get_object_or_404(Event, id=uuid)
+
+        if request.user.role != 'admin' and event.created_by != request.user:
+            return Response({
+                'status': 'error', 'message': 'Not authorized for this event',
+            }, status=status.HTTP_403_FORBIDDEN,)
+
+
         serializer = StaffAssignSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = get_object_or_404(User, id=serializer.validated_data['user_id'])
         event.staff.add(user)
+
+        if user.role not in ('staff', 'organizer', 'admin'):
+            return Response({
+                'status': 'error', 'message': 'User cannot be assigned to staff.',
+            }, status=status.HTTP_400_BAD_REQUEST,)
+
+        if event.staff.filter(id=user.id).exists():
+            return Response({
+                'status': 'error', 'message': f'{user.username} is already assigned to this event.',
+            }, status=status.HTTP_409_CONFLICT,)
+
         return Response({
             'status': 'success',
             'message': f'{user.username} assigned as staff.',
+        })
+
+    def delete(self, request, uuid):
+        event = get_object_or_404(Event, id=uuid)
+
+        if request.user.role != 'admin' and event.created_by != request.user:
+            return Response({
+                'status': 'error', 'message': 'Not authorized for this event',
+            }, status=status.HTTP_403_FORBIDDEN,)
+
+        user_id = request.user.get('user_id')
+        if not user_id:
+            return Response({
+                'status': 'error', 'message': 'user_id is required',
+            }, status=status.HTTP_400_BAD_REQUEST,)
+
+        user = get_object_or_404(User, id=user_id)
+        event.staff.remove(user)
+        return Response({
+            'status': 'success', 'message': f'{user.username} removed.',
         })
 
     def get(self, request, uuid):

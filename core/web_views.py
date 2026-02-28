@@ -9,6 +9,9 @@ from django.utils import timezone
 
 from .models import Person, Event, Ticket
 from .serializers import RegisterSerializer
+from .forms import EventForm
+from datetime import datetime
+from .serializers import EventCreateSerializer
 
 
 def home(request):
@@ -107,7 +110,8 @@ def scanner_page(request):
 @login_required
 def dashboard_page(request):
     """Admin dashboard — list of events with stats."""
-    if not request.user.is_staff_or_above():
+
+    if request.user.role not in ('staff', 'admin', 'organizer'):
         return redirect('home')
     events = Event.objects.all()
     return render(request, 'admin_portal/dashboard.html', {'events': events})
@@ -119,20 +123,30 @@ def event_create_page(request):
         return redirect('home')
 
     if request.method == 'POST':
-        from .serializers import EventCreateSerializer
-        serializer = EventCreateSerializer(data={
-            'name': request.POST.get('name', ''),
-            'description': request.POST.get('description', ''),
-            'location': request.POST.get('location', ''),
-            'start_time': request.POST.get('start_time', ''),
-            'end_time': request.POST.get('end_time', ''),
-            'capacity': request.POST.get('capacity', 0) or 0,
-        })
+        data = request.POST.copy()
+
+        # Convert reg_open and reg_close to datetime if they exist
+        for field in ['reg_open', 'reg_close']:
+            if field in data and data[field]:
+                try:
+                    data[field] = datetime.fromisoformat(data[field])
+                except ValueError:
+                    data[field] = None  # or handle invalid format
+
+        serializer = EventCreateSerializer(data=data)
         if serializer.is_valid():
+            # Save the event, passing created_by separately
             event = serializer.save(created_by=request.user)
             event.staff.add(request.user)
             return redirect('event-detail', uuid=event.id)
 
+        # If serializer invalid, show errors
+        return render(request, 'admin_portal/event_create.html', {
+            'errors': serializer.errors,
+            'data': data
+        })
+
+    # GET request: show empty form
     return render(request, 'admin_portal/event_create.html')
 
 
@@ -182,3 +196,39 @@ def toggle_walkins(request, uuid):
         event.save(update_fields=['allow_walkins'])
 
     return redirect('event-detail', uuid=uuid)
+
+
+@login_required
+def organizer_event_list(request):
+    if not request.user.is_organizer_or_above():
+        return redirect('dashboard')
+
+    events = Event.objects.filter(created_by=request.user)
+    return render(request, 'organizer_event_create/organizer_event_list.html', {
+        'events': events
+    })
+
+
+@login_required
+def event_edit_page(request, uuid):
+    if not request.user.is_organizer_or_above():
+        return redirect('dashboard')
+
+    event = get_object_or_404(Event, id=uuid)
+
+    if event.created_by != request.user:
+        return redirect('organizer-event-list')
+
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            return redirect('organizer-event-list')
+    else:
+        form = EventForm(instance=event)
+
+    return render(request, 'organizer_event_create/event_edit.html', {
+        'form': form,
+        'event': event
+    })
+

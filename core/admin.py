@@ -21,11 +21,19 @@ class PersonAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ['name', 'location', 'start_time', 'end_time', 'capacity', 'created_by']
-    list_filter = ['start_time']
+    list_display = ['name', 'location', 'start_time', 'end_time', 'reg_open', 'reg_close', 'capacity', 'created_by']
+    list_filter = ['start_time', 'reg_open']
     search_fields = ['name', 'location']
     readonly_fields = ['id', 'created_at']
     filter_horizontal = ['staff']
+
+    fieldsets = (
+    ('Event Details', {'fields': ('name', 'description', 'location')}),
+    ('Event Timing', {'fields': ('start_time', 'end_time')}),
+    ('Registration Window', {'fields': ('reg_open', 'reg_close')}),
+    ('Capacity & Staff', {'fields': ('capacity', 'staff')}),
+    ('Metadata', {'fields': ('created_by', 'created_at')}),
+    )
 
 
 @admin.register(Ticket)
