@@ -4,9 +4,68 @@
 {% block content %}
 <h2>Scanner</h2>
 
+{% if error %}
+<p style="color:var(--del-color);">⚠️ {{ error }}</p>
+{% endif %}
+
+{% if is_staff and not active_event %}
+
+{# ── STAFF: EVENT SELECTION MODE ──────────────────────────────── #}
+<article>
+    <header><h3>Select Event</h3></header>
+    <p>Choose the event you are working before scanning begins.</p>
+
+    {% if events %}
+    <form method="post" action="{% url 'select-event' %}">
+        {% csrf_token %}
+        <label for="event_uuid">Event</label>
+        <select name="event_uuid" id="event_uuid" required>
+            <option value="" disabled selected>— Choose event —</option>
+            {% for event in events %}
+            <option value="{{ event.id }}">
+                {{ event.name }} ({{ event.start_time|date:"M j" }})
+                {% if event.location %} · {{ event.location }}{% endif %}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Start Scanning</button>
+    </form>
+    {% else %}
+    <p><small>No upcoming events are assigned to you. Contact an organizer to be added to an event's staff list.</small></p>
+    {% endif %}
+</article>
+
+{% else %}
+
+{# ── STAFF: ACTIVE EVENT BANNER ───────────────────────────────── #}
+{% if is_staff and active_event %}
+<article>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+        <div>
+            <strong>📍 {{ active_event.name }}</strong>
+            {% if active_event.location %}<small> · {{ active_event.location }}</small>{% endif %}
+            <small> · {{ active_event.start_time|date:"M j, g:i A" }}</small>
+        </div>
+        <form method="post" action="{% url 'select-event' %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="outline" style="margin:0; padding:.35rem .85rem; font-size:.85rem;">
+                Change Event
+            </button>
+        </form>
+    </div>
+</article>
+{% endif %}
+
+{# ── ATTENDEE: DISCOVERY INTRO ─────────────────────────────────── #}
+{% if not is_staff %}
+<p><small>Scan a Turnstil QR code to view someone's contact card.</small></p>
+{% endif %}
+
+{# ── SCANNER UI (staff + attendees) ───────────────────────────── #}
 <div class="grid">
     <div>
-        <!-- Mode Toggle -->
+        <!-- Mode Toggle: staff only -->
+        {% if is_staff %}
         <fieldset role="group">
             <button id="btn-attendance" class="contrast" onclick="setMode('attendance')">
                 ✓ Attendance
@@ -15,19 +74,7 @@
                 ↗ Discovery
             </button>
         </fieldset>
-
-        <!-- Event Select (attendance mode only) -->
-        <div id="event-select">
-            <label for="event-dropdown">Select Event</label>
-            <select id="event-dropdown" required>
-                <option value="">— Choose event —</option>
-                {% for event in events %}
-                <option value="{{ event.id }}">
-                    {{ event.name }} ({{ event.start_time|date:"M j" }})
-                </option>
-                {% endfor %}
-            </select>
-        </div>
+        {% endif %}
 
         <!-- Camera -->
         <div id="reader"></div>
@@ -55,19 +102,27 @@
         </article>
     </div>
 </div>
+
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
+{% if is_staff and not active_event %}
+{# No JS needed on the event selection screen #}
+{% else %}
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
     // ── State ──
-    let mode = 'attendance';
-    let scanning = false;
+    // Staff default to attendance mode when an event is active; attendees always discover.
+    let mode = {% if is_staff %}'attendance'{% else %}'discovery'{% endif %};
+    {% if is_staff and active_event %}
+    const EVENT_UUID = "{{ active_event.id }}";
+    {% endif %}
     let lastScanTime = 0;
-    const SCAN_COOLDOWN = 2000; // ms between scans
+    const SCAN_COOLDOWN = 2000;
     const scanHistory = [];
 
-    // CSRF token from Django
+    // CSRF token from Django cookie
     function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let c of cookies) {
@@ -78,12 +133,11 @@
     }
     const csrfToken = getCookie('csrftoken');
 
-    // ── Mode Toggle ──
+    // ── Mode Toggle (staff only) ──
     function setMode(newMode) {
         mode = newMode;
         document.getElementById('btn-attendance').className = mode === 'attendance' ? 'contrast' : 'outline';
         document.getElementById('btn-discovery').className = mode === 'discovery' ? 'contrast' : 'outline';
-        document.getElementById('event-select').style.display = mode === 'attendance' ? 'block' : 'none';
     }
 
     // ── Result Display ──
@@ -92,38 +146,24 @@
         el.className = 'scan-result scan-' + type;
         el.innerHTML = '<strong>' + message + '</strong>' + (detail ? '<br><small>' + detail + '</small>' : '');
         el.style.display = 'block';
-
-        // Auto-hide after 4 seconds
         setTimeout(() => { el.style.display = 'none'; }, 4000);
     }
 
     function addToHistory(result, name, time) {
         const el = document.getElementById('scan-history');
-
-        // Remove placeholder text
         const placeholder = el.querySelector('p');
         if (placeholder && placeholder.innerText.includes('Scans will appear here')) {
             placeholder.remove();
         }
-
         const icon = result === 'success' ? '✅' : (result === 'duplicate' ? '🔁' : (result === 'info' ? '👤' : '❌'));
-
         const entry = document.createElement('div');
         entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr>';
         el.prepend(entry);
-
-        //update array
-        scanHistroy.unshift({ result, name, time });
+        scanHistory.unshift({ result, name, time });
     }
 
-    // ── Check-in API Call ──
+    // ── Check-in API Call (staff attendance mode only) ──
     async function checkIn(personUuid) {
-        const eventUuid = document.getElementById('event-dropdown').value;
-        if (!eventUuid) {
-            showResult('error', 'No event selected', 'Please select an event first.');
-            return;
-        }
-
         try {
             const resp = await fetch('/api/checkin', {
                 method: 'POST',
@@ -133,7 +173,7 @@
                 },
                 body: JSON.stringify({
                     person_uuid: personUuid,
-                    event_uuid: eventUuid,
+                    event_uuid: EVENT_UUID,
                 }),
             });
 
@@ -152,7 +192,7 @@
         }
     }
 
-    // ── Contact Fetch (Discovery Mode) ──
+    // ── Contact Fetch (discovery mode — available to all users) ──
     async function fetchContact(personUuid) {
         try {
             const resp = await fetch('/api/people/' + personUuid + '/contact', {
@@ -167,7 +207,6 @@
                 if (c.email) detail += '📧 ' + c.email + '<br>';
                 if (c.organization) detail += '🏢 ' + c.organization + '<br>';
                 if (c.phone) detail += '📞 ' + c.phone + '<br>';
-
                 showResult('info', '👤 ' + c.name, detail || 'No additional info shared.');
                 addToHistory('info', c.name, now);
             } else {
@@ -182,12 +221,10 @@
 
     // ── QR Scanner ──
     function onScanSuccess(decodedText) {
-        // Cooldown to prevent double-scans
         const now = Date.now();
         if (now - lastScanTime < SCAN_COOLDOWN) return;
         lastScanTime = now;
 
-        // Validate UUID format
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(decodedText)) {
             showResult('error', 'Invalid QR', 'Not a valid Turnstil QR code.');
@@ -219,4 +256,5 @@
             '<small>Use the manual UUID entry below, or grant camera permission.</small></p>';
     });
 </script>
+{% endif %}
 {% endblock %}
