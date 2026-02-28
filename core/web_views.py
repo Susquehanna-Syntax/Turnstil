@@ -52,6 +52,8 @@ def login_page(request):
         )
         if user:
             login(request, user)
+            if user.is_staff_or_above():
+                return redirect('scanner')
             next_url = request.GET.get('next', 'profile')
             return redirect(next_url)
         error = 'Invalid username or password.'
@@ -96,13 +98,100 @@ def qr_display(request):
     return render(request, 'public/qr_display.html', {'person': person})
 
 
+def _get_active_event(request):
+    """Helper function for scanner page"""
+    event_uuid = request.session.get('active_event_uuid')
+    if not event_uuid:
+        return None
+
+    try:
+        event = Event.objects.get(id=event_uuid)
+    except Event.DoesNotExist:
+        # Event was deleted — clean up
+        _clear_active_event(request)
+        return None
+
+    # Re-check authorization on every request (staff list may have changed)
+    if not (
+        request.user.role == 'admin'
+        or event.created_by == request.user
+        or event.staff.filter(id=request.user.id).exists()
+    ):
+        _clear_active_event(request)
+        return None
+
+    return event
+
+
+def _clear_active_event(request):
+    request.session.pop('active_event_uuid', None)
+    request.session.pop('active_event_name', None)
+
+
 @login_required
 def scanner_page(request):
     """Scanner interface for staff."""
-    events = Event.objects.filter(
-        end_time__gte=timezone.now()
-    ).order_by('start_time')
-    return render(request, 'scanner/index.html', {'events': events})
+
+    user = request.user
+    is_staff = user.is_staff_or_above()
+
+    active_event = _get_active_event(request) if is_staff else None
+
+    events = []
+    if is_staff:
+        events = Event.objects.filter(
+            end_time__gte=timezone.now()
+        ).order_by('start_time')
+
+        if user.role != 'admin':
+            events = (
+                    events.filter(staff__id=user.id) |
+                    events.filter(created_by_id=user.id)
+            ).distinct()
+
+    return render(request, 'scanner/index.html', {
+        'events': events,
+        'active_event': active_event,
+        'is_staff': is_staff,
+    })
+
+
+@login_required
+def select_event(request):
+    if not request.user.is_staff_or_above():
+        return redirect('home')
+
+    if request.method == 'POST':
+        event_uuid = request.POST.get('event_uuid', '').strip()
+
+        if not event_uuid:
+            # "Change event" / deselect
+            _clear_active_event(request)
+            return redirect('scanner')
+
+        event = get_object_or_404(Event, id=event_uuid)
+
+        if not (
+            request.user.role == 'admin'
+            or event.created_by == request.user
+            or event.staff.filter(id=request.user.id).exists()
+        ):
+            # Re-render event list with an error rather than a bare 403
+            events = Event.objects.filter(
+                end_time__gte=timezone.now()
+            ).order_by('start_time')
+            if request.user.role != 'admin':
+                events = events.filter(staff__id=request.user.id) | events.filter(created_by_id=request.user.id)
+            return render(request, 'scanner/index.html', {
+                'events': events,
+                'active_event': None,
+                'error': 'You are not assigned as staff for that event.',
+            })
+
+        request.session['active_event_uuid'] = str(event.id)
+        request.session['active_event_name'] = event.name
+
+    return redirect('scanner')
 
 
 @login_required
