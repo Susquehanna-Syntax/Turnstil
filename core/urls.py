@@ -13,6 +13,7 @@ urlpatterns = [
     path('profile/', web_views.profile_page, name='profile'),
     path('profile/qr/', web_views.qr_display, name='qr-display'),
     path('scanner/', web_views.scanner_page, name='scanner'),
+    path('scanner/select-event', web_views.select_event, name='select-event'),
     path('dashboard/', web_views.dashboard_page, name='dashboard'),
     path('events/create/', web_views.event_create_page, name='event-create'),
     path('events/<uuid:uuid>/', web_views.event_detail_page, name='event-detail'),
