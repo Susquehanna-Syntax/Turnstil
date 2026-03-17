@@ -2,19 +2,25 @@
 {% block title %}My Events{% endblock %}
 
 {% block content %}
-<h2>My Events</h2>
+<div class="page-header fade-up">
+    <h2>My Events</h2>
+</div>
 
-<a href="{% url 'event-create' %}">Create New Event</a>
+<div style="margin-bottom: 24px;" class="fade-up fade-up-1">
+    <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create New Event</a>
+</div>
 
-<ul>
-  {% for event in events %}
-    <li>
-      <strong>{{ event.name }}</strong>
-      —
-      <a href="{% url 'event-edit' event.id %}">Edit</a>
-    </li>
-  {% empty %}
-    <li>No events yet.</li>
-  {% endfor %}
-</ul>
+<div class="fade-up fade-up-2">
+    {% for event in events %}
+    <div class="list-item">
+        <div style="flex: 1;">
+            <strong>{{ event.name }}</strong>
+            <small class="text-muted" style="display: block; margin-top: 2px;">{{ event.start_time|date:"M j, Y" }}</small>
+        </div>
+        <a href="{% url 'event-edit' event.id %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Edit</a>
+    </div>
+    {% empty %}
+    <p class="text-muted">No events yet.</p>
+    {% endfor %}
+</div>
 {% endblock %}

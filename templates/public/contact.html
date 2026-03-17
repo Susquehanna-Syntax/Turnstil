@@ -2,13 +2,11 @@
 {% block title %}{{ contact.name }} — Turnstil{% endblock %}
 
 {% block content %}
-<article>
-    <header>
-        <hgroup>
-            <h2>{{ contact.name }}</h2>
-            <p>Contact Card</p>
-        </hgroup>
-    </header>
+<div class="card fade-up" style="max-width: 560px;">
+    <div class="page-header" style="margin-bottom: 16px;">
+        <h2>{{ contact.name }}</h2>
+        <p>Contact Card</p>
+    </div>
 
     {% if contact.organization %}
         <p>🏢 {{ contact.organization }}</p>
@@ -23,14 +21,15 @@
     {% endif %}
 
     {% if contact.links %}
-        <h4>Links</h4>
+        <div class="section-label" style="margin-top: 16px;">Links</div>
         {% for key, url in contact.links.items %}
             <p>🔗 <strong>{{ key }}:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
         {% endfor %}
     {% endif %}
 
-    <footer>
-        <small>Shared via Turnstil — <a href="{% url 'home' %}">Get your QR code</a></small>
-    </footer>
-</article>
+    <div class="card-footer">
+        <small class="text-muted">Shared via Turnstil</small>
+        <a href="{% url 'home' %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Get your QR code</a>
+    </div>
+</div>
 {% endblock %}

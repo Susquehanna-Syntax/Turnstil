@@ -2,21 +2,21 @@
 {% block title %}{{ event.name }} — Turnstil{% endblock %}
 
 {% block content %}
-<hgroup>
+<div class="page-header fade-up">
     <h2>{{ event.name }}</h2>
     <p>{{ event.start_time|date:"l, M j, Y · g:i A" }} — {{ event.end_time|date:"g:i A" }}</p>
-</hgroup>
+</div>
 
 {% if event.description %}
-    <p>{{ event.description }}</p>
+    <p class="fade-up fade-up-1">{{ event.description }}</p>
 {% endif %}
 
 {% if event.location %}
-    <p>📍 {{ event.location }}</p>
+    <p class="fade-up fade-up-1" style="color: var(--text-2);">📍 {{ event.location }}</p>
 {% endif %}
 
 <!-- Stats -->
-<div class="stat-grid">
+<div class="stat-grid fade-up fade-up-2">
     <div class="stat-card">
         <div class="number">{{ event.registration_count }}</div>
         <div class="label">Registered</div>
@@ -30,7 +30,7 @@
         <div class="label">Capacity</div>
     </div>
     <div class="stat-card">
-        <div class="number">
+        <div class="number" style="font-size: 1.5rem;">
             {% if event.is_active %}🟢{% elif event.is_upcoming %}🟡{% else %}⚫{% endif %}
         </div>
         <div class="label">
@@ -41,16 +41,35 @@
 
 <!-- Register button for attendees -->
 {% if user.is_authenticated and not event.is_full %}
-    <form method="post" style="margin: 1rem 0;">
+    <form method="post" style="margin: 16px 0;" class="fade-up fade-up-3">
         {% csrf_token %}
-        <button type="submit" name="register" value="1">Register for This Event</button>
+        <button type="submit" name="register" value="1" class="btn btn-filled-lav">Register for This Event</button>
     </form>
 {% endif %}
 
+<!-- Action buttons -->
+<div class="flex gap-8 flex-wrap fade-up fade-up-3" style="margin: 16px 0;">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">← Dashboard</a>
+
+
+    {% if user.is_organizer_or_above or event.created_by == user %}
+    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="display: inline; margin: 0;">
+        {% csrf_token %}
+        {% if event.allow_walkins %}
+            <button type="submit" class="btn btn-filled-mint">🚶 Walk-ins ON</button>
+        {% else %}
+            <button type="submit" class="btn btn-outline">🚶 Enable Walk-ins</button>
+        {% endif %}
+    </form>
+    {% endif %}
+
+   <a href="{% url 'scanner' %}" class="btn btn-outline">Open Scanner</a>
+</div>
+
 <!-- Attendee List (staff/organizer view) -->
 {% if user.is_staff_or_above %}
-<h3>Attendees</h3>
-<figure>
+<div class="section-label fade-up fade-up-4">Attendees</div>
+<div class="table-wrap fade-up fade-up-4">
     <table>
         <thead>
             <tr>
@@ -69,26 +88,10 @@
                 <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
             </tr>
             {% empty %}
-            <tr><td colspan="4">No registrations yet.</td></tr>
+            <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No registrations yet.</td></tr>
             {% endfor %}
         </tbody>
     </table>
-</figure>
+</div>
 {% endif %}
-
-<a href="{% url 'scanner' %}" role="button" class="outline">Open Scanner</a>
-
-{% if user.is_organizer_or_above or event.created_by == user %}
-<form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="display:inline">
-    {% csrf_token %}
-    {% if event.allow_walkins %}
-        <button type="submit" class="secondary">🚶 Walk-ins ON — Click to Disable</button>
-    {% else %}
-        <button type="submit" class="outline secondary">🚶 Enable Walk-ins</button>
-    {% endif %}
-</form>
-{% endif %}
-
-<a href="{% url 'dashboard' %}" role="button" class="secondary outline">← Dashboard</a>
-    
 {% endblock %}

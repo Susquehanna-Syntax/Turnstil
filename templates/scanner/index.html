@@ -2,17 +2,19 @@
 {% block title %}Scanner — Turnstil{% endblock %}
 
 {% block content %}
-<h2>Scanner</h2>
+<div class="page-header fade-up">
+    <h2>Scanner</h2>
+</div>
 
 {% if error %}
-<p style="color:var(--del-color);">⚠️ {{ error }}</p>
+<div class="flash flash-error">⚠️ {{ error }}</div>
 {% endif %}
 
 {% if is_staff and not active_event %}
 
 {# ── STAFF: EVENT SELECTION MODE ──────────────────────────────── #}
-<article>
-    <header><h3>Select Event</h3></header>
+<div class="card fade-up fade-up-1" style="max-width: 520px;">
+    <div class="section-label" style="margin-top: 0;">Select Event</div>
     <p>Choose the event you are working before scanning begins.</p>
 
     {% if events %}
@@ -28,63 +30,61 @@
             </option>
             {% endfor %}
         </select>
-        <button type="submit">Start Scanning</button>
+        <button type="submit" class="btn btn-filled-lav" style="margin-top: 16px;">Start Scanning</button>
     </form>
     {% else %}
-    <p><small>No upcoming events are assigned to you. Contact an organizer to be added to an event's staff list.</small></p>
+    <p><small class="text-muted">No upcoming events are assigned to you. Contact an organizer to be added to an event's staff list.</small></p>
     {% endif %}
-</article>
+</div>
 
 {% else %}
 
 {# ── STAFF: ACTIVE EVENT BANNER ───────────────────────────────── #}
 {% if is_staff and active_event %}
-<article>
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+<div class="card fade-up" style="margin-bottom: 16px;">
+    <div class="flex-between flex-wrap gap-8">
         <div>
             <strong>📍 {{ active_event.name }}</strong>
-            {% if active_event.location %}<small> · {{ active_event.location }}</small>{% endif %}
-            <small> · {{ active_event.start_time|date:"M j, g:i A" }}</small>
+            {% if active_event.location %}<small class="text-muted"> · {{ active_event.location }}</small>{% endif %}
+            <small class="text-muted"> · {{ active_event.start_time|date:"M j, g:i A" }}</small>
         </div>
-        <form method="post" action="{% url 'select-event' %}" style="margin:0;">
+        <form method="post" action="{% url 'select-event' %}" style="margin: 0;">
             {% csrf_token %}
-            <button type="submit" class="outline" style="margin:0; padding:.35rem .85rem; font-size:.85rem;">
-                Change Event
-            </button>
+            <button type="submit" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Change Event</button>
         </form>
     </div>
-</article>
+</div>
 {% endif %}
 
 {# ── ATTENDEE: DISCOVERY INTRO ─────────────────────────────────── #}
 {% if not is_staff %}
-<p><small>Scan a Turnstil QR code to view someone's contact card.</small></p>
+<p class="text-muted fade-up"><small>Scan a Turnstil QR code to view someone's contact card.</small></p>
 {% endif %}
 
 {# ── SCANNER UI (staff + attendees) ───────────────────────────── #}
-<div class="grid">
+<div class="two-col-grid fade-up fade-up-1">
     <div>
         <!-- Mode Toggle: staff only -->
         {% if is_staff %}
-        <fieldset role="group">
-            <button id="btn-attendance" class="contrast" onclick="setMode('attendance')">
+        <div class="btn-group" style="margin-bottom: 16px;">
+            <button id="btn-attendance" class="btn btn-filled-mint" onclick="setMode('attendance')">
                 ✓ Attendance
             </button>
-            <button id="btn-discovery" class="outline" onclick="setMode('discovery')">
+            <button id="btn-discovery" class="btn btn-outline" onclick="setMode('discovery')">
                 ↗ Discovery
             </button>
-        </fieldset>
+        </div>
         {% endif %}
 
         <!-- Camera -->
         <div id="reader"></div>
 
         <!-- Manual Entry fallback -->
-        <details>
+        <details class="collapsible" style="margin-top: 16px;">
             <summary>Manual UUID Entry</summary>
-            <div role="group">
-                <input type="text" id="manual-uuid" placeholder="Paste UUID here">
-                <button onclick="manualScan()">Submit</button>
+            <div style="display: flex; gap: 8px; padding: 0 16px 16px;">
+                <input type="text" id="manual-uuid" placeholder="Paste UUID here" style="flex: 1;">
+                <button class="btn btn-filled-lav" onclick="manualScan()">Submit</button>
             </div>
         </details>
     </div>
@@ -94,12 +94,12 @@
         <div id="result" class="scan-result" style="display:none"></div>
 
         <!-- Scan History -->
-        <article>
-            <header><h3>Recent Scans</h3></header>
+        <div class="card">
+            <div class="section-label" style="margin-top: 0;">Recent Scans</div>
             <div id="scan-history">
-                <p><small>Scans will appear here...</small></p>
+                <p><small class="text-muted">Scans will appear here...</small></p>
             </div>
-        </article>
+        </div>
     </div>
 </div>
 
@@ -136,8 +136,8 @@
     // ── Mode Toggle (staff only) ──
     function setMode(newMode) {
         mode = newMode;
-        document.getElementById('btn-attendance').className = mode === 'attendance' ? 'contrast' : 'outline';
-        document.getElementById('btn-discovery').className = mode === 'discovery' ? 'contrast' : 'outline';
+        document.getElementById('btn-attendance').className = mode === 'attendance' ? 'btn btn-filled-mint' : 'btn btn-outline';
+        document.getElementById('btn-discovery').className = mode === 'discovery' ? 'btn btn-filled-mint' : 'btn btn-outline';
     }
 
     // ── Result Display ──
@@ -157,7 +157,7 @@
         }
         const icon = result === 'success' ? '✅' : (result === 'duplicate' ? '🔁' : (result === 'info' ? '👤' : '❌'));
         const entry = document.createElement('div');
-        entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr>';
+        entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr style="border-color: var(--border); margin: 6px 0;">';
         el.prepend(entry);
         scanHistory.unshift({ result, name, time });
     }
@@ -252,7 +252,7 @@
         onScanSuccess
     ).catch(err => {
         document.getElementById('reader').innerHTML =
-            '<p>📷 Camera access denied or not available.<br>' +
+            '<p style="color: var(--text-2); padding: 16px;">📷 Camera access denied or not available.<br>' +
             '<small>Use the manual UUID entry below, or grant camera permission.</small></p>';
     });
 </script>

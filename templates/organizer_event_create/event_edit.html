@@ -2,13 +2,21 @@
 {% block title %}Edit Event{% endblock %}
 
 {% block content %}
-<h2>Edit {{ event.name }}</h2>
+<div class="page-header fade-up">
+    <h2>Edit {{ event.name }}</h2>
+</div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+<div class="card fade-up fade-up-1" style="max-width: 660px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-styled">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-filled-lav" style="margin-top: 8px;">Save Changes</button>
+    </form>
+</div>
 
-<a href="{% url 'organizer-event-list' %}">Back to My Events</a>
+<div style="margin-top: 16px;">
+    <a href="{% url 'organizer-event-list' %}" class="btn btn-outline">← Back to My Events</a>
+</div>
 {% endblock %}

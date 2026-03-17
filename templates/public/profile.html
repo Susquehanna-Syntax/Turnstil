@@ -2,89 +2,88 @@
 {% block title %}My Profile — Turnstil{% endblock %}
 
 {% block content %}
-<div class="grid">
-    <div>
-        <article>
-            <header>
-                <hgroup>
-                    <h2>My Profile</h2>
-                    <p>Your QR code: <code>{{ person.id }}</code></p>
-                </hgroup>
-            </header>
+<div class="page-header fade-up">
+    <h2>My Profile</h2>
+    <p>Your QR code: <code>{{ person.id }}</code></p>
+</div>
 
-            <form method="post">
-                {% csrf_token %}
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" value="{{ person.name }}" required>
+<div class="two-col-grid">
+    <div class="card fade-up fade-up-1">
+        <div class="section-label" style="margin-top: 0;">Personal Info</div>
+        <form method="post">
+            {% csrf_token %}
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ person.name }}" required>
 
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="{{ person.email }}">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ person.email }}">
 
-                <label for="organization">Organization</label>
-                <input type="text" id="organization" name="organization" value="{{ person.organization }}">
+            <label for="organization">Organization</label>
+            <input type="text" id="organization" name="organization" value="{{ person.organization }}">
 
-                <label for="phone">Phone</label>
-                <input type="tel" id="phone" name="phone" value="{{ person.phone }}">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" value="{{ person.phone }}">
 
-                <label for="links">Links</label>
-                <input type="url" id="links" name="links" value="{{ person.links }}">   
+            <label for="links">Links</label>
+            <input type="url" id="links" name="links" value="{{ person.links }}">
 
-                <fieldset>
-                    <legend>Visible when others scan your QR:</legend>
-                    <label>
-                        <input type="checkbox" name="vis_email" {% if person.visibility.email %}checked{% endif %}>
-                        Email
-                    </label>
-                    <label>
-                        <input type="checkbox" name="vis_organization" {% if person.visibility.organization %}checked{% endif %}>
-                        Organization
-                    </label>
-                    <label>
-                        <input type="checkbox" name="vis_phone" {% if person.visibility.phone %}checked{% endif %}>
-                        Phone
-                    </label>
-                    <label>
-                        <input type="checkbox" name="vis_links" {% if person.visibility.links %}checked{% endif %}>
-                        Links
-                    </label>
-                </fieldset>
+            <fieldset style="margin-top: 20px;">
+                <legend>Visible when others scan your QR:</legend>
+                <label>
+                    <input type="checkbox" name="vis_email" {% if person.visibility.email %}checked{% endif %}>
+                    Email
+                </label>
+                <label>
+                    <input type="checkbox" name="vis_organization" {% if person.visibility.organization %}checked{% endif %}>
+                    Organization
+                </label>
+                <label>
+                    <input type="checkbox" name="vis_phone" {% if person.visibility.phone %}checked{% endif %}>
+                    Phone
+                </label>
+                <label>
+                    <input type="checkbox" name="vis_links" {% if person.visibility.links %}checked{% endif %}>
+                    Links
+                </label>
+            </fieldset>
 
-                <button type="submit">Save Changes</button>
-            </form>
-        </article>
+            <button type="submit" class="btn btn-filled-lav" style="margin-top: 20px;">Save Changes</button>
+        </form>
     </div>
 
     <div>
-        <article>
-            <header><h3>My QR Code</h3></header>
+        <div class="card fade-up fade-up-2" style="margin-bottom: 14px;">
+            <div class="section-label" style="margin-top: 0;">My QR Code</div>
             <div class="qr-container">
                 <img src="{% url 'api-person-qr' uuid=person.id %}" alt="Your QR Code">
-                <p><small>Show this at events for check-in and networking</small></p>
+                <p style="margin-top: 12px;"><small>Show this at events for check-in and networking</small></p>
             </div>
-            <a href="{% url 'qr-display' %}" role="button" class="outline">Full Screen QR</a>
-        </article>
+            <a href="{% url 'qr-display' %}" class="btn btn-outline" style="width: 100%; justify-content: center;">Full Screen QR</a>
+        </div>
 
-        <article>
-            <header><h3>My Tickets</h3></header>
+        <div class="card fade-up fade-up-3">
+            <div class="section-label" style="margin-top: 0;">My Tickets</div>
             {% if tickets %}
-                <table>
-                    <thead>
-                        <tr><th>Event</th><th>Status</th><th>Date</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for ticket in tickets %}
-                        <tr>
-                            <td><a href="{% url 'event-detail' uuid=ticket.event.id %}">{{ ticket.event.name }}</a></td>
-                            <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
-                            <td>{{ ticket.event.start_time|date:"M j" }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Event</th><th>Status</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in tickets %}
+                            <tr>
+                                <td><a href="{% url 'event-detail' uuid=ticket.event.id %}">{{ ticket.event.name }}</a></td>
+                                <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                                <td>{{ ticket.event.start_time|date:"M j" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
-                <p>No tickets yet. <a href="{% url 'home' %}">Browse events</a></p>
+                <p class="text-muted">No tickets yet. <a href="{% url 'home' %}">Browse events</a></p>
             {% endif %}
-        </article>
+        </div>
     </div>
 </div>
 {% endblock %}
