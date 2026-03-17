@@ -89,11 +89,11 @@
         </details>
 
         <!-- Name Search fallback -->
-        <details>
+        <details class="collapsible" style="margin-top: 16px;">
             <summary>Search by Name</summary>
-            <div role="group">
-                <input type="search" id="name-search" placeholder="Search attendee name...">
-                <button onclick="searchByName()">Search</button>
+            <div role="group" style="display: flex; gap: 8px; padding: 0 16px 16px;">
+                <input type="search" id="name-search" placeholder="Search attendee name..." style="flex: 1;">
+                <button class="btn btn-filled-peach" onclick="">Search</button>
             </div>
             <ul id="name-search-results"></ul>
         </details>
