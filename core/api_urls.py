@@ -13,9 +13,11 @@ urlpatterns = [
     path('auth/me', views.MeView.as_view(), name='api-me'),
 
     # People
+    path('people/search/', views.PersonSearchView.as_view(), name='person-search'),
     path('people/<uuid:uuid>', views.PersonDetailView.as_view(), name='api-person-detail'),
     path('people/<uuid:uuid>/qr', views.PersonQRView.as_view(), name='api-person-qr'),
     path('people/<uuid:uuid>/contact', views.PersonContactView.as_view(), name='api-person-contact'),
+    
 
     # Events
     path('events', views.EventListCreateView.as_view(), name='api-events'),

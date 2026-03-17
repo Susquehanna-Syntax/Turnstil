@@ -93,7 +93,7 @@
             <summary>Search by Name</summary>
             <div role="group">
                 <input type="search" id="name-search" placeholder="Search attendee name...">
-                <button onclick="">Search</button>
+                <button onclick="searchByName()">Search</button>
             </div>
             <ul id="name-search-results"></ul>
         </details>
@@ -252,6 +252,40 @@
     function manualScan() {
         const uuid = document.getElementById('manual-uuid').value.trim();
         if (uuid) onScanSuccess(uuid);
+    }
+
+    function searchByName() {
+        const query = document.getElementById('name-search').value.trim();
+        if (!query) return;
+        onNameSearch(query);
+    }
+
+    async function onNameSearch(query) {
+        const list = document.getElementById('name-search-results');
+        list.innerHTML = '<li>Searching...</li>';
+
+        const response = await fetch(`/api/people/search/?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        list.innerHTML = '';
+
+        if (data.data.length === 0) {
+            list.innerHTML = '<li>No attendees found.</li>';
+            return;
+        }
+
+        data.data.forEach(person => {
+            const li = document.createElement('li');
+            li.textContent = person.organization
+                ? `${person.name} — ${person.organization}`
+                : person.name;
+            li.style.cursor = 'pointer';
+            li.onclick = () => {
+                onScanSuccess(person.id);
+                list.innerHTML = '';
+            };
+            list.appendChild(li);
+        });
     }
 
     // ── Initialize Camera ──

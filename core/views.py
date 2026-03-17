@@ -153,6 +153,25 @@ class PersonContactView(APIView):
             'status': 'success',
             'data': PersonSerializer(person).data,
         })
+    
+
+class PersonSearchView(APIView):
+    """Search Attendees by name. Staff Only"""
+    permission_classes = [permissions.IsAuthenticated, IsStaffOrAbove]
+
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+        if not query:
+            return Response({'status': 'success', 'data': []})
+        
+        people = Person.objects.filter(
+            name__icontains=query
+        ).values('id', 'name', 'organization')[:10]
+
+        return Response({
+            'status': 'success',
+            'data': list(people)
+        })
 
 
 # ── Events ───────────────────────────────────────────────────────
