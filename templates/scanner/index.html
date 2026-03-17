@@ -87,6 +87,16 @@
                 <button class="btn btn-filled-lav" onclick="manualScan()">Submit</button>
             </div>
         </details>
+
+        <!-- Name Search fallback -->
+        <details>
+            <summary>Search by Name</summary>
+            <div role="group">
+                <input type="search" id="name-search" placeholder="Search attendee name...">
+                <button onclick="">Search</button>
+            </div>
+            <ul id="name-search-results"></ul>
+        </details>
     </div>
 
     <div>
@@ -207,6 +217,7 @@
                 if (c.email) detail += '📧 ' + c.email + '<br>';
                 if (c.organization) detail += '🏢 ' + c.organization + '<br>';
                 if (c.phone) detail += '📞 ' + c.phone + '<br>';
+                if (c.links) detail += '🔗 ' + c.links + '<br>';
                 showResult('info', '👤 ' + c.name, detail || 'No additional info shared.');
                 addToHistory('info', c.name, now);
             } else {
