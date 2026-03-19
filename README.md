@@ -22,6 +22,10 @@ python manage.py migrate
 # Seed demo data
 python manage.py seed_demo
 
+# Or just create an admin user
+python manage.py seed_admin
+python manage.py seed_admin --username myadmin --password secret123 --email me@example.com
+
 # Run server
 python manage.py runserver
 ```
