@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Scanner — Turnstil{% endblock %}
 
+{% block main_class %}{% if is_staff and not active_event %}center-page{% endif %}{% endblock %}
 {% block content %}
 <div class="page-header fade-up">
     <h2>Scanner</h2>
@@ -13,7 +14,7 @@
 {% if is_staff and not active_event %}
 
 {# ── STAFF: EVENT SELECTION MODE ──────────────────────────────── #}
-<div class="card fade-up fade-up-1" style="max-width: 520px; margin: 0 auto;">
+<div class="card fade-up fade-up-1" style="max-width: 520px; width: 100%;">
     <div class="section-label" style="margin-top: 0;">Select Event</div>
     <p>Choose the event you are working before scanning begins.</p>
 
