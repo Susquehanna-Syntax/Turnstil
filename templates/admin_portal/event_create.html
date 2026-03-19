@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Create Event — Turnstil{% endblock %}
 
+{% block main_class %}center-page{% endblock %}
 {% block content %}
-<div class="page-header fade-up">
+<div class="page-header fade-up" style="text-align: center;">
     <h2>Create Event</h2>
 </div>
 
-<div class="card fade-up fade-up-1" style="max-width: 660px;">
+<div class="card fade-up fade-up-1" style="max-width: 660px; width: 100%;">
     <form method="post">
         {% csrf_token %}
         <label for="name">Event Name</label>
@@ -40,7 +41,7 @@
         <label for="capacity">Capacity (0 = unlimited)</label>
         <input type="number" id="capacity" name="capacity" value="0" min="0">
 
-        <button type="submit" class="btn btn-filled-lav" style="margin-top: 24px;">Create Event</button>
+        <button type="submit" class="btn btn-filled-peach" style="margin-top: 24px;">Create Event</button>
     </form>
 </div>
 {% endblock %}
