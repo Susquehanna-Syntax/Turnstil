@@ -40,30 +40,31 @@
 </div>
 
 <!-- Register button for attendees -->
-{% if user.is_authenticated and not event.is_full %}
-    <form method="post" style="margin: 16px 0;" class="fade-up fade-up-3">
-        {% csrf_token %}
-        <button type="submit" name="register" value="1" class="btn btn-filled-lav">Register for This Event</button>
-    </form>
-{% endif %}
 
 <!-- Action buttons -->
-<div class="flex gap-8 flex-wrap fade-up fade-up-3" style="margin: 16px 0;">
-    <a href="{% url 'dashboard' %}" class="btn btn-outline">← Dashboard</a>
+<div class="stat-grid fade-up fade-up-3" style="margin-top: 16px;">
+    <a href="{% url 'dashboard' %}" class="btn btn-filled-rose" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">← Dashboard</a>
 
+    {% if user.is_authenticated and not event.is_full %}
+        <form method="post" style="margin: 0; height: 100%;">
+            {% csrf_token %}
+            <button type="submit" name="register" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Register for This Event</button>
+        </form>
+    {% endif %}
+
+    <a href="{% url 'scanner' %}" class="btn btn-filled-peach" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Open Scanner</a>
 
     {% if user.is_organizer_or_above or event.created_by == user %}
-    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="display: inline; margin: 0;">
+    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin: 0; height: 100%;">
         {% csrf_token %}
         {% if event.allow_walkins %}
-            <button type="submit" class="btn btn-filled-mint">🚶 Walk-ins ON</button>
+            <button type="submit" class="btn btn-filled-mint" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Walk-ins ON</button>
         {% else %}
-            <button type="submit" class="btn btn-outline">🚶 Enable Walk-ins</button>
+            <button type="submit" class="btn btn-outline" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Enable Walk-ins</button>
         {% endif %}
     </form>
     {% endif %}
 
-   <a href="{% url 'scanner' %}" class="btn btn-outline">Open Scanner</a>
 </div>
 
 <!-- Attendee List (staff/organizer view) -->
