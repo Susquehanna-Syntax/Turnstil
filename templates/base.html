@@ -604,6 +604,33 @@
         #reader { width: 100%; max-width: 500px; margin: 0 auto; }
         #reader video { border-radius: var(--r-lg); }
 
+        /* ── Progress bar ── */
+        progress {
+            width: 100%;
+            height: 18px;
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: rgba(242, 160, 184, 0.25);
+            color: var(--mint);
+        }
+        progress::-webkit-progress-bar {
+            background-color: rgba(242, 160, 184, 0.25);
+            border-radius: 20px;
+        }
+        progress::-webkit-progress-value {
+            background-color: var(--mint);
+            border-radius: 20px;
+            transition: width 0.5s var(--ease-out-expo);
+        }
+        progress::-moz-progress-bar {
+            background-color: var(--mint);
+            border-radius: 20px;
+        }
+
         /* ── Centered page (vertical + horizontal) ── */
         .main-content.center-page {
             display: flex;
