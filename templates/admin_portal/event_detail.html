@@ -17,19 +17,19 @@
 
 <!-- Stats -->
 <div class="stat-grid fade-up fade-up-2">
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-rose">
         <div class="number">{{ event.registration_count }}</div>
         <div class="label">Registered</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-lav">
         <div class="number">{{ event.checkin_count }}</div>
         <div class="label">Checked In</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-lemon">
         <div class="number">{% if event.capacity %}{{ event.capacity }}{% else %}∞{% endif %}</div>
         <div class="label">Capacity</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-mint">
         <div class="number" style="font-size: 1.5rem;">
             {% if event.is_active %}🟢{% elif event.is_upcoming %}🟡{% else %}⚫{% endif %}
         </div>
@@ -52,7 +52,7 @@
         </form>
     {% endif %}
 
-    <a href="{% url 'scanner' %}" class="btn btn-filled-peach" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Open Scanner</a>
+    <a href="{% url 'scanner' %}" class="btn btn-filled-lemon" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Open Scanner</a>
 
     {% if user.is_organizer_or_above or event.created_by == user %}
     <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin: 0; height: 100%;">
