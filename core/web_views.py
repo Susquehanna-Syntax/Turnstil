@@ -2,7 +2,7 @@
 Turnstil web views — server-rendered pages.
 These handle the HTML interface; the API handles data operations.
 """
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
@@ -254,13 +254,40 @@ def event_detail_page(request, uuid):
         )
         return redirect('event-detail', uuid=uuid)
 
-    logs = ScanLog.objects.filter(event=event).select_related('person','actor').order_by('-timestamp')
+    logs = ScanLog.objects.filter(event=event).select_related('person', 'actor').order_by('-timestamp')
+
+    User = get_user_model()
+    event_staff = event.staff.all()
+    available_staff = User.objects.filter(
+        role__in=['staff', 'organizer', 'admin']
+    ).exclude(id__in=event_staff.values_list('id', flat=True))
 
     return render(request, 'admin_portal/event_detail.html', {
         'event': event,
         'tickets': tickets,
         'logs': logs,
+        'event_staff': event_staff,
+        'available_staff': available_staff,
     })
+
+
+@login_required
+def manage_event_staff(request, uuid):
+    event = get_object_or_404(Event, id=uuid)
+    if not (request.user.role == 'admin' or event.created_by == request.user or request.user.is_organizer_or_above()):
+        return redirect('event-detail', uuid=uuid)
+
+    if request.method == 'POST':
+        User = get_user_model()
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        user = get_object_or_404(User, id=user_id)
+        if action == 'add':
+            event.staff.add(user)
+        elif action == 'remove':
+            event.staff.remove(user)
+
+    return redirect('event-detail', uuid=uuid)
 
 
 def contact_page(request, uuid):

@@ -131,5 +131,46 @@
         </table>
     </div>
 
+{% if user.is_organizer_or_above or event.created_by == user %}
+<div class="section-label fade-up fade-up-4">Staff / Scanners</div>
+
+<div class="card fade-up fade-up-4">
+    <!-- Current staff -->
+    {% if event_staff %}
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+        {% for member in event_staff %}
+        <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="remove">
+            <input type="hidden" name="user_id" value="{{ member.id }}">
+            <button type="submit" class="btn btn-outline" style="font-size: 13px; padding: 5px 12px;">
+                {{ member.username }} <span style="opacity: 0.5; margin-left: 4px;">✕</span>
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted" style="margin-bottom: 16px;"><small>No staff assigned yet.</small></p>
+    {% endif %}
+
+    <!-- Add staff -->
+    {% if available_staff %}
+    <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: flex; gap: 8px; margin: 0;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
+        <select name="user_id" style="flex: 1;">
+            <option value="" disabled selected>— Add a staff member —</option>
+            {% for member in available_staff %}
+            <option value="{{ member.id }}">{{ member.username }} ({{ member.role }})</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-filled-lav">Add</button>
+    </form>
+    {% else %}
+    <p class="text-muted"><small>All eligible staff are already assigned.</small></p>
+    {% endif %}
+</div>
+{% endif %}
+
 {% endif %}
 {% endblock %}
