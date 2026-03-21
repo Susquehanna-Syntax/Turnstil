@@ -12,7 +12,7 @@
 {% endif %}
 
 {% if event.location %}
-    <p class="fade-up fade-up-1" style="color: var(--text-2);">📍 {{ event.location }}</p>
+    <p class="fade-up fade-up-1" style="color: var(--text-2);"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ event.location }}</p>
 {% endif %}
 
 <!-- Stats -->
@@ -30,12 +30,10 @@
         <div class="label">Capacity</div>
     </div>
     <div class="stat-card stat-card-filled stat-card-mint">
-        <div class="number" style="font-size: 1.5rem;">
-            {% if event.is_active %}🟢{% elif event.is_upcoming %}🟡{% else %}⚫{% endif %}
+        <div class="number" style="font-size: 1.2rem;">
+            {% if event.is_active %}Active{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
         </div>
-        <div class="label">
-            {% if event.is_active %}Live Now{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
-        </div>
+        <div class="label">Status</div>
     </div>
 </div>
 
