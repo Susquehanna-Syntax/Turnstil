@@ -2,11 +2,11 @@
 {% block title %}Edit Event{% endblock %}
 
 {% block content %}
-<div class="page-header fade-up">
+<div class="page-header fade-up" style="text-align: center;">
     <h2>Edit {{ event.name }}</h2>
 </div>
 
-<div class="card fade-up fade-up-1" style="max-width: 660px;">
+<div class="card fade-up fade-up-1" style="max-width: 660px; margin: 0 auto;">
     <form method="post">
         {% csrf_token %}
         <div class="form-styled">
@@ -16,7 +16,7 @@
     </form>
 </div>
 
-<div style="margin-top: 16px;">
+<div style="margin-top: 16px; max-width: 660px; margin-left: auto; margin-right: auto;">
     <a href="{% url 'organizer-event-list' %}" class="btn btn-outline">← Back to My Events</a>
 </div>
 {% endblock %}
