@@ -4,6 +4,7 @@ These handle the HTML interface; the API handles data operations.
 """
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
@@ -225,10 +226,16 @@ def event_create_page(request):
 
         serializer = EventCreateSerializer(data=data)
         if serializer.is_valid():
-            # Save the event, passing created_by separately
-            event = serializer.save(created_by=request.user)
-            event.staff.add(request.user)
-            return redirect('event-detail', uuid=event.id)
+            try:
+                event = serializer.save(created_by=request.user)
+                event.staff.add(request.user)
+                return redirect('event-detail', uuid=event.id)
+            except ValidationError as e:
+                errors = e.message_dict if hasattr(e, 'message_dict') else {'__all__': e.messages}
+                return render(request, 'admin_portal/event_create.html', {
+                    'errors': errors,
+                    'data': data
+                })
 
         # If serializer invalid, show errors
         return render(request, 'admin_portal/event_create.html', {
