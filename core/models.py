@@ -276,3 +276,15 @@ class ScanLog(models.Model):
     def __str__(self):
         person_name = self.person.name if self.person else 'Unknown'
         return f"[{self.result}] {person_name} @ {self.timestamp:%H:%M:%S}"
+    
+    @property
+    def result_display(self):
+        labels = {
+            self.Result.SUCCESS: 'Success',
+            self.Result.DUPLICATE: 'Duplicate',
+            self.Result.NOT_REGISTERED: 'Not Registered',
+            self.Result.INVALID: 'Invalid',
+            self.Result.WRONG_EVENT: 'Wrong Event',
+            self.Result.EVENT_INACTIVE: 'Event Inactive',
+        }
+        return labels.get(self.result, self.result)
