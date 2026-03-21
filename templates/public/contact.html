@@ -9,21 +9,21 @@
     </div>
 
     {% if contact.organization %}
-        <p>🏢 {{ contact.organization }}</p>
+        <p><i data-lucide="building-2" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ contact.organization }}</p>
     {% endif %}
 
     {% if contact.email %}
-        <p>📧 <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+        <p><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: -2px;"></i> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
     {% endif %}
 
     {% if contact.phone %}
-        <p>📞 <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+        <p><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: -2px;"></i> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
     {% endif %}
 
     {% if contact.links %}
         <div class="section-label" style="margin-top: 16px;">Links</div>
         {% for key, url in contact.links.items %}
-            <p>🔗 <strong>{{ key }}:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+            <p><i data-lucide="external-link" style="width: 14px; height: 14px; vertical-align: -2px;"></i> <strong>{{ key }}:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
         {% endfor %}
     {% endif %}
 
