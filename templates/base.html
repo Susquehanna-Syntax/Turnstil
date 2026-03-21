@@ -276,8 +276,8 @@
         }
         /* Filled stat cards */
         .stat-card-filled           { border: none; }
-        .stat-card-filled .number   { color: var(--bg); }
-        .stat-card-filled .label    { color: rgba(28, 28, 33, 0.7); }
+        .stat-card-filled .number   { color: #1c1c21; }
+        .stat-card-filled .label    { color: #3a3a43; }
         .stat-card-rose     { background: var(--rose); }
         .stat-card-lav  { background: var(--lavender); }
         .stat-card-mint     { background: var(--mint); }
@@ -285,6 +285,41 @@
         .stat-card-sky      { background: var(--sky); }
         .stat-card-lemon    { background: var(--lemon); }
         .stat-card-coral    { background: var(--coral); }
+
+        /* ── Tabs ── */
+        .tab-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: var(--text-3);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .tab-btn:hover { color: var(--text-1); }
+        .tab-btn.active { color: var(--text-1); }
+        .tab-btn[data-color="rose"].active    { border-bottom-color: var(--rose); }
+        .tab-btn[data-color="lavender"].active { border-bottom-color: var(--lavender); }
+        .tab-btn[data-color="mint"].active     { border-bottom-color: var(--mint); }
+        .tab-btn[data-color="lemon"].active    { border-bottom-color: var(--lemon); }
+        .tab-btn[data-color="coral"].active    { border-bottom-color: var(--coral); }
+        .tab-btn[data-color="sky"].active      { border-bottom-color: var(--sky); }
+        .tab-btn[data-color="peach"].active    { border-bottom-color: var(--peach); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         /* ── Table ── */
         .table-wrap {

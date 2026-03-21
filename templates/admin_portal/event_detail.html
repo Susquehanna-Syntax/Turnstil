@@ -67,113 +67,126 @@
 
 </div>
 
-<!-- Attendee List (staff/organizer view) -->
 {% if user.is_staff_or_above %}
-<div class="section-label fade-up fade-up-4">Attendees</div>
-<div class="table-wrap fade-up fade-up-4">
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Organization</th>
-                <th>Status</th>
-                <th>Checked In At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets %}
-            <tr>
-                <td>{{ ticket.person.name }}</td>
-                <td>{{ ticket.person.organization }}</td>
-                <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
-                <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No registrations yet.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Tabs -->
+<div class="tab-bar fade-up fade-up-4">
+    <button class="tab-btn active" data-tab="attendees" data-color="rose" onclick="switchTab('attendees', this)">Attendees</button>
+    {% if user.is_organizer_or_above or event.created_by == user %}
+    <button class="tab-btn" data-tab="staff" data-color="lavender" onclick="switchTab('staff', this)">Staff</button>
+    {% endif %}
+    <button class="tab-btn" data-tab="logs" data-color="lemon" onclick="switchTab('logs', this)">Logs</button>
 </div>
 
+<!-- Tab 1: Attendees -->
+<div id="tab-attendees" class="tab-panel active fade-up fade-up-4">
+    <div class="section-label">Attendance Ratio</div>
+    <progress id="attendance-ratio" value="{{ event.checkin_count }}" max="{{ event.registration_count|default:1 }}" style="display: block; width: 100%; margin: 12px 0 20px;">{{ event.checkin_count }}/{{ event.registration_count }}</progress>
 
-<div class="section-label fade-up fade-up-4">Statistics</div>
-
-   <div class="section-label fade-up fade-up-4">Attendance Ratio</div>
-   <progress class="fade-up fade-up-4" id="attendance-ratio" value="{{ event.checkin_count }}" max="{{ event.registration_count|default:1 }}" style="display: block; width: 100%; margin: 12px 0 20px;">{{ event.checkin_count }}/{{ event.registration_count}}</progress>
-
-
-   <div class="section-label fade-up fade-up-4">Logs</div>
-    <div class="table-wrap fade-up fade-up-4">
+    <div class="section-label">Attendees</div>
+    <div class="table-wrap">
         <table>
-            <thread>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Organization</th>
+                    <th>Status</th>
+                    <th>Checked In At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.person.name }}</td>
+                    <td>{{ ticket.person.organization }}</td>
+                    <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                    <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No registrations yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab 2: Staff -->
+{% if user.is_organizer_or_above or event.created_by == user %}
+<div id="tab-staff" class="tab-panel fade-up fade-up-4">
+    <div class="card">
+        {% if event_staff %}
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+            {% for member in event_staff %}
+            <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <input type="hidden" name="user_id" value="{{ member.id }}">
+                <button type="submit" class="btn btn-outline" style="font-size: 13px; padding: 5px 12px;">
+                    {{ member.username }} <span style="opacity: 0.5; margin-left: 4px;">✕</span>
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted" style="margin-bottom: 16px;"><small>No staff assigned yet.</small></p>
+        {% endif %}
+
+        {% if available_staff %}
+        <div style="display: flex; gap: 8px;">
+            <input type="search" id="staff-search" placeholder="Search staff by name..." style="flex: 1;" oninput="searchStaff(this.value)">
+        </div>
+        <ul id="staff-search-results" style="list-style: none; padding: 0; margin: 8px 0 0;"></ul>
+        <form id="add-staff-form" method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: none; margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="user_id" id="add-staff-user-id">
+        </form>
+        {% else %}
+        <p class="text-muted"><small>All eligible staff are already assigned.</small></p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Tab 3: Logs -->
+<div id="tab-logs" class="tab-panel fade-up fade-up-4">
+    <div class="table-wrap">
+        <table>
+            <thead>
                 <tr>
                     <th>Action</th>
                     <th>Attendee</th>
                     <th>Scanner</th>
                     <th>Time</th>
-
                 </tr>
-            </thread>
+            </thead>
             <tbody>
-            {% for log in logs %}
+                {% for log in logs %}
                 <tr>
                     <td>{{ log.result_display }}</td>
                     <td>{{ log.person.name }}</td>
                     <td>{{ log.actor.username }}</td>
                     <td>{{ log.timestamp }}</td>
                 </tr>
-            {% empty %}
-            <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No Logs Yet</td></tr>
-            {% endfor %}
-
+                {% empty %}
+                <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No Logs Yet</td></tr>
+                {% endfor %}
             </tbody>
-
         </table>
     </div>
-
-{% if user.is_organizer_or_above or event.created_by == user %}
-<div class="section-label fade-up fade-up-4">Staff / Scanners</div>
-
-<div class="card fade-up fade-up-4">
-    <!-- Current staff -->
-    {% if event_staff %}
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
-        {% for member in event_staff %}
-        <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="margin: 0;">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="remove">
-            <input type="hidden" name="user_id" value="{{ member.id }}">
-            <button type="submit" class="btn btn-outline" style="font-size: 13px; padding: 5px 12px;">
-                {{ member.username }} <span style="opacity: 0.5; margin-left: 4px;">✕</span>
-            </button>
-        </form>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p class="text-muted" style="margin-bottom: 16px;"><small>No staff assigned yet.</small></p>
-    {% endif %}
-
-    <!-- Add staff search -->
-    {% if available_staff %}
-    <div style="display: flex; gap: 8px;">
-        <input type="search" id="staff-search" placeholder="Search staff by name..." style="flex: 1;" oninput="searchStaff(this.value)">
-    </div>
-    <ul id="staff-search-results" style="list-style: none; padding: 0; margin: 8px 0 0;"></ul>
-    <form id="add-staff-form" method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: none; margin: 0;">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="add">
-        <input type="hidden" name="user_id" id="add-staff-user-id">
-    </form>
-    {% else %}
-    <p class="text-muted"><small>All eligible staff are already assigned.</small></p>
-    {% endif %}
 </div>
-{% endif %}
 
 {% endif %}
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    function switchTab(tabName, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>
 {% if available_staff %}
 <script>
     const availableStaff = [
