@@ -155,6 +155,18 @@ class ScanLogSerializer(serializers.ModelSerializer):
             'actor', 'actor_name', 'result',
             'scanned_value', 'metadata', 'timestamp',
         ]
+    
+    @property
+    def result_display(self):
+        labels = {
+            ScanLog.Result.SUCCESS: 'Success',  
+            ScanLog.Result.DUPLICATE: 'Duplicate',  
+            ScanLog.Result.NOT_REGISTERED: 'Not Registered',  
+            ScanLog.Result.INVALID: 'Invalid',
+            ScanLog.Result.WRONG_EVENT: 'Wrong Event',
+            ScanLog.Result.EVENT_INACTIVE: 'Event Inactive',
+        }
+        return labels.get(self.result, self.result)
 
 
 # ── Staff Assignment ─────────────────────────────────────────────
