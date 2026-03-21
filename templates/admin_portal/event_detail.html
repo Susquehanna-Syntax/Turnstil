@@ -153,18 +153,16 @@
     <p class="text-muted" style="margin-bottom: 16px;"><small>No staff assigned yet.</small></p>
     {% endif %}
 
-    <!-- Add staff -->
+    <!-- Add staff search -->
     {% if available_staff %}
-    <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: flex; gap: 8px; margin: 0;">
+    <div style="display: flex; gap: 8px;">
+        <input type="search" id="staff-search" placeholder="Search staff by name..." style="flex: 1;" oninput="searchStaff(this.value)">
+    </div>
+    <ul id="staff-search-results" style="list-style: none; padding: 0; margin: 8px 0 0;"></ul>
+    <form id="add-staff-form" method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: none; margin: 0;">
         {% csrf_token %}
         <input type="hidden" name="action" value="add">
-        <select name="user_id" style="flex: 1;">
-            <option value="" disabled selected>— Add a staff member —</option>
-            {% for member in available_staff %}
-            <option value="{{ member.id }}">{{ member.username }} ({{ member.role }})</option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-filled-lav">Add</button>
+        <input type="hidden" name="user_id" id="add-staff-user-id">
     </form>
     {% else %}
     <p class="text-muted"><small>All eligible staff are already assigned.</small></p>
@@ -172,5 +170,43 @@
 </div>
 {% endif %}
 
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if available_staff %}
+<script>
+    const availableStaff = [
+        {% for member in available_staff %}
+        { id: "{{ member.id }}", name: "{{ member.username }}", role: "{{ member.role }}" },
+        {% endfor %}
+    ];
+
+    function searchStaff(query) {
+        const list = document.getElementById('staff-search-results');
+        if (!query.trim()) { list.innerHTML = ''; return; }
+
+        const results = availableStaff.filter(m =>
+            m.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        list.innerHTML = '';
+        if (results.length === 0) {
+            list.innerHTML = '<li><small class="text-muted">No staff found.</small></li>';
+            return;
+        }
+
+        results.forEach(member => {
+            const li = document.createElement('li');
+            li.textContent = `${member.name} (${member.role})`;
+            li.style.cursor = 'pointer';
+            li.onclick = () => {
+                document.getElementById('add-staff-user-id').value = member.id;
+                document.getElementById('add-staff-form').submit();
+            };
+            list.appendChild(li);
+        });
+    }
+</script>
 {% endif %}
 {% endblock %}

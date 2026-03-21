@@ -280,7 +280,9 @@ def manage_event_staff(request, uuid):
     if request.method == 'POST':
         User = get_user_model()
         action = request.POST.get('action')
-        user_id = request.POST.get('user_id')
+        user_id = request.POST.get('user_id', '').strip()
+        if not user_id:
+            return redirect('event-detail', uuid=uuid)
         user = get_object_or_404(User, id=user_id)
         if action == 'add':
             event.staff.add(user)
