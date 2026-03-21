@@ -504,6 +504,31 @@
             border-color: rgba(130,196,238,0.3);
         }
 
+        /* ── Name search results list ── */
+        #name-search-results {
+            list-style: none;
+            margin: 0 0 16px;
+            padding: 0 16px;
+        }
+        #name-search-results li {
+            padding: 10px 14px;
+            border-radius: var(--r-sm);
+            border: 1px solid var(--border);
+            background: var(--surface-1);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            margin-bottom: 6px;
+        }
+        #name-search-results li:hover {
+            background: var(--surface-2);
+            border-color: var(--lav);
+        }
+        #name-search-results li:last-child {
+            margin-bottom: 0;
+        }
+
         /* ── QR container ── */
         .qr-container {
             text-align: center;
