@@ -82,19 +82,358 @@ turnstil/
 
 ## API Endpoints
 
-| Method | Endpoint | Auth | Purpose |
-|--------|----------|------|---------|
-| POST | `/api/auth/register` | None | Create account + get QR |
-| POST | `/api/auth/login` | None | Get JWT tokens |
-| GET | `/api/auth/me` | JWT | Current user info |
-| GET | `/api/people/{uuid}/contact` | JWT | Contact card (visibility-aware) |
-| PATCH | `/api/people/{uuid}/contact` | Owner | Update profile |
-| GET | `/api/people/{uuid}/qr` | Owner | QR code image (PNG) |
-| GET/POST | `/api/events` | JWT/Org | List or create events |
-| POST | `/api/events/{uuid}/register` | JWT | Register for event |
-| POST | `/api/checkin` | Staff | Process check-in scan |
-| GET | `/api/events/{uuid}/dashboard` | Staff | Live event stats |
-| GET | `/api/logs` | Admin | Audit log query |
+All responses follow the envelope format:
+```json
+{ "status": "success" | "error", "data": { ... } }
+```
+
+Authenticated endpoints require a JWT bearer token:
+```
+Authorization: Bearer <access_token>
+```
+
+---
+
+### Auth
+
+#### `POST /api/auth/register`
+Create a new account. Automatically creates a Person record and returns JWT tokens.
+
+**Auth:** None
+
+**Request body:**
+```json
+{
+  "username": "jsmith",
+  "email": "j@example.com",
+  "password": "mypassword",
+  "name": "Jane Smith",
+  "organization": "Acme Corp"
+}
+```
+
+**Response `201`:**
+```json
+{
+  "status": "success",
+  "data": {
+    "user": { "id": 1, "username": "jsmith", "email": "...", "role": "attendee", "person_uuid": "...", "person_name": "Jane Smith" },
+    "person_uuid": "<uuid>",
+    "tokens": { "access": "<jwt>", "refresh": "<jwt>" }
+  }
+}
+```
+
+---
+
+#### `POST /api/auth/login`
+Get JWT tokens for an existing account.
+
+**Auth:** None
+
+**Request body:**
+```json
+{ "username": "jsmith", "password": "mypassword" }
+```
+
+**Response `200`:**
+```json
+{ "access": "<jwt>", "refresh": "<jwt>" }
+```
+
+---
+
+#### `POST /api/auth/refresh`
+Exchange a refresh token for a new access token.
+
+**Auth:** None
+
+**Request body:**
+```json
+{ "refresh": "<refresh_token>" }
+```
+
+**Response `200`:**
+```json
+{ "access": "<new_jwt>" }
+```
+
+---
+
+#### `GET /api/auth/me`
+Return the current user's profile.
+
+**Auth:** JWT (any role)
+
+**Response `200`:**
+```json
+{
+  "status": "success",
+  "data": { "id": 1, "username": "jsmith", "email": "...", "role": "attendee", "person_uuid": "<uuid>", "person_name": "Jane Smith" }
+}
+```
+
+---
+
+### People
+
+#### `GET /api/people/{uuid}/contact`
+Return a person's contact card. The owner sees all fields; others see only fields the person has marked visible.
+
+**Auth:** JWT (any role)
+
+**Response `200`:**
+```json
+{
+  "status": "success",
+  "data": { "name": "Jane Smith", "email": "j@example.com", "organization": "Acme", "phone": "...", "links": { ... } }
+}
+```
+
+---
+
+#### `PATCH /api/people/{uuid}/contact`
+Update contact fields. Owner only.
+
+**Auth:** JWT (owner)
+
+**Request body** (all fields optional):
+```json
+{
+  "name": "Jane Smith",
+  "email": "new@example.com",
+  "organization": "New Org",
+  "phone": "555-1234",
+  "links": { "linkedin": "https://..." },
+  "visibility": { "email": true, "phone": false }
+}
+```
+
+**Response `200`:** Full updated person object.
+
+---
+
+#### `GET /api/people/{uuid}/qr`
+Return the person's QR code as a PNG image. Owner or admin only.
+
+**Auth:** JWT (owner or admin)
+
+**Response `200`:** `Content-Type: image/png`
+
+---
+
+#### `GET /api/people/search/?q={query}`
+Search attendees by name. Returns up to 10 matches.
+
+**Auth:** JWT (staff or above)
+
+**Response `200`:**
+```json
+{
+  "status": "success",
+  "data": [
+    { "id": "<uuid>", "name": "Jane Smith", "organization": "Acme" }
+  ]
+}
+```
+
+---
+
+### Events
+
+#### `GET /api/events`
+List all events.
+
+**Auth:** JWT (any role)
+
+**Response `200`:** Array of event objects with `registered_count`, `checkin_count`, `is_full`.
+
+---
+
+#### `POST /api/events`
+Create a new event. Creator is automatically added as staff.
+
+**Auth:** JWT (organizer or above)
+
+**Request body:**
+```json
+{
+  "name": "Tech Meetup",
+  "description": "...",
+  "location": "Room 101",
+  "start_time": "2026-04-01T18:00:00Z",
+  "end_time": "2026-04-01T21:00:00Z",
+  "capacity": 100
+}
+```
+
+**Response `201`:** Full event object.
+
+---
+
+#### `GET /api/events/{uuid}`
+Get a single event by UUID.
+
+**Auth:** JWT (any role)
+
+**Response `200`:** Full event object.
+
+---
+
+#### `POST /api/events/{uuid}/register`
+Register the currently authenticated user for an event. Returns `409` if already registered or event is full. Returns `403` if registration window is closed.
+
+**Auth:** JWT (any role)
+
+**Request body:** None
+
+**Response `201`:**
+```json
+{
+  "status": "success",
+  "data": { "id": "<uuid>", "person": "<uuid>", "event": "<uuid>", "status": "issued", "issued_at": "..." }
+}
+```
+
+**Error codes:**
+| Code | HTTP | Meaning |
+|------|------|---------|
+| `REGISTRATION_CLOSED` | 403 | Outside reg window |
+| `EVENT_FULL` | 409 | At capacity |
+| `ALREADY_REGISTERED` | 409 | Duplicate registration |
+
+---
+
+#### `GET /api/events/{uuid}/staff`
+List staff assigned to the event.
+
+**Auth:** JWT (organizer or above)
+
+**Response `200`:** Array of user objects.
+
+---
+
+#### `POST /api/events/{uuid}/staff`
+Assign a user as staff for the event. Only the event creator or an admin can do this.
+
+**Auth:** JWT (organizer or above, and must own the event)
+
+**Request body:**
+```json
+{ "user_id": 42 }
+```
+
+**Response `200`:**
+```json
+{ "status": "success", "message": "jsmith assigned as staff." }
+```
+
+---
+
+#### `DELETE /api/events/{uuid}/staff`
+Remove a user from the event's staff list.
+
+**Auth:** JWT (organizer or above, and must own the event)
+
+**Request body:**
+```json
+{ "user_id": 42 }
+```
+
+---
+
+#### `GET /api/events/{uuid}/dashboard`
+Live event stats and the 20 most recent scan log entries.
+
+**Auth:** JWT (event staff or above)
+
+**Response `200`:**
+```json
+{
+  "status": "success",
+  "data": {
+    "event": { ... },
+    "stats": { "registered": 80, "checked_in": 45, "capacity": 100, "is_full": false },
+    "recent_scans": [ ... ]
+  }
+}
+```
+
+---
+
+### Check-in
+
+#### `POST /api/checkin`
+Process a QR scan for attendance check-in. Every attempt is logged regardless of outcome.
+
+**Auth:** JWT (must be staff for the specified event)
+
+**Request body:**
+```json
+{
+  "person_uuid": "<person-uuid>",
+  "event_uuid": "<event-uuid>"
+}
+```
+
+**Response `200` (success):**
+```json
+{
+  "status": "success",
+  "data": { "person_name": "Jane Smith", "checked_in_at": "2026-04-01T18:32:00Z", "event_name": "Tech Meetup" }
+}
+```
+
+**Error codes:**
+| Code | HTTP | Meaning |
+|------|------|---------|
+| `INVALID` | 404 | Person or event UUID not found |
+| `UNAUTHORIZED` | 403 | Scanner is not staff for this event |
+| `NOT_REGISTERED` | 404 | Person has no ticket (walk-ins disabled) |
+| `EVENT_FULL` | 409 | Walk-in attempted but event is at capacity |
+| `DUPLICATE_CHECKIN` | 409 | Person already checked in |
+| `TICKET_CANCELED` | 409 | Ticket was canceled |
+
+---
+
+### Logs
+
+#### `GET /api/logs`
+Query the full scan audit log. Supports optional filtering.
+
+**Auth:** JWT (admin only)
+
+**Query params:**
+| Param | Description |
+|-------|-------------|
+| `event` | Filter by event UUID |
+| `result` | Filter by result: `success`, `duplicate`, `not_registered`, `invalid` |
+
+**Example:**
+```
+GET /api/logs?event=<uuid>&result=success
+```
+
+**Response `200`:**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "event": "<uuid>",
+      "person": "<uuid>",
+      "person_name": "Jane Smith",
+      "actor": 3,
+      "actor_name": "staffuser",
+      "result": "success",
+      "scanned_value": "",
+      "metadata": {},
+      "timestamp": "2026-04-01T18:32:00Z"
+    }
+  ]
+}
+```
 
 ## Scanner (Mobile)
 
