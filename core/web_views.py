@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
-from .models import Person, Event, Ticket
+from .models import Person, Event, Ticket, ScanLog
 from .serializers import RegisterSerializer
 from .forms import EventForm
 from datetime import datetime
@@ -254,9 +254,12 @@ def event_detail_page(request, uuid):
         )
         return redirect('event-detail', uuid=uuid)
 
+    logs = ScanLog.objects.filter(event=event).select_related('person','actor').order_by('-timestamp')
+
     return render(request, 'admin_portal/event_detail.html', {
         'event': event,
         'tickets': tickets,
+        'logs': logs,
     })
 
 

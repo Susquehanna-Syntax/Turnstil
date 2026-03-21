@@ -96,27 +96,36 @@
 </div>
 
 
-<div class="section-label fade-up fade-up-4">Live Statistics</div>
+<div class="section-label fade-up fade-up-4">Statistics</div>
 
    <div class="section-label fade-up fade-up-4">Attendance Ratio</div>
    <progress class="fade-up fade-up-4" id="attendance-ratio" value="{{ event.checkin_count }}" max="{{ event.registration_count|default:1 }}" style="display: block; width: 100%; margin: 12px 0 20px;">{{ event.checkin_count }}/{{ event.registration_count}}</progress>
 
 
-   <div class="section-label fade-up fade-up-4">Live Logs</div>
+   <div class="section-label fade-up fade-up-4">Logs</div>
     <div class="table-wrap fade-up fade-up-4">
         <table>
             <thread>
                 <tr>
                     <th>Action</th>
-                    <th>User</th>
-                    <th>Attendance</th>
+                    <th>Attendee</th>
+                    <th>Scanner</th>
                     <th>Time</th>
 
                 </tr>
             </thread>
             <tbody>
-
+            {% for log in logs %}
+                <tr>
+                    <td>{{ log.result }}</td>
+                    <td>{{ log.person.name }}</td>
+                    <td>{{ log.actor.username }}</td>
+                    <td>{{ log.timestamp }}</td>
+                </tr>
+            {% empty %}
             <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No Logs Yet</td></tr>
+            {% endfor %}
+
             </tbody>
 
         </table>
