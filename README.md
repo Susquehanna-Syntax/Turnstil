@@ -63,7 +63,7 @@ turnstil/
 │   ├── serializers.py   # DRF serializers
 │   ├── api_urls.py      # /api/* routes
 │   └── urls.py          # Web page routes
-├── templates/       # Django templates (Pico CSS)
+├── templates/       # Django templates (custom CSS)
 │   ├── scanner/         # QR scanner interface
 │   ├── admin_portal/    # Dashboard, event management
 │   ├── public/          # Home, profile, QR display
@@ -447,5 +447,5 @@ Then add the ngrok domain to `ALLOWED_HOSTS` in settings.
 
 ## Tech Stack
 
-Django 5 · Django REST Framework · SimpleJWT · PostgreSQL/SQLite · Pico CSS · html5-qrcode · Docker
+Django 5 · Django REST Framework · SimpleJWT · PostgreSQL/SQLite · html5-qrcode · Docker
 # Turnstil
