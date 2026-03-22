@@ -43,10 +43,18 @@
 <div class="stat-grid fade-up fade-up-3" style="margin-top: 16px;">
     <a href="{% url 'dashboard' %}" class="btn btn-filled-rose" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">← Dashboard</a>
 
-    {% if user.is_authenticated and not event.is_full %}
+    {% if user.is_authenticated %}
         <form method="post" style="margin: 0; height: 100%;">
             {% csrf_token %}
-            <button type="submit" name="register" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Register for This Event</button>
+
+            {% if is_registered %}
+                <!-- cancel button -->
+                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Cancel Registration</button>
+
+            {% elif not event.is_full %}
+                <!-- register button -->
+                <button type="submit" name="register" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Register for This Event</button>
+            {% endif %}
         </form>
     {% endif %}
 
