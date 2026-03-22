@@ -4,7 +4,6 @@ These handle the HTML interface; the API handles data operations.
 """
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
@@ -226,16 +225,10 @@ def event_create_page(request):
 
         serializer = EventCreateSerializer(data=data)
         if serializer.is_valid():
-            try:
-                event = serializer.save(created_by=request.user)
-                event.staff.add(request.user)
-                return redirect('event-detail', uuid=event.id)
-            except ValidationError as e:
-                errors = e.message_dict if hasattr(e, 'message_dict') else {'__all__': e.messages}
-                return render(request, 'admin_portal/event_create.html', {
-                    'errors': errors,
-                    'data': data
-                })
+            # Save the event, passing created_by separately
+            event = serializer.save(created_by=request.user)
+            event.staff.add(request.user)
+            return redirect('event-detail', uuid=event.id)
 
         # If serializer invalid, show errors
         return render(request, 'admin_portal/event_create.html', {
@@ -252,13 +245,35 @@ def event_detail_page(request, uuid):
     event = get_object_or_404(Event, id=uuid)
     tickets = event.tickets.select_related('person').order_by('-issued_at')
 
-    # Handle registration from web
-    if request.method == 'POST' and 'register' in request.POST:
+    # check if user is registered
+    is_registered = False
+    if request.user.is_authenticated:
+        try:
+            person = request.user.person
+            is_registered = Ticket.objects.filter(
+                person=person,
+                event=event,
+            ).exists()
+        except:
+            pass
+
+    # Handle registration from web (with added cancel feature)
+    if request.method == 'POST':
         person = request.user.person
-        Ticket.objects.get_or_create(
-            person=person, event=event,
-            defaults={'status': Ticket.Status.ISSUED},
-        )
+
+        if 'register' in request.POST:
+            Ticket.objects.get_or_create(
+                person=person,
+                event=event,
+                defaults={'status': Ticket.Status.ISSUED},
+            )
+
+        elif 'unregister' in request.POST:
+            Ticket.objects.filter(
+                person=person,
+                event=event,
+            ).delete()
+
         return redirect('event-detail', uuid=uuid)
 
     logs = ScanLog.objects.filter(event=event).select_related('person', 'actor').order_by('-timestamp')
@@ -275,6 +290,7 @@ def event_detail_page(request, uuid):
         'logs': logs,
         'event_staff': event_staff,
         'available_staff': available_staff,
+        'is_registered': is_registered,
     })
 
 
