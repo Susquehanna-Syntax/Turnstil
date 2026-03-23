@@ -15,6 +15,15 @@
     <p class="fade-up fade-up-1" style="color: var(--text-2);"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ event.location }}</p>
 {% endif %}
 
+{% if event.external_link %}
+    <p class="fade-up fade-up-1" style="color: var(--text-2);">
+        <i data-lucide="link" style="width: 14px; height: 14px; vertical-align: -2px;"></i>
+        <a href="{{ event.external_link }}" target="_blank" rel="noopener">
+            {{ event.external_link }}
+        </a>
+    </p>
+{% endif %}
+
 <!-- Stats -->
 <div class="stat-grid fade-up fade-up-2">
     <div class="stat-card stat-card-filled stat-card-rose">
