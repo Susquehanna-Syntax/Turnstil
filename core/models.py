@@ -137,6 +137,7 @@ class Event(models.Model):
         help_text='Allow check-in for people not pre-registered',
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    external_link = models.URLField(blank=True, null=True)
 
     class Meta:
         ordering = ['-start_time']
