@@ -191,12 +191,127 @@
             .two-col-grid { grid-template-columns: 1fr; }
             .four-col-grid { grid-template-columns: 1fr 1fr; }
         }
-        @media (max-width: 560px) {
-            .layout { grid-template-columns: 52px 1fr; }
-            .sidebar { width: 52px; }
+        @media (max-width: 768px) {
+            /* Layout */
+            .layout { grid-template-columns: 1fr; }
+
+            /* ── Bottom nav bar ── */
+            .sidebar {
+                position: fixed;
+                top: auto; bottom: 0; left: 0;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                justify-content: space-evenly;
+                align-items: center;
+                padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+                gap: 0;
+                border-right: none;
+                border-top: 1px solid var(--border);
+                overflow: visible;
+                background: var(--s1);
+            }
+            .sidebar-logo { display: none; }
+            .sidebar-spacer { display: none; }
+            .sidebar-avatar { display: none; }
+            .sidebar-icon[data-tip="Dashboard"],
+            .sidebar-icon[data-tip="Sign Out"] { display: none; }
+            .sidebar-icon {
+                width: 48px; height: 48px;
+                flex-shrink: 0;
+            }
+            .sidebar-icon svg { width: 22px; height: 22px; }
+            .sidebar-icon::after { display: none; }
+
+            /* ── Mobile More popover ── */
+            .sidebar-more-wrap {
+                display: flex;
+                align-items: center;
+                position: relative;
+            }
+            .mobile-popover {
+                position: absolute;
+                bottom: calc(100% + 12px);
+                right: -8px;
+                background: var(--s2);
+                border: 1px solid var(--border);
+                border-radius: var(--r-lg);
+                padding: 6px;
+                min-width: 200px;
+                box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+                z-index: 300;
+            }
+            .mobile-popover:not(.open) { display: none; }
+            .mobile-popover-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px 14px;
+                border-radius: var(--r-sm);
+                color: var(--text-1);
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+                transition: background 0.15s;
+            }
+            .mobile-popover-item:hover { background: var(--s3); text-decoration: none; }
+            .mobile-popover-item-danger { color: var(--rose); }
+            .mobile-popover-user {
+                padding: 10px 14px 8px;
+                font-size: 12px;
+                color: var(--text-3);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .mobile-popover-divider {
+                height: 1px;
+                background: var(--border);
+                margin: 4px 8px;
+            }
+
+            /* Main content */
+            .main-content {
+                grid-column: 1;
+                padding: 24px 16px 96px;
+                overflow-x: hidden;
+            }
+
             .four-col-grid { grid-template-columns: 1fr; }
-            .main-content { padding: 24px 16px 40px; }
             .stat-grid { grid-template-columns: 1fr 1fr; }
+
+            /* Tables: constrain for horizontal scroll */
+            .table-wrap {
+                max-width: calc(100vw - 32px);
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .two-col-grid > *, .tab-panel > * { min-width: 0; }
+            th, td { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+
+            /* Tab bar */
+            .tab-bar {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .tab-bar::-webkit-scrollbar { display: none; }
+            .tab-btn { white-space: nowrap; padding: 10px 14px; }
+
+            /* Typography */
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            .page-header h2 { font-size: 1.5rem; }
+
+            /* Profile mobile tabs */
+            .profile-tabs { display: flex; }
+            .profile-tab-panel { display: none; }
+            .profile-tab-panel.mob-active { display: block; }
+        }
+        @media (max-width: 400px) {
+            .stat-grid { grid-template-columns: 1fr; }
+            .main-content { padding: 16px 12px 96px; }
+            .table-wrap { max-width: calc(100vw - 24px); }
         }
 
         /* ── Page header ── */
@@ -417,6 +532,17 @@
         .btn-group .btn { border-radius: 0; }
         .btn-group .btn:first-child { border-radius: var(--r-md) 0 0 var(--r-md); }
         .btn-group .btn:last-child  { border-radius: 0 var(--r-md) var(--r-md) 0; }
+        /* Mobile btn-group: after component for cascade priority */
+        @media (max-width: 768px) {
+            .btn-group { flex-direction: column; width: 100%; gap: 8px; }
+            .btn-group .btn,
+            .btn-group .btn:first-child,
+            .btn-group .btn:last-child {
+                border-radius: var(--r-md);
+                width: 100%;
+                justify-content: center;
+            }
+        }
 
         /* ── Inputs / Forms ── */
         label {
@@ -515,6 +641,11 @@
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 16px;
+        }
+        /* Grid overrides after definitions for cascade priority */
+        @media (max-width: 900px) {
+            .two-col-grid { grid-template-columns: 1fr; }
+            .four-col-grid { grid-template-columns: 1fr 1fr; }
         }
 
         /* ── Scan results ── */
@@ -725,11 +856,18 @@
         .mt-24 { margin-top: 24px; }
         .mb-0  { margin-bottom: 0; }
         .flex  { display: flex; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .gap-8  { gap: 8px; }
         .gap-12 { gap: 12px; }
         .flex-wrap { flex-wrap: wrap; }
         .text-muted { color: var(--text-2); }
+
+        /* ── Mobile-only elements (hidden on desktop) ── */
+        @media (min-width: 769px) {
+            .sidebar-more-wrap { display: none; }
+            .profile-tabs { display: none; }
+            .mobile-popover { display: none; }
+        }
 
         {% block extra_css %}{% endblock %}
     </style>
@@ -785,7 +923,38 @@
                 <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
         </a>
+        {# ── Mobile More menu (staff only — Dashboard access) ── #}
+        <div class="sidebar-more-wrap">
+            <button class="sidebar-icon" data-tip="More" onclick="toggleMobileMenu(event)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                </svg>
+            </button>
+            <div class="mobile-popover" id="mobile-popover">
+                <div class="mobile-popover-user">{{ user.username }}</div>
+                <a href="{% url 'dashboard' %}" class="mobile-popover-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    Dashboard
+                </a>
+                <div class="mobile-popover-divider"></div>
+                <a href="{% url 'logout' %}" class="mobile-popover-item mobile-popover-item-danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Sign Out
+                </a>
+            </div>
+        </div>
         {% endif %}
+
         {% endif %}
 
         <div class="sidebar-spacer"></div>
@@ -830,6 +999,20 @@
 </div>
 
 {% block extra_js %}{% endblock %}
+<script>
+/* Mobile More menu toggle */
+function toggleMobileMenu(e) {
+    e.stopPropagation();
+    var p = document.getElementById('mobile-popover');
+    if (p) p.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+    var p = document.getElementById('mobile-popover');
+    if (p && !e.target.closest('.sidebar-more-wrap')) {
+        p.classList.remove('open');
+    }
+});
+</script>
 <script>lucide.createIcons();</script>
 </body>
 </html>
