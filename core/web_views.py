@@ -2,7 +2,7 @@
 Turnstil web views — server-rendered pages.
 These handle the HTML interface; the API handles data operations.
 """
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
@@ -12,7 +12,9 @@ from .serializers import RegisterSerializer
 from .forms import EventForm
 from datetime import datetime
 from .serializers import EventCreateSerializer
+from django.core.mail import send_mail
 
+User = get_user_model()
 
 def home(request):
     """Landing page with upcoming events."""
@@ -228,6 +230,29 @@ def event_create_page(request):
             # Save the event, passing created_by separately
             event = serializer.save(created_by=request.user)
             event.staff.add(request.user)
+
+            users = User.objects.all()
+
+            subject = f"New Event: {event.name}"
+            message = f"""
+            A new event has been created!
+
+            Event: {event.name}
+            Start: {event.start_time}
+            Location: {event.location}
+
+            Register now in the app.
+            """
+
+            recipient_list = [user.email for user in users if user.email]
+
+            send_mail(
+                subject,
+                message,
+                None,
+                recipient_list,
+            )
+
             return redirect('event-detail', uuid=event.id)
 
         # If serializer invalid, show errors
@@ -313,6 +338,29 @@ def event_edit_page(request, uuid):
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
+
+            attendees = User.objects.filter(
+                person__tickets__event=event
+            ).distinct()
+
+            subject = f"Update for {event.name}"
+            message = f"""
+            The event "{event.name}" has been updated.
+
+            Start: {event.start_time}
+            Location: {event.location}
+
+            Please check the app for details.
+            """
+
+            recipient_list = [user.email for user in attendees if user.email]
+
+            send_mail(
+                subject,
+                message,
+                None,  # uses DEFAULT_FROM_EMAIL
+                recipient_list,
+            )
             return redirect('organizer-event-list')
     else:
         form = EventForm(instance=event)
