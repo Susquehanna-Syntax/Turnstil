@@ -25,6 +25,7 @@ urlpatterns = [
     path('events/<uuid:uuid>/register', views.EventRegisterView.as_view(), name='api-event-register'),
     path('events/<uuid:uuid>/staff', views.EventStaffView.as_view(), name='api-event-staff'),
     path('events/<uuid:uuid>/dashboard', views.EventDashboardView.as_view(), name='api-event-dashboard'),
+    path('events/<uuid:uuid>/attendees.csv', views.EventAttendeesCSVView.as_view(), name='api-event-attendees-csv'),
 
     # Check-in
     path('checkin', views.CheckInView.as_view(), name='api-checkin'),

@@ -27,6 +27,7 @@
                 <th>Registered</th>
                 <th>Checked In</th>
                 <th>Status</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -44,6 +45,16 @@
                         <span class="ticket-badge badge-issued">Upcoming</span>
                     {% else %}
                         <span class="ticket-badge badge-canceled">Ended</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.role == 'admin' or event.created_by == user or user in event.staff.all %}
+                        <a href="/api/events/{{ event.id }}/attendees.csv"
+                           class="btn btn-outline"
+                           style="padding: 5px 12px; font-size: 12px; white-space: nowrap;"
+                           title="Export attendee list as CSV">
+                            ↓ CSV
+                        </a>
                     {% endif %}
                 </td>
             </tr>

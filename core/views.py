@@ -2,7 +2,9 @@
 Turnstil API views.
 """
 import uuid
+import csv
 
+from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -11,6 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Person, Event, Ticket, ScanLog
 from .serializers import (
@@ -346,6 +349,48 @@ class EventDashboardView(APIView):
                 'recent_scans': ScanLogSerializer(recent_scans, many=True).data,
             },
         })
+
+
+class EventAttendeesCSVView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, uuid):
+        event = get_object_or_404(Event, id=uuid)
+
+        if not (
+                request.user.role == 'admin'
+                or event.created_by == request.user
+                or event.staff.filter(id=request.user.id).exists()
+        ):
+            return Response({'detail': 'Not authorized.'}, status=403)
+
+        tickets = (
+            event.tickets
+            .exclude(status=Ticket.Status.CANCELED)
+            .select_related('person')
+            .order_by('person__name')
+        )
+
+        response = HttpResponse(content_type='text/csv')
+        filename = f"{event.name.replace(' ', '_')}_attendees.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Email', 'Organization', 'Phone', 'Status', 'Registered At', 'Checked In At'])
+
+        for ticket in tickets:
+            p = ticket.person
+            writer.writerow([
+                p.name,
+                p.email,
+                p.organization,
+                p.phone,
+                ticket.get_status_display(),
+                ticket.issued_at.strftime('%Y-%m-%d %H:%M'),
+                ticket.checked_in_at.strftime('%Y-%m-%d %H:%M') if ticket.checked_in_at else '',
+            ])
+
+        return response
 
 
 # ── Check-in (the critical endpoint) ────────────────────────────
