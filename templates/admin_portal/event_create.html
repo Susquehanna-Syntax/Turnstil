@@ -1,44 +1,59 @@
 {% extends "base.html" %}
 {% block title %}Create Event — Turnstil{% endblock %}
 
+{% block main_class %}center-page{% endblock %}
 {% block content %}
-<article>
-    <header><h2>Create Event</h2></header>
+<div class="page-header fade-up" style="text-align: center;">
+    <h2>Create Event</h2>
+</div>
 
+<div class="card fade-up fade-up-1" style="max-width: 660px; width: 100%;">
+    {% if errors %}
+        <div class="flash flash-error" style="margin-bottom: 16px;">
+            {% for field, messages in errors.items %}
+                {% for message in messages %}
+                    <div>{% if field != '__all__' %}<strong>{{ field|title|cut:"_" }}:</strong> {% endif %}{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         <label for="name">Event Name</label>
-        <input type="text" id="name" name="name" required placeholder="Spring Conference 2026">
+        <input type="text" id="name" name="name" required placeholder="Spring Conference 2026" value="{{ data.name|default:'' }}">
 
         <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3" placeholder="Tell people what this event is about..."></textarea>
+        <textarea id="description" name="description" rows="3" placeholder="Tell people what this event is about...">{{ data.description|default:'' }}</textarea>
 
         <label for="location">Location</label>
-        <input type="text" id="location" name="location" placeholder="Room 201, Science Building">
+        <input type="text" id="location" name="location" placeholder="Room 201, Science Building" value="{{ data.location|default:'' }}">
 
-        <div class="grid">
+        <div class="two-col-grid" style="margin-top: 16px;">
             <div>
                 <label for="start_time">Start</label>
-                <input type="datetime-local" id="start_time" name="start_time" required>
+                <input type="datetime-local" id="start_time" name="start_time" required value="{{ data.start_time|default:'' }}">
             </div>
             <div>
                 <label for="end_time">End</label>
-                <input type="datetime-local" id="end_time" name="end_time" required>
+                <input type="datetime-local" id="end_time" name="end_time" required value="{{ data.end_time|default:'' }}">
             </div>
             <div>
                 <label for="reg_open">Registration Opens</label>
-                <input type="datetime-local" name="reg_open" id="reg_open" required>
+                <input type="datetime-local" name="reg_open" id="reg_open" required value="{{ data.reg_open|default:'' }}">
             </div>
             <div>
                 <label for="reg_close">Registration Closes</label>
-                <input type="datetime-local" name="reg_close" id="reg_close" required>
+                <input type="datetime-local" name="reg_close" id="reg_close" required value="{{ data.reg_close|default:'' }}">
             </div>
         </div>
 
         <label for="capacity">Capacity (0 = unlimited)</label>
-        <input type="number" id="capacity" name="capacity" value="0" min="0">
+        <input type="number" id="capacity" name="capacity" value="{{ data.capacity|default:'0' }}" min="0">
 
-        <button type="submit">Create Event</button>
+        <label for="external_link">External Link (optional)</label>
+        <input type="url" id="external_link" name="external_link" value="{{ data.external_link|default:'' }}">
+
+        <button type="submit" class="btn btn-filled-peach" style="margin-top: 24px;">Create Event</button>
     </form>
-</article>
+</div>
 {% endblock %}

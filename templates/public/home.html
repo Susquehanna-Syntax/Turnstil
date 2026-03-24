@@ -2,51 +2,54 @@
 {% block title %}Turnstil — Event Management{% endblock %}
 
 {% block content %}
-<hgroup>
+<div class="page-header fade-up">
     <h1>Welcome to Turnstil</h1>
     <p>One QR code. Every event. Seamless check-in and networking.</p>
-</hgroup>
+</div>
 
 {% if not user.is_authenticated %}
-<div class="grid">
-    <div>
-        <article>
-            <h3>For Attendees</h3>
-            <p>Register once, get your personal QR code, and use it at every event — for check-in and sharing your contact info.</p>
-            <a href="{% url 'register' %}" role="button">Get Started</a>
-        </article>
+<div class="two-col-grid fade-up fade-up-1" style="margin-bottom: 32px;">
+    <div class="card">
+        <div class="card-title">For Attendees</div>
+        <p class="card-desc">Register once, get your personal QR code, and use it at every event — for check-in and sharing your contact info.</p>
+        <div style="margin-top: 16px;">
+            <a href="{% url 'register' %}" class="btn btn-filled-lav">Get Started</a>
+        </div>
     </div>
-    <div>
-        <article>
-            <h3>For Organizers</h3>
-            <p>Create events, manage registrations, scan attendees at the door, and track attendance in real time.</p>
-            <a href="{% url 'login' %}" role="button" class="outline">Sign In</a>
-        </article>
+    <div class="card">
+        <div class="card-title">For Organizers</div>
+        <p class="card-desc">Create events, manage registrations, scan attendees at the door, and track attendance in real time.</p>
+        <div style="margin-top: 16px;">
+            <a href="{% url 'login' %}" class="btn btn-outline">Sign In</a>
+        </div>
     </div>
 </div>
 {% endif %}
 
-<h2>Upcoming Events</h2>
+<div class="section-label">Upcoming Events</div>
+
 {% if events %}
     {% for event in events %}
-    <article>
-        <header>
-            <hgroup>
-                <h3><a href="{% url 'event-detail' uuid=event.id %}">{{ event.name }}</a></h3>
-                <p>{{ event.start_time|date:"M j, Y g:i A" }} · {{ event.location }}</p>
-            </hgroup>
-        </header>
+    <div class="card fade-up" style="margin-bottom: 12px;">
+        <div class="flex-between flex-wrap gap-8">
+            <div>
+                <div class="card-title">
+                    <a href="{% url 'event-detail' uuid=event.id %}" style="color: var(--text-1);">{{ event.name }}</a>
+                </div>
+                <small>{{ event.start_time|date:"M j, Y g:i A" }} · {{ event.location }}</small>
+            </div>
+            {% if event.is_full %}<span class="badge badge-rose">Full</span>{% endif %}
+        </div>
         {% if event.description %}
-            <p>{{ event.description|truncatewords:30 }}</p>
+            <p class="card-desc" style="margin-top: 10px;">{{ event.description|truncatewords:30 }}</p>
         {% endif %}
-        <footer>
-            {{ event.registration_count }} registered
-            {% if event.capacity %}/ {{ event.capacity }} capacity{% endif %}
-            {% if event.is_full %}<mark>FULL</mark>{% endif %}
-        </footer>
-    </article>
+        <div class="card-footer">
+            <small class="text-muted">{{ event.registration_count }} registered{% if event.capacity %} / {{ event.capacity }} capacity{% endif %}</small>
+            <a href="{% url 'event-detail' uuid=event.id %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">View →</a>
+        </div>
+    </div>
     {% endfor %}
 {% else %}
-    <p>No upcoming events yet.</p>
+    <p class="text-muted">No upcoming events yet.</p>
 {% endif %}
 {% endblock %}

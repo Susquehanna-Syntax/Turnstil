@@ -2,16 +2,21 @@
 {% block title %}My Profile — Turnstil{% endblock %}
 
 {% block content %}
-<div class="grid">
-    <div>
-        <article>
-            <header>
-                <hgroup>
-                    <h2>My Profile</h2>
-                    <p>Your QR code: <code>{{ person.id }}</code></p>
-                </hgroup>
-            </header>
+<div class="page-header fade-up">
+    <h2>My Profile</h2>
+    <p>Your QR code: <code>{{ person.id }}</code></p>
+</div>
 
+{# ── Mobile-only tab bar ── #}
+<div class="profile-tabs tab-bar fade-up" style="margin-bottom: 20px;">
+    <button class="tab-btn active" data-color="sky" onclick="switchProfileTab('info', this)">Info</button>
+    <button class="tab-btn" data-color="peach" onclick="switchProfileTab('qr', this)">QR & Tickets</button>
+</div>
+
+<div class="two-col-grid">
+    <div class="profile-tab-panel mob-active" id="ptab-info">
+        <div class="card fade-up fade-up-1">
+            <div class="section-label" style="margin-top: 0;">Personal Info</div>
             <form method="post">
                 {% csrf_token %}
                 <label for="name">Name</label>
@@ -27,9 +32,9 @@
                 <input type="tel" id="phone" name="phone" value="{{ person.phone }}">
 
                 <label for="links">Links</label>
-                <input type="url" id="links" name="links" value="{{ person.links }}">   
+                <input type="url" id="links" name="links" value="{{ person.links }}">
 
-                <fieldset>
+                <fieldset style="margin-top: 20px;">
                     <legend>Visible when others scan your QR:</legend>
                     <label>
                         <input type="checkbox" name="vis_email" {% if person.visibility.email %}checked{% endif %}>
@@ -49,42 +54,55 @@
                     </label>
                 </fieldset>
 
-                <button type="submit">Save Changes</button>
+                <button type="submit" class="btn btn-filled-sky" style="margin-top: 20px;">Save Changes</button>
             </form>
-        </article>
+        </div>
     </div>
 
-    <div>
-        <article>
-            <header><h3>My QR Code</h3></header>
+    <div class="profile-tab-panel" id="ptab-qr">
+        <div class="card fade-up fade-up-2" style="margin-bottom: 14px;">
+            <div class="section-label" style="margin-top: 0;">My QR Code</div>
             <div class="qr-container">
                 <img src="{% url 'api-person-qr' uuid=person.id %}" alt="Your QR Code">
-                <p><small>Show this at events for check-in and networking</small></p>
+                <p style="margin-top: 12px;"><small>Show this at events for check-in and networking</small></p>
             </div>
-            <a href="{% url 'qr-display' %}" role="button" class="outline">Full Screen QR</a>
-        </article>
+            <a href="{% url 'qr-display' %}" class="btn btn-outline" style="width: 100%; justify-content: center;">Full Screen QR</a>
+        </div>
 
-        <article>
-            <header><h3>My Tickets</h3></header>
+        <div class="card fade-up fade-up-3">
+            <div class="section-label" style="margin-top: 0;">My Tickets</div>
             {% if tickets %}
-                <table>
-                    <thead>
-                        <tr><th>Event</th><th>Status</th><th>Date</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for ticket in tickets %}
-                        <tr>
-                            <td><a href="{% url 'event-detail' uuid=ticket.event.id %}">{{ ticket.event.name }}</a></td>
-                            <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
-                            <td>{{ ticket.event.start_time|date:"M j" }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Event</th><th>Status</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in tickets %}
+                            <tr>
+                                <td><a href="{% url 'event-detail' uuid=ticket.event.id %}">{{ ticket.event.name }}</a></td>
+                                <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                                <td>{{ ticket.event.start_time|date:"M j" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
-                <p>No tickets yet. <a href="{% url 'home' %}">Browse events</a></p>
+                <p class="text-muted">No tickets yet. <a href="{% url 'home' %}">Browse events</a></p>
             {% endif %}
-        </article>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchProfileTab(tab, btn) {
+    document.querySelectorAll('.profile-tabs .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('ptab-info').classList.toggle('mob-active', tab === 'info');
+    document.getElementById('ptab-qr').classList.toggle('mob-active', tab === 'qr');
+}
+</script>
 {% endblock %}

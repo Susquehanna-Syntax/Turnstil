@@ -107,7 +107,12 @@ class EventSerializer(serializers.ModelSerializer):
 class EventCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['name', 'description', 'location', 'start_time', 'end_time', 'capacity']
+        fields = ['name', 'description', 'location', 'start_time', 'end_time', 'capacity', 'reg_open', 'reg_close', 'external_link']
+        extra_kwargs = {
+            'reg_open': {'required': False, 'allow_null': True},
+            'reg_close': {'required': False, 'allow_null': True},
+            'external_link': {'required': False, 'allow_null': True},
+        }
 
 
 # ── Ticket ────────────────────────────────────────────────────────
@@ -155,6 +160,18 @@ class ScanLogSerializer(serializers.ModelSerializer):
             'actor', 'actor_name', 'result',
             'scanned_value', 'metadata', 'timestamp',
         ]
+    
+    @property
+    def result_display(self):
+        labels = {
+            ScanLog.Result.SUCCESS: 'Success',  
+            ScanLog.Result.DUPLICATE: 'Duplicate',  
+            ScanLog.Result.NOT_REGISTERED: 'Not Registered',  
+            ScanLog.Result.INVALID: 'Invalid',
+            ScanLog.Result.WRONG_EVENT: 'Wrong Event',
+            ScanLog.Result.EVENT_INACTIVE: 'Event Inactive',
+        }
+        return labels.get(self.result, self.result)
 
 
 # ── Staff Assignment ─────────────────────────────────────────────

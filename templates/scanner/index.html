@@ -1,19 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Scanner — Turnstil{% endblock %}
 
+{% block main_class %}{% if is_staff and not active_event %}center-page{% endif %}{% endblock %}
 {% block content %}
-<h2>Scanner</h2>
+<div class="page-header fade-up">
+    <h2>Scanner</h2>
+</div>
 
 {% if error %}
-<p style="color:var(--del-color);">⚠️ {{ error }}</p>
+<div class="flash flash-error"><i data-lucide="alert-triangle" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ error }}</div>
 {% endif %}
 
 {% if is_staff and not active_event %}
 
 {# ── STAFF: EVENT SELECTION MODE ──────────────────────────────── #}
-<article>
-    <header><h3>Select Event</h3></header>
-    <p>Choose the event you are working before scanning begins.</p>
+<div class="card fade-up fade-up-1" style="max-width: 520px; width: 100%;">
+    <div class="section-label" style="margin-top: 0;">Select Event</div>
+    <p>C  hoose the event you are working before scanning begins.</p>
 
     {% if events %}
     <form method="post" action="{% url 'select-event' %}">
@@ -28,64 +31,72 @@
             </option>
             {% endfor %}
         </select>
-        <button type="submit">Start Scanning</button>
+        <button type="submit" class="btn btn-filled-lav" style="margin-top: 16px;">Start Scanning</button>
     </form>
     {% else %}
-    <p><small>No upcoming events are assigned to you. Contact an organizer to be added to an event's staff list.</small></p>
+    <p><small class="text-muted">No upcoming events are assigned to you. Contact an organizer to be added to an event's staff list.</small></p>
     {% endif %}
-</article>
+</div>
 
 {% else %}
 
 {# ── STAFF: ACTIVE EVENT BANNER ───────────────────────────────── #}
 {% if is_staff and active_event %}
-<article>
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+<div class="card fade-up" style="margin-bottom: 16px;">
+    <div class="flex-between flex-wrap gap-8">
         <div>
-            <strong>📍 {{ active_event.name }}</strong>
-            {% if active_event.location %}<small> · {{ active_event.location }}</small>{% endif %}
-            <small> · {{ active_event.start_time|date:"M j, g:i A" }}</small>
+            <strong><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ active_event.name }}</strong>
+            {% if active_event.location %}<small class="text-muted"> · {{ active_event.location }}</small>{% endif %}
+            <small class="text-muted"> · {{ active_event.start_time|date:"M j, g:i A" }}</small>
         </div>
-        <form method="post" action="{% url 'select-event' %}" style="margin:0;">
+        <form method="post" action="{% url 'select-event' %}" style="margin: 0;">
             {% csrf_token %}
-            <button type="submit" class="outline" style="margin:0; padding:.35rem .85rem; font-size:.85rem;">
-                Change Event
-            </button>
+            <button type="submit" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Change Event</button>
         </form>
     </div>
-</article>
+</div>
 {% endif %}
 
 {# ── ATTENDEE: DISCOVERY INTRO ─────────────────────────────────── #}
 {% if not is_staff %}
-<p><small>Scan a Turnstil QR code to view someone's contact card.</small></p>
+<p class="text-muted fade-up"><small>Scan a Turnstil QR code to view someone's contact card.</small></p>
 {% endif %}
 
 {# ── SCANNER UI (staff + attendees) ───────────────────────────── #}
-<div class="grid">
+<div class="two-col-grid fade-up fade-up-1">
     <div>
         <!-- Mode Toggle: staff only -->
         {% if is_staff %}
-        <fieldset role="group">
-            <button id="btn-attendance" class="contrast" onclick="setMode('attendance')">
+        <div class="btn-group" style="margin-bottom: 16px;">
+            <button id="btn-attendance" class="btn btn-filled-mint" onclick="setMode('attendance')">
                 ✓ Attendance
             </button>
-            <button id="btn-discovery" class="outline" onclick="setMode('discovery')">
+            <button id="btn-discovery" class="btn btn-outline" onclick="setMode('discovery')">
                 ↗ Discovery
             </button>
-        </fieldset>
+        </div>
         {% endif %}
 
         <!-- Camera -->
         <div id="reader"></div>
 
         <!-- Manual Entry fallback -->
-        <details>
+        <details class="collapsible" style="margin-top: 16px;">
             <summary>Manual UUID Entry</summary>
-            <div role="group">
-                <input type="text" id="manual-uuid" placeholder="Paste UUID here">
-                <button onclick="manualScan()">Submit</button>
+            <div style="display: flex; gap: 8px; padding: 0 16px 16px;">
+                <input type="text" id="manual-uuid" placeholder="Paste UUID here" style="flex: 1;">
+                <button class="btn btn-filled-lav" onclick="manualScan()">Submit</button>
             </div>
+        </details>
+
+        <!-- Name Search fallback -->
+        <details class="collapsible" style="margin-top: 16px;">
+            <summary>Search by Name</summary>
+            <div role="group" style="display: flex; gap: 8px; padding: 0 16px 16px;">
+                <input type="search" id="name-search" placeholder="Search attendee name..." style="flex: 1;">
+                <button class="btn btn-filled-peach" onclick="searchByName()">Search</button>
+            </div>
+            <ul id="name-search-results"></ul>
         </details>
     </div>
 
@@ -94,12 +105,12 @@
         <div id="result" class="scan-result" style="display:none"></div>
 
         <!-- Scan History -->
-        <article>
-            <header><h3>Recent Scans</h3></header>
+        <div class="card">
+            <div class="section-label" style="margin-top: 0;">Recent Scans</div>
             <div id="scan-history">
-                <p><small>Scans will appear here...</small></p>
+                <p><small class="text-muted">Scans will appear here...</small></p>
             </div>
-        </article>
+        </div>
     </div>
 </div>
 
@@ -122,6 +133,19 @@
     const SCAN_COOLDOWN = 2000;
     const scanHistory = [];
 
+    // Inline SVG icons for dynamic content
+    const svgIcon = (path, cls='') => `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;" class="${cls}">${path}</svg>`;
+    const ICONS = {
+        check:  svgIcon('<polyline points="20 6 9 17 4 12"/>'),
+        x:      svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
+        repeat: svgIcon('<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
+        user:   svgIcon('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+        mail:   svgIcon('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>'),
+        building: svgIcon('<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/>'),
+        phone:  svgIcon('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>'),
+        link:   svgIcon('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'),
+    };
+
     // CSRF token from Django cookie
     function getCookie(name) {
         const cookies = document.cookie.split(';');
@@ -136,8 +160,8 @@
     // ── Mode Toggle (staff only) ──
     function setMode(newMode) {
         mode = newMode;
-        document.getElementById('btn-attendance').className = mode === 'attendance' ? 'contrast' : 'outline';
-        document.getElementById('btn-discovery').className = mode === 'discovery' ? 'contrast' : 'outline';
+        document.getElementById('btn-attendance').className = mode === 'attendance' ? 'btn btn-filled-mint' : 'btn btn-outline';
+        document.getElementById('btn-discovery').className = mode === 'discovery' ? 'btn btn-filled-mint' : 'btn btn-outline';
     }
 
     // ── Result Display ──
@@ -155,9 +179,9 @@
         if (placeholder && placeholder.innerText.includes('Scans will appear here')) {
             placeholder.remove();
         }
-        const icon = result === 'success' ? '✅' : (result === 'duplicate' ? '🔁' : (result === 'info' ? '👤' : '❌'));
+        const icon = result === 'success' ? ICONS.check : (result === 'duplicate' ? ICONS.repeat : (result === 'info' ? ICONS.user : ICONS.x));
         const entry = document.createElement('div');
-        entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr>';
+        entry.innerHTML = '<small>' + icon + ' <strong>' + name + '</strong> — ' + time + '</small><hr style="border-color: var(--border); margin: 6px 0;">';
         el.prepend(entry);
         scanHistory.unshift({ result, name, time });
     }
@@ -204,10 +228,11 @@
             if (data.status === 'success') {
                 const c = data.data;
                 let detail = '';
-                if (c.email) detail += '📧 ' + c.email + '<br>';
-                if (c.organization) detail += '🏢 ' + c.organization + '<br>';
-                if (c.phone) detail += '📞 ' + c.phone + '<br>';
-                showResult('info', '👤 ' + c.name, detail || 'No additional info shared.');
+                if (c.email) detail += ICONS.mail + ' ' + c.email + '<br>';
+                if (c.organization) detail += ICONS.building + ' ' + c.organization + '<br>';
+                if (c.phone) detail += ICONS.phone + ' ' + c.phone + '<br>';
+                if (c.links) detail += ICONS.link + ' ' + c.links + '<br>';
+                showResult('info', ICONS.user + ' ' + c.name, detail || 'No additional info shared.');
                 addToHistory('info', c.name, now);
             } else {
                 showResult('error', 'Not Found', 'QR code not recognized.');
@@ -243,6 +268,40 @@
         if (uuid) onScanSuccess(uuid);
     }
 
+    function searchByName() {
+        const query = document.getElementById('name-search').value.trim();
+        if (!query) return;
+        onNameSearch(query);
+    }
+
+    async function onNameSearch(query) {
+        const list = document.getElementById('name-search-results');
+        list.innerHTML = '<li>Searching...</li>';
+
+        const response = await fetch(`/api/people/search/?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        list.innerHTML = '';
+
+        if (data.data.length === 0) {
+            list.innerHTML = '<li>No attendees found.</li>';
+            return;
+        }
+
+        data.data.forEach(person => {
+            const li = document.createElement('li');
+            li.textContent = person.organization
+                ? `${person.name} — ${person.organization}`
+                : person.name;
+            li.style.cursor = 'pointer';
+            li.onclick = () => {
+                onScanSuccess(person.id);
+                list.innerHTML = '';
+            };
+            list.appendChild(li);
+        });
+    }
+
     // ── Initialize Camera ──
     const html5QrCode = new Html5Qrcode("reader");
 
@@ -252,7 +311,7 @@
         onScanSuccess
     ).catch(err => {
         document.getElementById('reader').innerHTML =
-            '<p>📷 Camera access denied or not available.<br>' +
+            '<p style="color: var(--text-2); padding: 16px;">' + ICONS.x + ' Camera access denied or not available.<br>' +
             '<small>Use the manual UUID entry below, or grant camera permission.</small></p>';
     });
 </script>

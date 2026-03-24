@@ -13,4 +13,5 @@ class EventForm(ModelForm):
             'reg_open',
             'reg_close',
             'capacity',
+            'external_link',
         ]

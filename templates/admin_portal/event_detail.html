@@ -2,93 +2,239 @@
 {% block title %}{{ event.name }} — Turnstil{% endblock %}
 
 {% block content %}
-<hgroup>
+<div class="page-header fade-up">
     <h2>{{ event.name }}</h2>
     <p>{{ event.start_time|date:"l, M j, Y · g:i A" }} — {{ event.end_time|date:"g:i A" }}</p>
-</hgroup>
+</div>
 
 {% if event.description %}
-    <p>{{ event.description }}</p>
+    <p class="fade-up fade-up-1">{{ event.description }}</p>
 {% endif %}
 
 {% if event.location %}
-    <p>📍 {{ event.location }}</p>
+    <p class="fade-up fade-up-1" style="color: var(--text-2);"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ event.location }}</p>
+{% endif %}
+
+{% if event.external_link %}
+    <p class="fade-up fade-up-1" style="color: var(--text-2);">
+        <i data-lucide="link" style="width: 14px; height: 14px; vertical-align: -2px;"></i>
+        <a href="{{ event.external_link }}" target="_blank" rel="noopener">
+            {{ event.external_link }}
+        </a>
+    </p>
 {% endif %}
 
 <!-- Stats -->
-<div class="stat-grid">
-    <div class="stat-card">
+<div class="stat-grid fade-up fade-up-2">
+    <div class="stat-card stat-card-filled stat-card-rose">
         <div class="number">{{ event.registration_count }}</div>
         <div class="label">Registered</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-lav">
         <div class="number">{{ event.checkin_count }}</div>
         <div class="label">Checked In</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-lemon">
         <div class="number">{% if event.capacity %}{{ event.capacity }}{% else %}∞{% endif %}</div>
         <div class="label">Capacity</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card-filled stat-card-mint">
         <div class="number">
-            {% if event.is_active %}🟢{% elif event.is_upcoming %}🟡{% else %}⚫{% endif %}
+            {% if event.is_active %}Active{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
         </div>
-        <div class="label">
-            {% if event.is_active %}Live Now{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
-        </div>
+        <div class="label">Status</div>
     </div>
 </div>
 
 <!-- Register button for attendees -->
-{% if user.is_authenticated and not event.is_full %}
-    <form method="post" style="margin: 1rem 0;">
-        {% csrf_token %}
-        <button type="submit" name="register" value="1">Register for This Event</button>
-    </form>
-{% endif %}
 
-<!-- Attendee List (staff/organizer view) -->
-{% if user.is_staff_or_above %}
-<h3>Attendees</h3>
-<figure>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Organization</th>
-                <th>Status</th>
-                <th>Checked In At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets %}
-            <tr>
-                <td>{{ ticket.person.name }}</td>
-                <td>{{ ticket.person.organization }}</td>
-                <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
-                <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4">No registrations yet.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</figure>
-{% endif %}
+<!-- Action buttons -->
+<div class="stat-grid fade-up fade-up-3" style="margin-top: 16px;">
+    <a href="{% url 'dashboard' %}" class="btn btn-filled-rose" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">← Dashboard</a>
 
-<a href="{% url 'scanner' %}" role="button" class="outline">Open Scanner</a>
+    {% if user.is_authenticated %}
+        <form method="post" style="margin: 0; height: 100%;">
+            {% csrf_token %}
 
-{% if user.is_organizer_or_above or event.created_by == user %}
-<form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="display:inline">
-    {% csrf_token %}
-    {% if event.allow_walkins %}
-        <button type="submit" class="secondary">🚶 Walk-ins ON — Click to Disable</button>
-    {% else %}
-        <button type="submit" class="outline secondary">🚶 Enable Walk-ins</button>
+            {% if is_registered %}
+                <!-- cancel button -->
+                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Cancel Registration</button>
+
+            {% elif not event.is_full %}
+                <!-- register button -->
+                <button type="submit" name="register" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Register for This Event</button>
+            {% endif %}
+        </form>
     {% endif %}
-</form>
+
+    <a href="{% url 'scanner' %}" class="btn btn-filled-lemon" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Open Scanner</a>
+
+    {% if user.is_organizer_or_above or event.created_by == user %}
+    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin: 0; height: 100%;">
+        {% csrf_token %}
+        {% if event.allow_walkins %}
+            <button type="submit" class="btn btn-filled-mint" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Walk-ins ON</button>
+        {% else %}
+            <button type="submit" class="btn btn-outline" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Enable Walk-ins</button>
+        {% endif %}
+    </form>
+    {% endif %}
+
+</div>
+
+{% if user.is_staff_or_above %}
+<!-- Tabs -->
+<div class="tab-bar fade-up fade-up-4">
+    <button class="tab-btn active" data-tab="attendees" data-color="rose" onclick="switchTab('attendees', this)">Attendees</button>
+    {% if user.is_organizer_or_above or event.created_by == user %}
+    <button class="tab-btn" data-tab="staff" data-color="lavender" onclick="switchTab('staff', this)">Staff</button>
+    {% endif %}
+    <button class="tab-btn" data-tab="logs" data-color="lemon" onclick="switchTab('logs', this)">Logs</button>
+</div>
+
+<!-- Tab 1: Attendees -->
+<div id="tab-attendees" class="tab-panel active fade-up fade-up-4">
+    <div class="section-label">Attendance Ratio</div>
+    <progress id="attendance-ratio" value="{{ event.checkin_count }}" max="{{ event.registration_count|default:1 }}" style="display: block; width: 100%; margin: 12px 0 20px;">{{ event.checkin_count }}/{{ event.registration_count }}</progress>
+
+    <div class="section-label">Attendees</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Organization</th>
+                    <th>Status</th>
+                    <th>Checked In At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.person.name }}</td>
+                    <td>{{ ticket.person.organization }}</td>
+                    <td><span class="ticket-badge badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                    <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No registrations yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab 2: Staff -->
+{% if user.is_organizer_or_above or event.created_by == user %}
+<div id="tab-staff" class="tab-panel fade-up fade-up-4">
+    <div class="card">
+        {% if event_staff %}
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+            {% for member in event_staff %}
+            <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <input type="hidden" name="user_id" value="{{ member.id }}">
+                <button type="submit" class="btn btn-outline" style="font-size: 13px; padding: 5px 12px;">
+                    {{ member.username }} <span style="opacity: 0.5; margin-left: 4px;">✕</span>
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted" style="margin-bottom: 16px;"><small>No staff assigned yet.</small></p>
+        {% endif %}
+
+        {% if available_staff %}
+        <div style="display: flex; gap: 8px;">
+            <input type="search" id="staff-search" placeholder="Search staff by name..." style="flex: 1;" oninput="searchStaff(this.value)">
+        </div>
+        <ul id="staff-search-results" style="list-style: none; padding: 0; margin: 8px 0 0;"></ul>
+        <form id="add-staff-form" method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: none; margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="user_id" id="add-staff-user-id">
+        </form>
+        {% else %}
+        <p class="text-muted"><small>All eligible staff are already assigned.</small></p>
+        {% endif %}
+    </div>
+</div>
 {% endif %}
 
-<a href="{% url 'dashboard' %}" role="button" class="secondary outline">← Dashboard</a>
-    
+<!-- Tab 3: Logs -->
+<div id="tab-logs" class="tab-panel fade-up fade-up-4">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Attendee</th>
+                    <th>Scanner</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.result_display }}</td>
+                    <td>{{ log.person.name }}</td>
+                    <td>{{ log.actor.username }}</td>
+                    <td>{{ log.timestamp }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No Logs Yet</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchTab(tabName, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>
+{% if available_staff %}
+<script>
+    const availableStaff = [
+        {% for member in available_staff %}
+        { id: "{{ member.id }}", name: "{{ member.username }}", role: "{{ member.role }}" },
+        {% endfor %}
+    ];
+
+    function searchStaff(query) {
+        const list = document.getElementById('staff-search-results');
+        if (!query.trim()) { list.innerHTML = ''; return; }
+
+        const results = availableStaff.filter(m =>
+            m.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        list.innerHTML = '';
+        if (results.length === 0) {
+            list.innerHTML = '<li><small class="text-muted">No staff found.</small></li>';
+            return;
+        }
+
+        results.forEach(member => {
+            const li = document.createElement('li');
+            li.textContent = `${member.name} (${member.role})`;
+            li.style.cursor = 'pointer';
+            li.onclick = () => {
+                document.getElementById('add-staff-user-id').value = member.id;
+                document.getElementById('add-staff-form').submit();
+            };
+            list.appendChild(li);
+        });
+    }
+</script>
+{% endif %}
 {% endblock %}

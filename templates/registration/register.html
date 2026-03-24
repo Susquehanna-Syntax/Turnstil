@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Register — Turnstil{% endblock %}
 
+{% block main_class %}center-page{% endblock %}
 {% block content %}
-<article>
-    <header><h2>Create Your Account</h2></header>
+<div class="card fade-up" style="max-width: 480px; width: 100%;">
+    <div class="page-header" style="margin-bottom: 20px;">
+        <h2>Create Your Account</h2>
+    </div>
 
     {% if errors %}
         <div class="flash flash-error">
             {% for field, msgs in errors.items %}
                 {% for msg in msgs %}
-                    <p>{{ field }}: {{ msg }}</p>
+                    <p style="margin: 0 0 4px;">{{ field }}: {{ msg }}</p>
                 {% endfor %}
             {% endfor %}
         </div>
@@ -32,11 +35,11 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required minlength="8" placeholder="Minimum 8 characters">
 
-        <button type="submit">Register & Get My QR Code</button>
+        <button type="submit" class="btn btn-filled-lav" style="width: 100%; justify-content: center; margin-top: 20px;">Register & Get My QR Code</button>
     </form>
 
-    <footer>
+    <p style="margin-top: 16px; font-size: 13px; color: var(--text-2);">
         Already have an account? <a href="{% url 'login' %}">Sign in</a>
-    </footer>
-</article>
+    </p>
+</div>
 {% endblock %}

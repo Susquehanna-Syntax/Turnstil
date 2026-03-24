@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
-from .models import Person, Event, Ticket
+from .models import Person, Event, Ticket, ScanLog
 from .serializers import RegisterSerializer
 from .forms import EventForm
 from datetime import datetime
@@ -270,19 +270,74 @@ def event_detail_page(request, uuid):
     event = get_object_or_404(Event, id=uuid)
     tickets = event.tickets.select_related('person').order_by('-issued_at')
 
-    # Handle registration from web
-    if request.method == 'POST' and 'register' in request.POST:
+    # check if user is registered
+    is_registered = False
+    if request.user.is_authenticated:
+        try:
+            person = request.user.person
+            is_registered = Ticket.objects.filter(
+                person=person,
+                event=event,
+            ).exists()
+        except:
+            pass
+
+    # Handle registration from web (with added cancel feature)
+    if request.method == 'POST':
         person = request.user.person
-        Ticket.objects.get_or_create(
-            person=person, event=event,
-            defaults={'status': Ticket.Status.ISSUED},
-        )
+
+        if 'register' in request.POST:
+            Ticket.objects.get_or_create(
+                person=person,
+                event=event,
+                defaults={'status': Ticket.Status.ISSUED},
+            )
+
+        elif 'unregister' in request.POST:
+            Ticket.objects.filter(
+                person=person,
+                event=event,
+            ).delete()
+
         return redirect('event-detail', uuid=uuid)
+
+    logs = ScanLog.objects.filter(event=event).select_related('person', 'actor').order_by('-timestamp')
+
+    User = get_user_model()
+    event_staff = event.staff.all()
+    available_staff = User.objects.filter(
+        role__in=['staff', 'organizer', 'admin']
+    ).exclude(id__in=event_staff.values_list('id', flat=True))
 
     return render(request, 'admin_portal/event_detail.html', {
         'event': event,
         'tickets': tickets,
+        'logs': logs,
+        'event_staff': event_staff,
+        'available_staff': available_staff,
+        'is_registered': is_registered,
     })
+
+
+@login_required
+def manage_event_staff(request, uuid):
+    event = get_object_or_404(Event, id=uuid)
+    if not (request.user.role == 'admin' or event.created_by == request.user or request.user.is_organizer_or_above()):
+        return redirect('event-detail', uuid=uuid)
+
+    if request.method == 'POST':
+        User = get_user_model()
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id', '').strip()
+        if not user_id:
+            return redirect('event-detail', uuid=uuid)
+        user = get_object_or_404(User, id=user_id)
+        if action == 'add':
+            event.staff.add(user)
+        elif action == 'remove':
+            event.staff.remove(user)
+
+    return redirect('event-detail', uuid=uuid)
 
 
 def contact_page(request, uuid):

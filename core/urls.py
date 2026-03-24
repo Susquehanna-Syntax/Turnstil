@@ -36,5 +36,6 @@ urlpatterns = [
     path('events/create/', web_views.event_create_page, name='event-create'),
     path('events/<uuid:uuid>/', web_views.event_detail_page, name='event-detail'),
     path('events/<uuid:uuid>/walkins/', web_views.toggle_walkins, name='toggle-walkins'),
+    path('events/<uuid:uuid>/staff/', web_views.manage_event_staff, name='manage-event-staff'),
     path('contact/<uuid:uuid>/', web_views.contact_page, name='contact-view'),
 ]
