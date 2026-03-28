@@ -203,12 +203,9 @@
     }
 </script>
 {% if available_staff %}
+<div id="available-staff-data" data-staff='[{% for member in available_staff %}{"id":"{{ member.id }}","name":"{{ member.username }}","role":"{{ member.role }}"}{% if not forloop.last %},{% endif %}{% endfor %}]' hidden></div>
 <script>
-    const availableStaff = [
-        {% for member in available_staff %}
-        { id: "{{ member.id }}", name: "{{ member.username }}", role: "{{ member.role }}" },
-        {% endfor %}
-    ];
+    const availableStaff = JSON.parse(document.getElementById('available-staff-data').dataset.staff);
 
     function searchStaff(query) {
         const list = document.getElementById('staff-search-results');
