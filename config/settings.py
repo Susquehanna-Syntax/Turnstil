@@ -120,15 +120,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- QR Code ---
 QR_CODE_DIR = MEDIA_ROOT / 'qrcodes'
 # --- Email ---
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = 'turnstilreminders@gmail.com'
+# Set EMAIL_HOST_PASSWORD to a Gmail App Password to enable SMTP delivery.
+# Generate one at https://myaccount.google.com/apppasswords — revoke it there to cancel.
+# When unset, emails print to the console (safe for dev/test).
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND = (
+    'django.core.mail.backends.smtp.EmailBackend'
+    if EMAIL_HOST_PASSWORD
+    else 'django.core.mail.backends.console.EmailBackend'
+)
+
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'turnstilreminders@gmail.com')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Reminder windows (hours before event start) for periodic email reminders
+REMINDER_WINDOWS = [24, 1]
 
 
 

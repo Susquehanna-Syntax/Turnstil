@@ -16,6 +16,23 @@ services:
       - DB_USER=turnstil
       - DB_PASSWORD=turnstil
       - SECRET_KEY=dev-secret-change-in-production
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
+    depends_on:
+      - db
+
+  reminders:
+    build: .
+    command: python manage.py send_reminders --loop
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://turnstil:turnstil@db:5432/turnstil
+      - DB_HOST=db
+      - DB_NAME=turnstil
+      - DB_USER=turnstil
+      - DB_PASSWORD=turnstil
+      - SECRET_KEY=dev-secret-change-in-production
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
     depends_on:
       - db
 

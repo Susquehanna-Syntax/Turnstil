@@ -238,6 +238,19 @@ class Ticket(models.Model):
         self.save(update_fields=['status', 'checked_in_at'])
 
 
+class EventReminder(models.Model):
+    """Tracks which reminder emails have been sent for each event."""
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='reminders')
+    hours_before = models.PositiveIntegerField(help_text='Reminder window in hours before start')
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['event', 'hours_before']
+
+    def __str__(self):
+        return f"{self.event.name} — {self.hours_before}h reminder"
+
+
 class ScanLog(models.Model):
     """Audit trail for every scan attempt, successful or not."""
 

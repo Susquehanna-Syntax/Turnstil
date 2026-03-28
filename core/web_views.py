@@ -13,6 +13,9 @@ from .forms import EventForm
 from datetime import datetime
 from .serializers import EventCreateSerializer
 from django.core.mail import send_mail
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -234,24 +237,20 @@ def event_create_page(request):
             users = User.objects.all()
 
             subject = f"New Event: {event.name}"
-            message = f"""
-            A new event has been created!
-
-            Event: {event.name}
-            Start: {event.start_time}
-            Location: {event.location}
-
-            Register now in the app.
-            """
+            message = (
+                f"A new event has been created!\n\n"
+                f"Event: {event.name}\n"
+                f"Start: {event.start_time}\n"
+                f"Location: {event.location}\n\n"
+                f"Register now in the app."
+            )
 
             recipient_list = [user.email for user in users if user.email]
 
-            send_mail(
-                subject,
-                message,
-                None,
-                recipient_list,
-            )
+            try:
+                send_mail(subject, message, None, recipient_list)
+            except Exception:
+                logger.exception("Failed to send event creation email for %s", event.name)
 
             return redirect('event-detail', uuid=event.id)
 
@@ -399,23 +398,20 @@ def event_edit_page(request, uuid):
             ).distinct()
 
             subject = f"Update for {event.name}"
-            message = f"""
-            The event "{event.name}" has been updated.
-
-            Start: {event.start_time}
-            Location: {event.location}
-
-            Please check the app for details.
-            """
+            message = (
+                f'The event "{event.name}" has been updated.\n\n'
+                f"Start: {event.start_time}\n"
+                f"Location: {event.location}\n\n"
+                f"Please check the app for details."
+            )
 
             recipient_list = [user.email for user in attendees if user.email]
 
-            send_mail(
-                subject,
-                message,
-                None,  # uses DEFAULT_FROM_EMAIL
-                recipient_list,
-            )
+            try:
+                send_mail(subject, message, None, recipient_list)
+            except Exception:
+                logger.exception("Failed to send event update email for %s", event.name)
+
             return redirect('organizer-event-list')
     else:
         form = EventForm(instance=event)
