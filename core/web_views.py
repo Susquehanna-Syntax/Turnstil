@@ -2,18 +2,19 @@
 Turnstil web views — server-rendered pages.
 These handle the HTML interface; the API handles data operations.
 """
+import logging
+from datetime import datetime
+
+from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
-from .models import Person, Event, Ticket, ScanLog
-from .serializers import RegisterSerializer
 from .forms import EventForm
-from datetime import datetime
-from .serializers import EventCreateSerializer
-from django.core.mail import send_mail
-import logging
+from .models import Person, Event, Ticket, ScanLog
+from .serializers import RegisterSerializer, EventCreateSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -285,7 +286,7 @@ def event_detail_page(request, uuid):
                 person=person,
                 event=event,
             ).exists()
-        except:
+        except Person.DoesNotExist:
             pass
 
     # Handle registration from web (with added cancel feature)
@@ -309,7 +310,6 @@ def event_detail_page(request, uuid):
 
     logs = ScanLog.objects.filter(event=event).select_related('person', 'actor').order_by('-timestamp')
 
-    User = get_user_model()
     event_staff = event.staff.all()
     available_staff = User.objects.filter(
         role__in=['staff', 'organizer', 'admin']
@@ -332,7 +332,6 @@ def manage_event_staff(request, uuid):
         return redirect('event-detail', uuid=uuid)
 
     if request.method == 'POST':
-        User = get_user_model()
         action = request.POST.get('action')
         user_id = request.POST.get('user_id', '').strip()
         if not user_id:
@@ -431,13 +430,13 @@ def event_edit_page(request, uuid):
 
 # ── Admin user management ──────────────────────────────────────
 
-def _require_admin(request):
+def _is_admin(request):
     return request.user.is_authenticated and request.user.role == 'admin'
 
 
 @login_required
 def admin_create_user(request):
-    if not _require_admin(request):
+    if not _is_admin(request):
         return redirect('home')
     if request.method != 'POST':
         return redirect('dashboard')
@@ -449,46 +448,46 @@ def admin_create_user(request):
     role = request.POST.get('role', 'attendee')
 
     if not username or not password:
-        from django.contrib import messages
+
         messages.error(request, 'Username and password are required.')
         return redirect('dashboard')
 
     if User.objects.filter(username=username).exists():
-        from django.contrib import messages
+
         messages.error(request, f'Username "{username}" already exists.')
         return redirect('dashboard')
 
     user = User.objects.create_user(username=username, email=email, password=password, role=role)
     Person.objects.create(user=user, name=name or username, email=email)
 
-    from django.contrib import messages
+
     messages.success(request, f'User "{username}" created.')
     return redirect('dashboard')
 
 
 @login_required
 def admin_delete_user(request, user_id):
-    if not _require_admin(request):
+    if not _is_admin(request):
         return redirect('home')
     if request.method != 'POST':
         return redirect('dashboard')
 
     target = get_object_or_404(User, id=user_id)
     if target == request.user:
-        from django.contrib import messages
+
         messages.error(request, "You can't delete your own account.")
         return redirect('dashboard')
 
     username = target.username
     target.delete()
-    from django.contrib import messages
+
     messages.success(request, f'User "{username}" deleted.')
     return redirect('dashboard')
 
 
 @login_required
 def admin_change_role(request, user_id):
-    if not _require_admin(request):
+    if not _is_admin(request):
         return redirect('home')
     if request.method != 'POST':
         return redirect('dashboard')
@@ -501,14 +500,14 @@ def admin_change_role(request, user_id):
 
     target.role = new_role
     target.save(update_fields=['role'])
-    from django.contrib import messages
+
     messages.success(request, f'Changed {target.username} to {new_role}.')
     return redirect('dashboard')
 
 
 @login_required
 def admin_register_user_for_event(request, user_id):
-    if not _require_admin(request):
+    if not _is_admin(request):
         return redirect('home')
     if request.method != 'POST':
         return redirect('dashboard')
@@ -525,7 +524,7 @@ def admin_register_user_for_event(request, user_id):
         event=event,
         defaults={'status': Ticket.Status.ISSUED},
     )
-    from django.contrib import messages
+
     messages.success(request, f'Registered {target.username} for {event.name}.')
     return redirect('dashboard')
 

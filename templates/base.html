@@ -861,12 +861,53 @@
         .mt-16 { margin-top: 16px; }
         .mt-24 { margin-top: 24px; }
         .mb-0  { margin-bottom: 0; }
+        .mb-16 { margin-bottom: 16px; }
         .flex  { display: flex; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .gap-8  { gap: 8px; }
         .gap-12 { gap: 12px; }
         .flex-wrap { flex-wrap: wrap; }
         .text-muted { color: var(--text-2); }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-card {
+            background: var(--s1);
+            border-radius: var(--r-lg);
+            border: 1px solid var(--border);
+            padding: 22px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-card:hover { background: var(--s1); }
+        .modal-card-sm  { max-width: 440px; }
+        .modal-card-md  { max-width: 600px; max-height: 85vh; }
+
+        /* ── Button modifiers ── */
+        .btn-block {
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 11px;
+            margin: 0;
+        }
 
         /* ── Mobile-only elements (hidden on desktop) ── */
         @media (min-width: 769px) {
@@ -1024,6 +1065,31 @@ lucide.createIcons();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
 }
+
+/* Shared tab switcher */
+function switchTab(tabName, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    btn.classList.add('active');
+}
+
+/* Shared modal helpers */
+function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(function(m) {
+            if (m.style.display === 'flex') closeModal(m.id);
+        });
+    }
+});
 </script>
 </body>
 </html>

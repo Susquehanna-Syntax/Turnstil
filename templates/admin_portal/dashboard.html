@@ -7,11 +7,9 @@
     <p>Event management overview</p>
 </div>
 
-<div class="flex gap-8 fade-up fade-up-1" style="margin-bottom: 24px; flex-wrap: wrap;">
+<div class="flex gap-8 fade-up fade-up-1" style="margin-bottom:24px; flex-wrap:wrap;">
     {% if user.is_organizer_or_above %}
         <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create Event</a>
-    {% endif %}
-    {% if request.user.is_organizer_or_above %}
         <a href="{% url 'organizer-event-list' %}" class="btn btn-outline">My Events</a>
     {% endif %}
 </div>
@@ -25,19 +23,11 @@
 
 <!-- Tab 1: Events -->
 <div id="tab-events" class="{% if user.role == 'admin' %}tab-panel active{% endif %} fade-up fade-up-2">
-    <div class="section-label" style="margin-top: 0;">All Events</div>
+    <div class="section-label" style="margin-top:0;">All Events</div>
     <div class="table-wrap">
         <table>
             <thead>
-                <tr>
-                    <th>Event</th>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Registered</th>
-                    <th>Checked In</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
+                <tr><th>Event</th><th>Date</th><th>Location</th><th>Registered</th><th>Checked In</th><th>Status</th><th></th></tr>
             </thead>
             <tbody>
                 {% for event in events %}
@@ -59,16 +49,13 @@
                     <td>
                         {% if user.role == 'admin' or event.created_by == user or user in event.staff.all %}
                             <a href="/api/events/{{ event.id }}/attendees.csv"
-                               class="btn btn-filled-sky"
-                               style="padding: 5px 12px; font-size: 12px; white-space: nowrap; margin: 0;"
-                               title="Export attendee list as CSV">
-                                ↓ CSV
-                            </a>
+                               class="btn btn-filled-sky btn-sm"
+                               title="Export attendee list as CSV">↓ CSV</a>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" style="color: var(--text-2); text-align: center; padding: 24px;">No events yet.</td></tr>
+                <tr><td colspan="7" class="text-muted" style="text-align:center; padding:24px;">No events yet.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -80,11 +67,11 @@
 <div id="tab-users" class="tab-panel fade-up fade-up-2">
 
     <!-- Add User -->
-    <details class="collapsible" style="margin-top: 0;">
+    <details class="collapsible" style="margin-top:0;">
         <summary>+ Add User</summary>
-        <form method="post" action="{% url 'admin-create-user' %}" style="padding: 0 16px 16px;">
+        <form method="post" action="{% url 'admin-create-user' %}" style="padding:0 16px 16px;">
             {% csrf_token %}
-            <div class="two-col-grid" style="gap: 12px;">
+            <div class="two-col-grid" style="gap:12px;">
                 <div>
                     <label for="new-username">Username</label>
                     <input type="text" id="new-username" name="username" required>
@@ -110,7 +97,7 @@
                     </select>
                 </div>
             </div>
-            <button type="submit" class="btn btn-filled-peach" style="margin-top: 16px;">Create User</button>
+            <button type="submit" class="btn btn-filled-peach mt-16">Create User</button>
         </form>
     </details>
 
@@ -119,13 +106,7 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th></th>
-                </tr>
+                <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th></th></tr>
             </thead>
             <tbody>
                 {% for u in users %}
@@ -134,9 +115,9 @@
                     <td>{{ u.person.name }}</td>
                     <td>{{ u.email|default:"—" }}</td>
                     <td>
-                        <form method="post" action="{% url 'admin-change-role' user_id=u.id %}" style="margin: 0; display: flex; gap: 6px; align-items: center;">
+                        <form method="post" action="{% url 'admin-change-role' user_id=u.id %}" style="margin:0;">
                             {% csrf_token %}
-                            <select name="role" style="width: auto; padding: 5px 10px; font-size: 12px;" onchange="this.form.submit()">
+                            <select name="role" style="width:auto; padding:5px 10px; font-size:12px;" onchange="this.form.submit()">
                                 {% for value, label in role_choices %}
                                 <option value="{{ value }}" {% if u.role == value %}selected{% endif %}>{{ label }}</option>
                                 {% endfor %}
@@ -144,22 +125,19 @@
                         </form>
                     </td>
                     <td>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            <button type="button"
-                                    class="btn btn-filled-lemon"
-                                    style="padding: 5px 12px; font-size: 11px; margin: 0;"
-                                    onclick="openRegModal({{ u.id }}, '{{ u.username }}')">Register</button>
+                        <div class="flex flex-wrap gap-8">
+                            <button type="button" class="btn btn-filled-lemon btn-sm" onclick="openRegModal({{ u.id }}, '{{ u.username }}')">Register</button>
                             {% if u != user %}
-                            <form method="post" action="{% url 'admin-delete-user' user_id=u.id %}" style="margin: 0;" onsubmit="return confirm('Delete {{ u.username }}? This cannot be undone.')">
+                            <form method="post" action="{% url 'admin-delete-user' user_id=u.id %}" style="margin:0;" onsubmit="return confirm('Delete {{ u.username }}? This cannot be undone.')">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-filled-rose" style="padding: 5px 12px; font-size: 11px; margin: 0;">Delete</button>
+                                <button type="submit" class="btn btn-filled-rose btn-sm">Delete</button>
                             </form>
                             {% endif %}
                         </div>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" style="color: var(--text-2); text-align: center; padding: 24px;">No users.</td></tr>
+                <tr><td colspan="5" class="text-muted" style="text-align:center; padding:24px;">No users.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -167,11 +145,11 @@
 </div>
 
 <!-- Register-for-event modal -->
-<div id="reg-modal" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:center; padding:16px;">
-    <div class="card" style="max-width:440px; width:100%; max-height:80vh; overflow:hidden; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
-        <div class="flex-between" style="margin-bottom:12px;">
+<div id="reg-modal" class="modal-overlay" onclick="closeModal('reg-modal')">
+    <div class="modal-card modal-card-sm" style="display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
+        <div class="flex-between mb-16">
             <h3 id="reg-modal-title" style="margin:0;">Register User</h3>
-            <button type="button" class="btn btn-ghost" style="padding:4px 8px; margin:0; font-size:18px;" onclick="closeRegModal()">✕</button>
+            <button type="button" class="btn btn-ghost" style="padding:4px 8px; margin:0; font-size:18px;" onclick="closeModal('reg-modal')">✕</button>
         </div>
         <input type="search" id="reg-event-search" placeholder="Search events..." oninput="filterRegEvents(this.value)" style="margin-bottom:12px;">
         <div id="reg-event-list" style="overflow-y:auto; flex:1; max-height:50vh;"></div>
@@ -190,14 +168,6 @@
      data-events='[{% for ev in all_events %}{"id":"{{ ev.id }}","name":"{{ ev.name }}","date":"{{ ev.start_time|date:"M j" }}","location":"{{ ev.location }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
      hidden></div>
 <script>
-    function switchTab(tabName, btn) {
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + tabName).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    // ── Register-for-event modal ──
     const allEvents = JSON.parse(document.getElementById('events-data').dataset.events);
     let regUserId = null;
 
@@ -206,40 +176,28 @@
         document.getElementById('reg-modal-title').textContent = 'Register ' + username;
         document.getElementById('reg-event-search').value = '';
         renderRegEvents(allEvents);
-        const modal = document.getElementById('reg-modal');
-        modal.style.display = 'flex';
-        modal.onclick = closeRegModal;
-        document.body.style.overflow = 'hidden';
+        openModal('reg-modal');
         document.getElementById('reg-event-search').focus();
-    }
-
-    function closeRegModal() {
-        document.getElementById('reg-modal').style.display = 'none';
-        document.body.style.overflow = '';
-        regUserId = null;
     }
 
     function filterRegEvents(query) {
         const q = query.toLowerCase();
-        const filtered = allEvents.filter(ev =>
+        renderRegEvents(allEvents.filter(ev =>
             ev.name.toLowerCase().includes(q) || ev.location.toLowerCase().includes(q)
-        );
-        renderRegEvents(filtered);
+        ));
     }
 
     function renderRegEvents(events) {
         const list = document.getElementById('reg-event-list');
         if (events.length === 0) {
-            list.innerHTML = '<p style="color:var(--text-2); text-align:center; padding:16px;"><small>No matching events.</small></p>';
+            list.innerHTML = '<p class="text-muted" style="text-align:center; padding:16px;"><small>No matching events.</small></p>';
             return;
         }
         list.innerHTML = events.map(ev =>
             '<div class="list-item" onclick="submitReg(\'' + ev.id + '\')">' +
-                '<div style="flex:1;">' +
-                    '<strong>' + ev.name + '</strong><br>' +
-                    '<small class="text-muted">' + ev.date + (ev.location ? ' · ' + ev.location : '') + '</small>' +
-                '</div>' +
-                '<span class="btn btn-filled-mint" style="padding:5px 14px; font-size:11px; margin:0; pointer-events:none;">Select</span>' +
+                '<div style="flex:1;"><strong>' + ev.name + '</strong><br>' +
+                '<small class="text-muted">' + ev.date + (ev.location ? ' · ' + ev.location : '') + '</small></div>' +
+                '<span class="btn btn-filled-mint btn-sm" style="pointer-events:none;">Select</span>' +
             '</div>'
         ).join('');
     }
@@ -251,10 +209,6 @@
         document.getElementById('reg-event-uuid').value = eventUuid;
         form.submit();
     }
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeRegModal();
-    });
 </script>
 {% endif %}
 {% endblock %}
