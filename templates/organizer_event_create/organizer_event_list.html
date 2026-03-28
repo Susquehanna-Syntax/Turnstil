@@ -44,7 +44,7 @@
 </div>
 
 <!-- Edit event modal -->
-<div id="edit-modal" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:center; padding: 20px;">
+<div id="edit-modal" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:center; padding:16px;">
     <div class="card" style="max-width:600px; width:100%; max-height:85vh; overflow-y:auto;" onclick="event.stopPropagation()">
         <div class="flex-between" style="margin-bottom: 16px;">
             <h3 id="edit-modal-title" style="margin:0;">Edit Event</h3>
@@ -92,9 +92,9 @@
                     </div>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 20px;">
-                <button type="submit" class="btn btn-filled-lav" style="margin: 0;">Save Changes</button>
-                <button type="button" class="btn btn-outline" style="margin: 0;" onclick="closeEditModal()">Cancel</button>
+            <div style="display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-filled-lav" style="margin: 0; flex: 1; min-width: 120px; justify-content: center;">Save Changes</button>
+                <button type="button" class="btn btn-outline" style="margin: 0; flex: 1; min-width: 120px; justify-content: center;" onclick="closeEditModal()">Cancel</button>
             </div>
         </form>
     </div>
@@ -120,11 +120,13 @@
         const modal = document.getElementById('edit-modal');
         modal.style.display = 'flex';
         modal.onclick = closeEditModal;
+        document.body.style.overflow = 'hidden';
         document.getElementById('edit-name').focus();
     }
 
     function closeEditModal() {
         document.getElementById('edit-modal').style.display = 'none';
+        document.body.style.overflow = '';
     }
 
     document.addEventListener('keydown', function(e) {

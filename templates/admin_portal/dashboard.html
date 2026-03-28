@@ -143,17 +143,19 @@
                             </select>
                         </form>
                     </td>
-                    <td style="white-space: nowrap;">
-                        <button type="button"
-                                class="btn btn-filled-lemon"
-                                style="padding: 5px 12px; font-size: 11px; margin: 0;"
-                                onclick="openRegModal({{ u.id }}, '{{ u.username }}')">Register</button>
-                        {% if u != user %}
-                        <form method="post" action="{% url 'admin-delete-user' user_id=u.id %}" style="margin: 0; display: inline;" onsubmit="return confirm('Delete {{ u.username }}? This cannot be undone.')">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-filled-rose" style="padding: 5px 12px; font-size: 11px; margin: 0;">Delete</button>
-                        </form>
-                        {% endif %}
+                    <td>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button type="button"
+                                    class="btn btn-filled-lemon"
+                                    style="padding: 5px 12px; font-size: 11px; margin: 0;"
+                                    onclick="openRegModal({{ u.id }}, '{{ u.username }}')">Register</button>
+                            {% if u != user %}
+                            <form method="post" action="{% url 'admin-delete-user' user_id=u.id %}" style="margin: 0;" onsubmit="return confirm('Delete {{ u.username }}? This cannot be undone.')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-filled-rose" style="padding: 5px 12px; font-size: 11px; margin: 0;">Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
@@ -165,8 +167,8 @@
 </div>
 
 <!-- Register-for-event modal -->
-<div id="reg-modal" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:center;">
-    <div class="card" style="max-width:440px; width:90%; max-height:80vh; overflow:hidden; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
+<div id="reg-modal" style="display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); justify-content:center; align-items:center; padding:16px;">
+    <div class="card" style="max-width:440px; width:100%; max-height:80vh; overflow:hidden; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
         <div class="flex-between" style="margin-bottom:12px;">
             <h3 id="reg-modal-title" style="margin:0;">Register User</h3>
             <button type="button" class="btn btn-ghost" style="padding:4px 8px; margin:0; font-size:18px;" onclick="closeRegModal()">✕</button>
@@ -207,11 +209,13 @@
         const modal = document.getElementById('reg-modal');
         modal.style.display = 'flex';
         modal.onclick = closeRegModal;
+        document.body.style.overflow = 'hidden';
         document.getElementById('reg-event-search').focus();
     }
 
     function closeRegModal() {
         document.getElementById('reg-modal').style.display = 'none';
+        document.body.style.overflow = '';
         regUserId = null;
     }
 
