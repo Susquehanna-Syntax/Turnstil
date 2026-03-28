@@ -38,4 +38,10 @@ urlpatterns = [
     path('events/<uuid:uuid>/walkins/', web_views.toggle_walkins, name='toggle-walkins'),
     path('events/<uuid:uuid>/staff/', web_views.manage_event_staff, name='manage-event-staff'),
     path('contact/<uuid:uuid>/', web_views.contact_page, name='contact-view'),
+
+    # Admin user management
+    path('dashboard/users/create/', web_views.admin_create_user, name='admin-create-user'),
+    path('dashboard/users/<int:user_id>/delete/', web_views.admin_delete_user, name='admin-delete-user'),
+    path('dashboard/users/<int:user_id>/role/', web_views.admin_change_role, name='admin-change-role'),
+    path('dashboard/users/<int:user_id>/register/', web_views.admin_register_user_for_event, name='admin-register-user'),
 ]

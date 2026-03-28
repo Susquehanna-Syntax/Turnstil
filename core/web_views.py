@@ -209,7 +209,14 @@ def dashboard_page(request):
     if request.user.role not in ('staff', 'admin', 'organizer'):
         return redirect('home')
     events = Event.objects.all()
-    return render(request, 'admin_portal/dashboard.html', {'events': events})
+    context = {'events': events}
+
+    if request.user.role == 'admin':
+        context['users'] = User.objects.select_related('person').order_by('username')
+        context['all_events'] = Event.objects.filter(end_time__gte=timezone.now()).order_by('start_time')
+        context['role_choices'] = User.Role.choices
+
+    return render(request, 'admin_portal/dashboard.html', context)
 
 
 @login_required
@@ -420,4 +427,105 @@ def event_edit_page(request, uuid):
         'form': form,
         'event': event
     })
+
+
+# ── Admin user management ──────────────────────────────────────
+
+def _require_admin(request):
+    return request.user.is_authenticated and request.user.role == 'admin'
+
+
+@login_required
+def admin_create_user(request):
+    if not _require_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    username = request.POST.get('username', '').strip()
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '').strip()
+    name = request.POST.get('name', '').strip()
+    role = request.POST.get('role', 'attendee')
+
+    if not username or not password:
+        from django.contrib import messages
+        messages.error(request, 'Username and password are required.')
+        return redirect('dashboard')
+
+    if User.objects.filter(username=username).exists():
+        from django.contrib import messages
+        messages.error(request, f'Username "{username}" already exists.')
+        return redirect('dashboard')
+
+    user = User.objects.create_user(username=username, email=email, password=password, role=role)
+    Person.objects.create(user=user, name=name or username, email=email)
+
+    from django.contrib import messages
+    messages.success(request, f'User "{username}" created.')
+    return redirect('dashboard')
+
+
+@login_required
+def admin_delete_user(request, user_id):
+    if not _require_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    target = get_object_or_404(User, id=user_id)
+    if target == request.user:
+        from django.contrib import messages
+        messages.error(request, "You can't delete your own account.")
+        return redirect('dashboard')
+
+    username = target.username
+    target.delete()
+    from django.contrib import messages
+    messages.success(request, f'User "{username}" deleted.')
+    return redirect('dashboard')
+
+
+@login_required
+def admin_change_role(request, user_id):
+    if not _require_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    target = get_object_or_404(User, id=user_id)
+    new_role = request.POST.get('role', '').strip()
+    valid_roles = [r[0] for r in User.Role.choices]
+    if new_role not in valid_roles:
+        return redirect('dashboard')
+
+    target.role = new_role
+    target.save(update_fields=['role'])
+    from django.contrib import messages
+    messages.success(request, f'Changed {target.username} to {new_role}.')
+    return redirect('dashboard')
+
+
+@login_required
+def admin_register_user_for_event(request, user_id):
+    if not _require_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    target = get_object_or_404(User, id=user_id)
+    event_uuid = request.POST.get('event_uuid', '').strip()
+    if not event_uuid:
+        return redirect('dashboard')
+
+    event = get_object_or_404(Event, id=event_uuid)
+    person = target.person
+    Ticket.objects.get_or_create(
+        person=person,
+        event=event,
+        defaults={'status': Ticket.Status.ISSUED},
+    )
+    from django.contrib import messages
+    messages.success(request, f'Registered {target.username} for {event.name}.')
+    return redirect('dashboard')
 
