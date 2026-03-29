@@ -187,6 +187,7 @@
     <a href="#pwa" class="nav-link"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>PWA &amp; Mobile</a>
     <div class="nav-section-label">Reference</div>
     <a href="#api" class="nav-link"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>API Reference</a>
+    <a href="#datamodel" class="nav-link"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Data Model</a>
     <a href="#contributing" class="nav-link"><svg viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 00-1-3.5c3 0 6-2 6-5.5a4.2 4.2 0 00-1.2-3 4.2 4.2 0 00-.1-3S17.2 2.6 14 4.5a11 11 0 00-6 0C5 2.5 3.4 3 3.4 3a4.2 4.2 0 00-.1 3A4.2 4.2 0 002 9c0 3.5 3 5.5 6 5.5a4.8 4.8 0 00-1 3.5v4"/><path d="M9 18c-4.5 2-5-2-7-2"/></svg>Contributing</a>
     <div class="nav-spacer"></div>
     <div class="nav-footer">
@@ -463,6 +464,7 @@
           <tr><td><code>EMAIL_HOST_USER</code></td><td>SMTP sender address</td><td><code>turnstilreminders@gmail.com</code></td></tr>
         </tbody>
       </table></div>
+      <div class="callout callout-tip"><div class="callout-icon">✓</div><div><strong>Database auto-detection:</strong> If <code>DATABASE_URL</code> is set and starts with <code>postgresql</code>, Turnstil uses PostgreSQL. Otherwise, it falls back to SQLite — convenient for local development without Docker.</div></div>
       <div class="callout callout-info"><div class="callout-icon">i</div><div>When running behind a reverse proxy (Cloudflare Tunnels, Caddy, nginx), add your public domain to both <code>ALLOWED_HOSTS</code> and <code>CSRF_TRUSTED_ORIGINS</code> (with <code>https://</code> prefix for CSRF).</div></div>
       <h3>Email Notifications</h3>
       <div class="prose"><p>Turnstil sends email notifications for event-related activities:</p>
@@ -483,13 +485,37 @@
       <div class="section-label">Features</div>
       <div class="section-title">Authentication &amp; <span style="color:var(--sky)">Accounts</span></div>
       <h3>Registration</h3>
-      <div class="prose"><p>Users create an account by providing a username, email, password (minimum 8 characters), full name, and optionally an organization. Registration creates two linked records: a <strong>User</strong> (for login credentials and role) and a <strong>Person</strong> (for identity, contact info, and QR code). New accounts default to the <strong>attendee</strong> role.</p><p>After registering, users are automatically logged in and redirected to their profile.</p></div>
+      <div class="prose"><p>Users create an account by providing the following fields:</p>
+        <ul>
+          <li><strong>Username</strong> — must be unique</li>
+          <li><strong>Email</strong> — must be unique</li>
+          <li><strong>Password</strong> — minimum 8 characters</li>
+          <li><strong>Full name</strong> — displayed on their contact card and QR display</li>
+          <li><strong>Organization</strong> — optional, shown on contact card if visibility is enabled</li>
+        </ul>
+        <p>Registration creates two linked records: a <strong>User</strong> (for login credentials and role) and a <strong>Person</strong> (for identity, contact info, and QR code). The Person is assigned a permanent UUID that becomes the payload of their QR code. New accounts default to the <strong>attendee</strong> role.</p>
+        <p>After registering, users are automatically logged in and redirected to their profile.</p></div>
       <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-registration.png --></div>
       <h3>Login / Logout</h3>
-      <div class="prose"><p>Session-based login is used for all web pages. Staff and above are redirected to the scanner after login; attendees are redirected to their profile. Logging out clears the session and returns to the home page.</p></div>
+      <div class="prose"><p>Session-based login is used for all web pages. After login, users are redirected based on their role:</p>
+        <ul>
+          <li><strong>Staff, organizer, admin</strong> → redirected to the scanner page (<code>/scanner/</code>)</li>
+          <li><strong>Attendee</strong> → redirected to their profile (<code>/profile/</code>), or to the <code>?next=</code> URL if one was provided</li>
+        </ul>
+        <p>Logging out clears the session (including any active event selection) and returns to the home page.</p>
+      </div>
       <h3>JWT Authentication (API)</h3>
-      <div class="prose"><p>API consumers authenticate via JSON Web Tokens (SimpleJWT). Login returns an access token (8-hour lifetime) and a refresh token (7-day lifetime). The scanner page stores the JWT in <code>localStorage</code> to make authenticated API calls from the browser.</p></div>
+      <div class="prose"><p>API consumers authenticate via JSON Web Tokens (SimpleJWT). Login returns an access token and a refresh token. The scanner page stores the JWT in <code>localStorage</code> to make authenticated API calls from the browser.</p></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Token</th><th>Lifetime</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Access token</td><td>8 hours</td><td>Include as <code>Authorization: Bearer &lt;token&gt;</code></td></tr>
+          <tr><td>Refresh token</td><td>7 days</td><td>Tokens are rotated on refresh</td></tr>
+        </tbody>
+      </table></div>
       <div class="callout callout-info"><div class="callout-icon">i</div><div>The scanner page uses JWT for API calls rather than session auth, allowing it to make direct <code>fetch()</code> requests to the REST endpoints.</div></div>
+      <h3>Home Page</h3>
+      <div class="prose"><p>The public home page (<code>/</code>) displays all upcoming events as cards. Each card shows the event name, date/time, location, and a link to the event detail page. Unauthenticated visitors can browse events and are prompted to log in or register to sign up.</p></div>
     </div>
     <div class="divider"></div>
 
@@ -504,7 +530,9 @@
       </ul></div>
       <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-qr-fullscreen.png --></div>
       <h3>QR Code Generation</h3>
-      <div class="prose"><p>QR codes are generated on demand as PNG images via the API. The QR encodes only the Person UUID — no personal data is embedded in the code itself.</p></div>
+      <div class="prose"><p>QR codes are generated on demand as PNG images via the API at <code>/api/people/&lt;uuid&gt;/qr</code>. The QR encodes only the Person UUID — no personal data is embedded in the code itself. Only the person themselves or an admin can download the QR image.</p></div>
+      <h3>QR Code Download</h3>
+      <div class="prose"><p>The fullscreen QR view (<code>/profile/qr/</code>) includes a <strong>Download</strong> button that saves the QR code as a PNG file named <code>&lt;name&gt;_qr.png</code>. This lets users save their QR code to their phone's camera roll for easy access at events.</p></div>
     </div>
     <div class="divider"></div>
 
@@ -532,7 +560,27 @@
       <h3>Creating Events</h3>
       <div class="prose"><p>Organizers and admins can create events with the following fields: <strong>Name</strong> (required), <strong>Description</strong>, <strong>Location</strong>, <strong>Start/End Time</strong> (required), <strong>Registration Open/Close</strong>, <strong>Capacity</strong> (set to 0 for unlimited), and an optional <strong>External Link</strong>.</p><p>The event creator is automatically assigned as staff for their event. Email notifications for event creation and editing are sent only to the event owner.</p></div>
       <h3>Editing Events</h3>
-      <div class="prose"><p>Event owners can edit their events directly from the <strong>My Events</strong> page via an inline modal popup — no separate page navigation required. The modal pre-fills all event fields from the selected event and submits changes in place. Only the event owner (or an admin) can edit an event.</p></div>
+      <div class="prose"><p>Event owners can edit their events directly from the <strong>My Events</strong> page via an inline modal popup — no separate page navigation required. The modal pre-fills all event fields from the selected event and submits changes in place. Only the event owner (or an admin) can edit an event.</p>
+        <p>When an event is edited, registered attendees automatically receive an email notification with the updated details.</p></div>
+      <h3>Organizer Event Management</h3>
+      <div class="prose"><p>Organizers and admins have a dedicated <strong>My Events</strong> page at <code>/organizer_event_create/</code> that lists only events they have created. From this page they can:</p>
+        <ul>
+          <li><strong>View all their events</strong> — cards showing name, date, location, and registration count</li>
+          <li><strong>Edit events inline</strong> — opens a blurred modal popup pre-filled with the event's current data</li>
+          <li><strong>Navigate to event details</strong> — links to the full event detail page with attendee/staff/log tabs</li>
+        </ul>
+        <p>This is separate from the admin dashboard — organizers see only their own events, while admins see everything.</p>
+      </div>
+      <h3>Event Validation Rules</h3>
+      <div class="prose"><p>Events enforce the following date/time constraints on create and edit:</p>
+        <ul>
+          <li><code>start_time</code> must be before <code>end_time</code></li>
+          <li><code>reg_open</code> must be before <code>reg_close</code></li>
+          <li><code>reg_close</code> must be on or before <code>start_time</code></li>
+          <li><code>reg_open</code> must be before <code>end_time</code></li>
+        </ul>
+        <p>If <code>reg_open</code> or <code>reg_close</code> are left blank, they default to the event's creation time and start time, respectively. A <strong>capacity</strong> of <code>0</code> means unlimited.</p>
+      </div>
       <h3>Event Registration</h3>
       <div class="prose"><p>Authenticated users can register for events through the event detail page or the API. Registration validates that the registration window is open, the event is not at capacity, and the user is not already registered. Canceled registrations can be reactivated.</p></div>
       <h3>Walk-In Mode</h3>
@@ -540,6 +588,20 @@
       <div class="callout callout-tip"><div class="callout-icon">✓</div><div>Walk-in mode is ideal for informal events where pre-registration isn't required. Toggle it from the event detail page or via the API.</div></div>
       <h3>Event Status</h3>
       <div class="prose"><p>Events expose computed status properties: <strong>Active</strong> (current time is between start and end), <strong>Upcoming</strong> (current time is before start), and <strong>Full</strong> (registration count has reached capacity).</p></div>
+      <h3>Email Notifications for Events</h3>
+      <div class="prose"><p>The following emails are sent automatically during the event lifecycle:</p>
+        <ul>
+          <li><strong>Event creation</strong> — the event owner receives a confirmation email</li>
+          <li><strong>Event editing</strong> — all registered attendees receive a notification with updated details</li>
+          <li><strong>Registration confirmation</strong> — attendees receive an email when they register for an event</li>
+          <li><strong>Reminders</strong> — registered attendees receive reminders at <strong>24 hours</strong> and <strong>1 hour</strong> before event start (configurable via <code>REMINDER_WINDOWS</code> in settings)</li>
+        </ul>
+        <p>All email sending is wrapped in try/except — delivery failures never crash the application. Without SMTP configuration, emails print to the console for development.</p>
+      </div>
+      <h3>CSV Export</h3>
+      <div class="prose"><p>Staff and above can download an attendee list for any event as a CSV file. The export is available via the <strong>Download CSV</strong> button on the dashboard event table or via the API at <code>/api/events/&lt;uuid&gt;/attendees.csv</code>.</p>
+        <p>The CSV includes columns: <strong>Name</strong>, <strong>Email</strong>, <strong>Organization</strong>, <strong>Phone</strong>, <strong>Status</strong>, <strong>Registered At</strong>, and <strong>Checked In At</strong>. Canceled registrations are excluded, and rows are sorted alphabetically by name.</p>
+      </div>
     </div>
     <div class="divider"></div>
 
@@ -565,12 +627,14 @@
       <div class="prose"><p>Used for networking and contact exchange. Scanning a QR code in Discovery mode fetches the person's contact card, showing only the fields they've made visible through their privacy settings.</p></div>
       <h3>Scanner Features</h3>
       <div class="prose"><ul>
-        <li><strong>Camera scanning</strong> — uses the device's environment-facing camera via the html5-qrcode library</li>
-        <li><strong>Manual UUID entry</strong> — fallback for when camera scanning isn't available</li>
-        <li><strong>Name search</strong> — staff can search for attendees by name (returns top 10 results)</li>
-        <li><strong>Scan cooldown</strong> — 2-second cooldown prevents accidental double-scans</li>
-        <li><strong>Scan history</strong> — recent scan results displayed on the page</li>
-        <li><strong>Result messages</strong> — success/error feedback shown for 4 seconds after each scan</li>
+        <li><strong>Camera scanning</strong> — uses the device's rear-facing camera via the <code>html5-qrcode</code> library. Starts automatically when the scanner page loads (requires HTTPS for camera access)</li>
+        <li><strong>Manual UUID entry</strong> — expandable fallback input for when the camera isn't available or a QR code is damaged. Paste or type the person's UUID and submit</li>
+        <li><strong>Name search</strong> — staff can search attendees by name using the <code>/api/people/search/</code> endpoint. Returns the top 10 matches with name and organization. Clicking a result triggers a check-in (Attendance mode) or loads their contact card (Discovery mode)</li>
+        <li><strong>Scan cooldown</strong> — 2-second cooldown between scans prevents accidental double-scans from the camera reading the same QR code repeatedly</li>
+        <li><strong>Scan history</strong> — recent scan results are displayed in a live feed on the page, showing the person's name, result status (success/duplicate/error), and timestamp</li>
+        <li><strong>Result messages</strong> — color-coded feedback banners shown for 4 seconds after each scan: green for success, yellow for duplicates, red for errors, blue for informational messages</li>
+        <li><strong>Event selection</strong> — in Attendance mode, staff must select an active event before scanning. The selected event persists in the server session across page loads</li>
+        <li><strong>JWT authentication</strong> — the scanner page obtains a JWT token on load and uses it for all API calls, enabling direct <code>fetch()</code> requests to the REST endpoints</li>
       </ul></div>
     </div>
     <div class="divider"></div>
@@ -582,9 +646,21 @@
       <div class="prose"><p>Each user has a public contact card at <code>/contact/&lt;uuid&gt;/</code>. This page displays the user's name and any contact fields they've made visible. Email addresses render as <code>mailto:</code> links and phone numbers as <code>tel:</code> links.</p></div>
       <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-contact-card.png --></div>
       <h3>Profile Editing</h3>
-      <div class="prose"><p>Users manage their contact information from the profile page: name, email, organization, phone, links (stored as JSON — supports multiple URLs), and visibility toggles for each field.</p></div>
+      <div class="prose"><p>Users manage their contact information from the profile page, which has two tabs:</p>
+        <ul>
+          <li><strong>Info tab</strong> — edit name, email, organization, phone, and links. Each field (except name) has a visibility toggle: "Visible when others scan your QR." The <strong>Links</strong> field is stored as JSON and supports multiple URLs (e.g., personal website, LinkedIn, GitHub)</li>
+          <li><strong>QR &amp; Tickets tab</strong> — shows the user's QR code with a link to the fullscreen view, and a list of their event registrations</li>
+        </ul>
+      </div>
       <h3>Tickets</h3>
-      <div class="prose"><p>The profile page also shows the user's event registrations (tickets) with event names, dates, locations, and ticket status.</p></div>
+      <div class="prose"><p>The profile page shows the user's event registrations (tickets) with event name, date, location, and ticket status. Ticket statuses are:</p>
+        <ul>
+          <li><strong>Issued</strong> — registered but not yet checked in</li>
+          <li><strong>Checked In</strong> — successfully scanned at the event</li>
+          <li><strong>Canceled</strong> — registration was canceled (can be reactivated)</li>
+          <li><strong>Expired</strong> — event has ended</li>
+        </ul>
+      </div>
     </div>
     <div class="divider"></div>
 
@@ -592,7 +668,16 @@
     <div class="section" id="dashboard">
       <div class="section-title"><span style="color:var(--coral)">Dashboard</span> &amp; Administration</div>
       <h3>Event Dashboard</h3>
-      <div class="prose"><p>Staff, organizers, and admins can access the dashboard (<code>/dashboard/</code>) which shows an overview table of all events with event name and date, location, registered/checked-in counts, event status, and a CSV export button for attendee lists.</p></div>
+      <div class="prose"><p>Staff, organizers, and admins can access the dashboard (<code>/dashboard/</code>) which shows an overview table of all events with:</p>
+        <ul>
+          <li>Event name and date/time</li>
+          <li>Location</li>
+          <li>Registered and checked-in counts</li>
+          <li>Event status badge (Active, Upcoming, or Full)</li>
+          <li><strong>Download CSV</strong> button — exports the attendee list for that event</li>
+          <li>Click-through to the event detail page</li>
+        </ul>
+      </div>
       <div class="img-placeholder" style="height:220px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-dashboard.png --></div>
       <h3>User Management (Admin Only)</h3>
       <div class="prose"><p>Admins see a <strong>Users</strong> tab on the dashboard with full user management capabilities:</p>
@@ -605,10 +690,42 @@
         </ul>
         <p>User management routes live under <code>/dashboard/users/</code> to avoid conflicts with Django's built-in admin.</p>
       </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Route</th><th>Method</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>/dashboard/users/create/</code></td><td>POST</td><td>Create a new user with username, password, name, email, and role</td></tr>
+          <tr><td><code>/dashboard/users/&lt;id&gt;/role/</code></td><td>POST</td><td>Change a user's role (attendee, staff, organizer, admin)</td></tr>
+          <tr><td><code>/dashboard/users/&lt;id&gt;/register/</code></td><td>POST</td><td>Register a user for an event via a searchable modal popup</td></tr>
+          <tr><td><code>/dashboard/users/&lt;id&gt;/delete/</code></td><td>POST</td><td>Delete a user account (with confirmation prompt)</td></tr>
+        </tbody>
+      </table></div>
       <h3>Event Detail Page</h3>
-      <div class="prose"><p>The event detail page (<code>/events/&lt;uuid&gt;/</code>) provides different views based on role. All authenticated users see event info and stats cards. Staff and above also get tabs for <strong>Attendees</strong> (table of registered people), <strong>Staff</strong> (assigned staff list with add/remove), and <strong>Scan Logs</strong> (history of all scan attempts).</p></div>
+      <div class="prose"><p>The event detail page (<code>/events/&lt;uuid&gt;/</code>) provides different views based on role:</p>
+        <ul>
+          <li><strong>All authenticated users</strong> — event info (name, description, location, times), stat cards (registered count, checked-in count, capacity), registration button, and an attendance ratio progress bar</li>
+          <li><strong>Staff and above</strong> — additional tabbed interface:
+            <ul>
+              <li><strong>Attendees tab</strong> — table of registered people with name, email, ticket status, registration time, and check-in time</li>
+              <li><strong>Staff tab</strong> — list of assigned staff with a search-to-add autocomplete and remove buttons. Staff search queries users by name</li>
+              <li><strong>Scan Logs tab</strong> — history of all scan attempts showing result code, person name, actor (who scanned), timestamp, and metadata</li>
+            </ul>
+          </li>
+          <li><strong>Event creator / admin</strong> — toggle for walk-in mode, staff management controls</li>
+        </ul>
+      </div>
       <h3>Scan Logs</h3>
-      <div class="prose"><p>Admins can view all scan logs via the API with optional filtering by event or result code. Every scan attempt is logged — successful or not — creating a complete audit trail.</p></div>
+      <div class="prose"><p>Every scan attempt is logged to the <code>ScanLog</code> model — successful or not — creating a complete audit trail. Each log entry records:</p>
+        <ul>
+          <li><strong>Event</strong> — which event the scan was for</li>
+          <li><strong>Person</strong> — who was scanned (if valid)</li>
+          <li><strong>Actor</strong> — which staff member performed the scan</li>
+          <li><strong>Result</strong> — outcome code (success, duplicate, not_registered, invalid, wrong_event, event_inactive)</li>
+          <li><strong>Scanned value</strong> — the raw UUID that was scanned</li>
+          <li><strong>Metadata</strong> — JSON field with additional context (e.g., check-in timestamp for duplicates)</li>
+          <li><strong>Timestamp</strong> — when the scan occurred</li>
+        </ul>
+        <p>Admins can view all scan logs via the API at <code>/api/logs</code> with optional filtering by <code>?event=&lt;uuid&gt;</code> or <code>?result=&lt;code&gt;</code>. Logs are also visible on the event detail page's Scan Logs tab.</p>
+      </div>
       <div class="callout callout-info"><div class="callout-icon">i</div><div>Scan logs are currently fetched on page load and on each new scan. Real-time streaming of logs (e.g. via WebSockets) is planned but not yet implemented.</div></div>
     </div>
     <div class="divider"></div>
@@ -623,10 +740,21 @@
           <tr><td><strong>Attendee</strong></td><td>Register for events, manage profile, use Discovery mode scanner, view own QR code</td></tr>
           <tr><td><strong>Staff</strong></td><td>All attendee capabilities + Attendance mode scanning (for assigned events), view dashboard, view attendee lists</td></tr>
           <tr><td><strong>Organizer</strong></td><td>All staff capabilities + create events, manage event staff, edit own events, toggle walk-ins</td></tr>
-          <tr><td><strong>Admin</strong></td><td>Full system access — scan any event, view all logs, manage all events and staff</td></tr>
+          <tr><td><strong>Admin</strong></td><td>Full system access — scan any event, view all logs, manage all events and staff, CRUD all user accounts, assign roles, register users for events</td></tr>
         </tbody>
       </table></div>
       <div class="callout callout-info"><div class="callout-icon">i</div><div>Staff must be explicitly assigned to an event (via the <code>staff</code> ManyToMany relationship) to scan check-ins for that event. Event creators are auto-assigned. Admins bypass this requirement.</div></div>
+      <h3>API Permission Classes</h3>
+      <div class="prose"><p>The REST API enforces permissions using custom DRF permission classes:</p></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Class</th><th>Grants Access To</th></tr></thead>
+        <tbody>
+          <tr><td><code>IsStaffOrAbove</code></td><td>Users with role: staff, organizer, or admin</td></tr>
+          <tr><td><code>IsOrganizerOrAbove</code></td><td>Users with role: organizer or admin</td></tr>
+          <tr><td><code>IsAdminRole</code></td><td>Users with role: admin only</td></tr>
+          <tr><td><code>IsEventStaff</code></td><td>Users who are the event creator, assigned staff, or admin for a specific event</td></tr>
+        </tbody>
+      </table></div>
     </div>
     <div class="divider"></div>
 
@@ -636,12 +764,13 @@
       <div class="prose"><p>Turnstil supports installation as a Progressive Web App for a native app-like experience on mobile devices.</p></div>
       <h3>Features</h3>
       <div class="prose"><ul>
-        <li><strong>Add to Home Screen</strong> — users can install Turnstil to their device's home screen</li>
-        <li><strong>Standalone mode</strong> — runs without browser chrome when launched from the home screen</li>
-        <li><strong>Offline caching</strong> — service worker caches static assets and serves cached content when offline</li>
-        <li><strong>App icons</strong> — 192×192 and 512×512 SVG icons (maskable)</li>
-        <li><strong>Apple support</strong> — includes Apple-specific meta tags for iOS home screen integration</li>
+        <li><strong>Add to Home Screen</strong> — users can install Turnstil to their device's home screen via the browser's install prompt</li>
+        <li><strong>Standalone mode</strong> — runs without browser chrome when launched from the home screen, providing a native app feel</li>
+        <li><strong>App icons</strong> — 192×192 and 512×512 SVG icons with <code>maskable</code> purpose for Android adaptive icons</li>
+        <li><strong>Apple support</strong> — includes <code>apple-mobile-web-app-capable</code> and <code>apple-mobile-web-app-status-bar-style</code> meta tags for iOS home screen integration</li>
+        <li><strong>Theme color</strong> — status bar and app frame use <code>#1c1c21</code> to match the dark UI</li>
       </ul></div>
+      <div class="prose"><p>The PWA manifest is served at <code>/static/manifest.json</code> and referenced in the <code>&lt;head&gt;</code> of every page.</p></div>
       <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-pwa-mobile.png --></div>
       <h3>Camera &amp; HTTPS</h3>
       <div class="prose"><p>QR scanning requires camera access, which browsers only allow over HTTPS. For local development, <a href="https://ngrok.com" target="_blank" rel="noopener">ngrok</a> can be used to provide an HTTPS tunnel.</p></div>
@@ -687,19 +816,104 @@
           <tr><td><span class="api-method m-get">GET</span></td><td><code>/api/events/&lt;uuid&gt;/staff</code></td><td>List event staff</td><td>JWT</td></tr>
           <tr><td><span class="api-method m-post">POST</span></td><td><code>/api/events/&lt;uuid&gt;/staff</code></td><td>Assign staff to event</td><td>Organizer+</td></tr>
           <tr><td><span class="api-method m-delete">DELETE</span></td><td><code>/api/events/&lt;uuid&gt;/staff</code></td><td>Remove staff from event</td><td>Organizer+</td></tr>
-          <tr><td><span class="api-method m-get">GET</span></td><td><code>/api/events/&lt;uuid&gt;/dashboard</code></td><td>Event stats &amp; recent scans</td><td>Event Staff</td></tr>
+          <tr><td><span class="api-method m-get">GET</span></td><td><code>/api/events/&lt;uuid&gt;/dashboard</code></td><td>Event stats, counts &amp; 20 most recent scans</td><td>Event Staff</td></tr>
+          <tr><td><span class="api-method m-get">GET</span></td><td><code>/api/events/&lt;uuid&gt;/attendees.csv</code></td><td>Download attendee list as CSV</td><td>Event Staff</td></tr>
         </tbody>
       </table></div>
+      <h3>CSV Export</h3>
+      <div class="prose"><p>The CSV export endpoint returns an attendee list as a downloadable file. Only the event creator, assigned staff, or admins can access it.</p></div>
+      <div class="code-block"><span class="code-label">HTTP</span><pre><span class="hl-keyword">GET</span> <span class="hl-string">/api/events/&lt;uuid&gt;/attendees.csv</span>
+
+<span class="hl-comment"># Response: CSV file download</span>
+<span class="hl-comment"># Columns: Name, Email, Organization, Phone, Status, Registered At, Checked In At</span>
+<span class="hl-comment"># Filename: {event_name}_attendees.csv</span>
+<span class="hl-comment"># Excludes canceled registrations, sorted by name</span></pre></div>
+
+      <h3>Event Dashboard</h3>
+      <div class="prose"><p>The dashboard endpoint returns live event statistics and the 20 most recent scan logs. Used by the event detail page to display real-time stats.</p></div>
+      <div class="code-block"><span class="code-label">JSON</span><pre><span class="hl-keyword">GET</span> <span class="hl-string">/api/events/&lt;uuid&gt;/dashboard</span>
+
+<span class="hl-comment">// Response</span>
+{
+  <span class="hl-string">"event"</span>: { <span class="hl-comment">/* full event object */</span> },
+  <span class="hl-string">"stats"</span>: {
+    <span class="hl-string">"registered"</span>: <span class="hl-num">42</span>,
+    <span class="hl-string">"checked_in"</span>: <span class="hl-num">28</span>,
+    <span class="hl-string">"capacity"</span>: <span class="hl-num">100</span>,
+    <span class="hl-string">"is_full"</span>: <span class="hl-keyword">false</span>
+  },
+  <span class="hl-string">"recent_scans"</span>: [ <span class="hl-comment">/* last 20 ScanLog entries */</span> ]
+}</pre></div>
+
       <h3>Check-In</h3>
       <div class="table-wrap"><table>
         <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
         <tbody><tr><td><span class="api-method m-post">POST</span></td><td><code>/api/checkin</code></td><td>Process QR scan for attendance</td><td>Event Staff</td></tr></tbody>
       </table></div>
+      <div class="prose"><p><strong>Request body:</strong></p></div>
+      <div class="code-block"><span class="code-label">JSON</span><pre>{
+  <span class="hl-string">"person_uuid"</span>: <span class="hl-string">"&lt;person-uuid&gt;"</span>,
+  <span class="hl-string">"event_uuid"</span>: <span class="hl-string">"&lt;event-uuid&gt;"</span>
+}</pre></div>
+      <div class="prose"><p><strong>Response codes:</strong></p></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>HTTP</th><th>Code</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>200</code></td><td><code>success</code></td><td>Attendee checked in — returns <code>person_name</code>, <code>checked_in_at</code>, <code>event_name</code></td></tr>
+          <tr><td><code>200</code></td><td><code>success</code></td><td>Walk-in auto-registered and checked in (when <code>allow_walkins</code> is enabled)</td></tr>
+          <tr><td><code>403</code></td><td><code>UNAUTHORIZED</code></td><td>User is not staff for the specified event</td></tr>
+          <tr><td><code>404</code></td><td><code>INVALID</code></td><td>Person UUID does not exist in the system</td></tr>
+          <tr><td><code>404</code></td><td><code>NOT_REGISTERED</code></td><td>Person is not registered for this event and walk-ins are disabled</td></tr>
+          <tr><td><code>409</code></td><td><code>DUPLICATE_CHECKIN</code></td><td>Person is already checked in — returns original <code>checked_in_at</code> timestamp</td></tr>
+          <tr><td><code>409</code></td><td><code>TICKET_CANCELED</code></td><td>The person's registration was canceled</td></tr>
+          <tr><td><code>409</code></td><td><code>EVENT_FULL</code></td><td>Walk-in denied because event is at capacity</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout callout-info"><div class="callout-icon">i</div><div>Every scan attempt — successful or not — is recorded in the <code>ScanLog</code> with the result code, person UUID, actor, and timestamp. This ensures a complete audit trail even for failed scans.</div></div>
       <h3>Logs</h3>
       <div class="table-wrap"><table>
         <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
         <tbody><tr><td><span class="api-method m-get">GET</span></td><td><code>/api/logs</code></td><td>List scan logs (filter by <code>?event=</code> or <code>?result=</code>)</td><td>Admin</td></tr></tbody>
       </table></div>
+      <div class="prose"><p><strong>Query parameters:</strong></p>
+        <ul>
+          <li><code>?event=&lt;uuid&gt;</code> — filter logs to a specific event</li>
+          <li><code>?result=success|duplicate|not_registered|invalid|wrong_event|event_inactive</code> — filter by result type</li>
+        </ul>
+        <p>Each log entry includes: <code>event</code>, <code>person_name</code>, <code>actor_name</code>, <code>result</code>, <code>scanned_value</code>, <code>metadata</code> (JSON), and <code>timestamp</code>.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- DATA MODEL -->
+    <div class="section" id="datamodel">
+      <div class="section-title">Data <span style="color:var(--lavender)">Model</span></div>
+      <div class="section-desc">Turnstil uses six Django models. Understanding the relationships between them helps when working with the API or extending the platform.</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Model</th><th>Primary Key</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>User</strong></td><td>Auto int</td><td>Extends Django's AbstractUser with a <code>role</code> field (attendee, staff, organizer, admin). One-to-one link to Person via <code>user.person</code></td></tr>
+          <tr><td><strong>Person</strong></td><td>UUID</td><td>Identity and contact info. The UUID is the QR code payload. Fields: name, email, organization, phone, links (JSON), visibility (JSON)</td></tr>
+          <tr><td><strong>Event</strong></td><td>UUID</td><td>Event details with registration windows, capacity, walk-in toggle. Has a <code>created_by</code> FK to User and a <code>staff</code> M2M to User</td></tr>
+          <tr><td><strong>Ticket</strong></td><td>UUID</td><td>Links a Person to an Event with status tracking. Unique constraint on (person, event) — one ticket per person per event</td></tr>
+          <tr><td><strong>EventReminder</strong></td><td>Auto int</td><td>Tracks which reminder emails have been sent to prevent duplicates. Unique constraint on (event, hours_before)</td></tr>
+          <tr><td><strong>ScanLog</strong></td><td>UUID</td><td>Audit trail of every scan attempt. Records event, person, actor (who scanned), result code, raw scanned value, and metadata (JSON)</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Key Relationships</h3>
+      <div class="prose"><ul>
+        <li><strong>User → Person</strong> — one-to-one. Created together during registration. The Person holds the UUID/QR identity; the User holds login credentials and role</li>
+        <li><strong>Person → Ticket → Event</strong> — many-to-many through Ticket. Each Ticket tracks registration status and check-in time</li>
+        <li><strong>Event → User (staff)</strong> — many-to-many. Staff can scan check-ins for events they're assigned to. Event creators are auto-assigned</li>
+        <li><strong>Event → ScanLog</strong> — one-to-many. Every scan attempt for an event is logged, whether it succeeds or fails</li>
+      </ul></div>
+      <h3>Ticket Status Lifecycle</h3>
+      <div class="prose"><ul>
+        <li><code>ISSUED</code> → <code>CHECKED_IN</code> — normal check-in flow via scanner</li>
+        <li><code>ISSUED</code> → <code>CANCELED</code> — registration canceled</li>
+        <li><code>CANCELED</code> → <code>ISSUED</code> — re-registration reactivates canceled tickets</li>
+        <li><code>ISSUED</code> → <code>EXPIRED</code> — event has ended (not currently auto-set)</li>
+      </ul></div>
     </div>
     <div class="divider"></div>
 
