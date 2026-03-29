@@ -114,9 +114,6 @@
   .callout-tip { background: rgba(126,221,181,0.08); color: var(--mint); }
   .callout-tip .callout-icon { background: var(--mint); color: var(--bg); }
 
-  .img-placeholder { width: 100%; border-radius: var(--r-md); background: var(--s1); border: 1.5px dashed var(--s4); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; padding: 32px 20px; margin: 16px 0 20px; color: var(--text-3); font-size: 12px; font-weight: 500; transition: border-color 0.3s; }
-  .img-placeholder:hover { border-color: var(--lavender); }
-  .img-placeholder svg { width: 28px; height: 28px; stroke: var(--text-3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
   .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
   .feature-card { background: var(--s1); border-radius: var(--r-lg); padding: 22px; transition: transform 0.5s var(--ease-out-expo), background 0.3s; }
@@ -153,6 +150,63 @@
   .page-footer a:hover { color: var(--lavender); }
   .footer-sqsy-logo { width: 48px; height: 48px; border-radius: var(--r-sm); background: var(--s2); display: inline-grid; place-items: center; margin-bottom: 12px; overflow: hidden; transition: transform 0.5s var(--ease-out-expo); }
   .footer-sqsy-logo:hover { transform: scale(1.06) rotate(-3deg); }
+
+  /* ── Mockup preview frames ── */
+  .mockup { background: var(--bg); border: 1px solid var(--s3); border-radius: var(--r-lg); overflow: hidden; margin: 16px 0 20px; font-size: 12px; color: var(--text-2); }
+  .mockup-bar { background: var(--s1); padding: 8px 14px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--s3); }
+  .mockup-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mockup-dot:nth-child(1) { background: var(--rose); opacity: .6; }
+  .mockup-dot:nth-child(2) { background: var(--lemon); opacity: .6; }
+  .mockup-dot:nth-child(3) { background: var(--mint); opacity: .6; }
+  .mockup-url { margin-left: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-3); background: var(--s2); padding: 3px 10px; border-radius: 4px; flex: 1; }
+  .mockup-body { padding: 20px; }
+  .mockup-sidebar { display: grid; grid-template-columns: 48px 1fr; min-height: 200px; }
+  .mockup-nav { background: var(--s1); border-right: 1px solid var(--s3); padding: 12px 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .mockup-nav-dot { width: 24px; height: 24px; border-radius: 6px; background: var(--s3); }
+  .mockup-nav-dot.active { background: rgba(126,221,181,0.15); }
+  .mockup-main { padding: 16px 20px; flex: 1; }
+  .m-card { background: var(--s1); border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--s3); }
+  .m-btn { display: inline-block; padding: 5px 14px; border-radius: 8px; font-size: 10px; font-weight: 600; }
+  .m-btn-lav { background: var(--lavender); color: var(--bg); }
+  .m-btn-sky { background: var(--sky); color: var(--bg); }
+  .m-btn-mint { background: var(--mint); color: var(--bg); }
+  .m-btn-outline { border: 1px solid var(--s4); color: var(--text-2); }
+  .m-input { background: var(--s2); border: 1px solid var(--s3); border-radius: 6px; padding: 5px 10px; color: var(--text-3); font-size: 10px; width: 100%; margin: 3px 0; display: block; }
+  .m-label { font-size: 10px; color: var(--text-2); font-weight: 600; margin-top: 6px; display: block; }
+  .m-h2 { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; color: var(--text-1); margin-bottom: 4px; }
+  .m-h3 { font-size: 11px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
+  .m-muted { font-size: 10px; color: var(--text-3); }
+  .m-badge { font-size: 9px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .m-badge-mint { color: var(--mint); background: rgba(126,221,181,0.12); }
+  .m-badge-sky { color: var(--sky); background: rgba(130,196,238,0.12); }
+  .m-badge-rose { color: var(--rose); background: rgba(242,160,184,0.12); }
+  .m-badge-peach { color: var(--peach); background: rgba(240,184,136,0.12); }
+  .m-row { display: flex; align-items: center; gap: 8px; }
+  .m-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .m-table { width: 100%; font-size: 10px; border-collapse: collapse; }
+  .m-table th { text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3); font-weight: 600; padding: 6px 8px; background: var(--s2); }
+  .m-table td { padding: 5px 8px; border-top: 1px solid var(--s3); color: var(--text-2); }
+  .m-qr { width: 80px; height: 80px; background: #fff; border-radius: 8px; display: grid; place-items: center; margin: 8px auto; }
+  .m-qr-lg { width: 140px; height: 140px; background: #fff; border-radius: var(--r-md); display: grid; place-items: center; margin: 12px auto; }
+  .m-qr-inner { width: 60%; height: 60%; background: repeating-conic-gradient(var(--bg) 0% 25%, #fff 0% 50%) 0 0 / 8px 8px; border-radius: 2px; }
+  .m-camera { background: var(--s2); border-radius: var(--r-sm); height: 120px; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 10px; border: 1.5px dashed var(--s4); margin-bottom: 8px; flex-direction: column; gap: 4px; }
+  .m-camera svg { width: 20px; height: 20px; stroke: var(--text-3); fill: none; stroke-width: 1.5; }
+  .m-stat { text-align: center; background: var(--s1); border-radius: var(--r-sm); padding: 10px 8px; border: 1px solid var(--s3); }
+  .m-stat-num { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; color: var(--text-1); }
+  .m-stat-label { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .m-progress { height: 4px; background: var(--s3); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .m-progress-fill { height: 100%; border-radius: 2px; }
+  .m-tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+  .m-tab { font-size: 10px; font-weight: 600; padding: 4px 12px; border-radius: 6px; color: var(--text-3); background: transparent; }
+  .m-tab.active { background: rgba(130,196,238,0.12); color: var(--sky); }
+  .m-checkbox { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-2); margin: 2px 0; }
+  .m-checkbox::before { content: ''; width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--s4); display: inline-block; flex-shrink: 0; }
+  .m-checkbox.checked::before { background: var(--mint); border-color: var(--mint); }
+  .m-scan-ok { background: rgba(126,221,181,0.08); border: 1px solid rgba(126,221,181,0.2); border-radius: var(--r-sm); padding: 8px 12px; font-size: 10px; color: var(--mint); margin-bottom: 6px; }
+  .m-scan-dup { background: rgba(226,212,120,0.08); border: 1px solid rgba(226,212,120,0.2); border-radius: var(--r-sm); padding: 8px 12px; font-size: 10px; color: var(--lemon); margin-bottom: 6px; }
+  .m-phone { max-width: 180px; margin: 0 auto; background: var(--s1); border-radius: 20px; border: 2px solid var(--s3); padding: 8px; }
+  .m-phone-screen { background: var(--bg); border-radius: 14px; padding: 12px; min-height: 200px; }
+  .m-phone-notch { width: 60px; height: 4px; background: var(--s3); border-radius: 2px; margin: 0 auto 8px; }
 </style>
 </head>
 <body>
@@ -241,9 +295,28 @@
           <div class="feature-card-desc">Scan anyone's QR to see their contact card — privacy controls let users choose what's visible.</div>
         </div>
       </div>
-      <div class="img-placeholder" style="height:200px">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <!-- REPLACE: screenshot-overview.png -->
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app</div></div>
+        <div class="mockup-sidebar">
+          <div class="mockup-nav">
+            <div style="width:20px;height:20px;background:var(--mint);border-radius:5px;font-family:'Fraunces',serif;font-size:9px;font-weight:700;display:grid;place-items:center;color:var(--bg);">T</div>
+            <div class="mockup-nav-dot active"></div>
+            <div class="mockup-nav-dot"></div>
+            <div class="mockup-nav-dot"></div>
+            <div class="mockup-nav-dot"></div>
+          </div>
+          <div class="mockup-main">
+            <div class="m-h2" style="margin-bottom:2px;">Welcome to <span style="color:var(--mint)">Turnstil</span></div>
+            <div class="m-muted" style="margin-bottom:12px;">One QR code. Every event. Seamless check-in and networking.</div>
+            <div class="m-grid" style="margin-bottom:12px;">
+              <div class="m-card"><div class="m-h3">For Attendees</div><div class="m-muted">Register once, get your personal QR code.</div><div style="margin-top:8px;"><span class="m-btn m-btn-lav">Get Started</span></div></div>
+              <div class="m-card"><div class="m-h3">For Organizers</div><div class="m-muted">Create events, scan attendees at the door.</div><div style="margin-top:8px;"><span class="m-btn m-btn-outline">Sign In</span></div></div>
+            </div>
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);font-weight:700;margin-bottom:6px;">Upcoming Events</div>
+            <div class="m-card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="m-h3" style="margin:0;">Spring Tech Meetup</div><div class="m-muted">Mar 30, 2026 · Lark Hall</div></div><span class="m-badge m-badge-mint">Active</span></div></div>
+            <div class="m-card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="m-h3" style="margin:0;">Hackathon Kickoff</div><div class="m-muted">Apr 2, 2026 · Innovation Lab</div></div><span class="m-badge m-badge-sky">Upcoming</span></div></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="divider"></div>
@@ -494,7 +567,21 @@
         </ul>
         <p>Registration creates two linked records: a <strong>User</strong> (for login credentials and role) and a <strong>Person</strong> (for identity, contact info, and QR code). The Person is assigned a permanent UUID that becomes the payload of their QR code. New accounts default to the <strong>attendee</strong> role.</p>
         <p>After registering, users are automatically logged in and redirected to their profile.</p></div>
-      <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-registration.png --></div>
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app/register/</div></div>
+        <div class="mockup-body" style="display:flex;justify-content:center;">
+          <div class="m-card" style="max-width:280px;width:100%;">
+            <div class="m-h2" style="margin-bottom:8px;">Create Your Account</div>
+            <div class="m-label">Full Name</div><div class="m-input">Jane Doe</div>
+            <div class="m-label">Username</div><div class="m-input">janedoe</div>
+            <div class="m-label">Email</div><div class="m-input">jane@example.com</div>
+            <div class="m-label">Organization (optional)</div><div class="m-input">Acme Corp</div>
+            <div class="m-label">Password</div><div class="m-input">••••••••</div>
+            <div style="margin-top:10px;"><span class="m-btn m-btn-lav" style="display:block;text-align:center;padding:7px;">Register &amp; Get My QR Code</span></div>
+            <div class="m-muted" style="margin-top:8px;">Already have an account? <span style="color:var(--sky);">Sign in</span></div>
+          </div>
+        </div>
+      </div>
       <h3>Login / Logout</h3>
       <div class="prose"><p>Session-based login is used for all web pages. After login, users are redirected based on their role:</p>
         <ul>
@@ -527,7 +614,19 @@
         <li><strong>Profile page</strong> — shows a thumbnail of the QR code with a link to the fullscreen view.</li>
         <li><strong>Fullscreen view</strong> (<code>/profile/qr/</code>) — displays the QR code at full size along with the user's name and organization. Includes a download button that saves the QR as a PNG file.</li>
       </ul></div>
-      <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-qr-fullscreen.png --></div>
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app/profile/qr/</div></div>
+        <div class="mockup-body" style="text-align:center;padding:24px 20px;">
+          <div class="m-qr-lg"><div class="m-qr-inner"></div></div>
+          <div class="m-h2" style="margin-top:8px;">Jane Doe</div>
+          <div class="m-muted">Acme Corp</div>
+          <div class="m-muted" style="margin-top:4px;margin-bottom:10px;">Scan to check in or connect</div>
+          <div class="m-row" style="justify-content:center;gap:6px;">
+            <span class="m-btn m-btn-outline">Download QR</span>
+            <span class="m-btn m-btn-outline">← Back to Profile</span>
+          </div>
+        </div>
+      </div>
       <h3>QR Code Generation</h3>
       <div class="prose"><p>QR codes are generated on demand as PNG images via the API at <code>/api/people/&lt;uuid&gt;/qr</code>. The QR encodes only the Person UUID — no personal data is embedded in the code itself. Only the person themselves or an admin can download the QR image.</p></div>
       <h3>QR Code Download</h3>
@@ -549,7 +648,34 @@
         </tbody>
       </table></div>
       <div class="prose"><p>Visibility settings are managed on the profile page under checkboxes labeled "Visible when others scan your QR." These settings are enforced on the public contact card page and the Discovery mode scanner results.</p></div>
-      <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-privacy-settings.png --></div>
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app/profile/</div></div>
+        <div class="mockup-sidebar">
+          <div class="mockup-nav">
+            <div style="width:20px;height:20px;background:var(--mint);border-radius:5px;font-size:9px;font-weight:700;display:grid;place-items:center;color:var(--bg);font-family:'Fraunces',serif;">T</div>
+            <div class="mockup-nav-dot"></div>
+            <div class="mockup-nav-dot active"></div>
+            <div class="mockup-nav-dot"></div>
+          </div>
+          <div class="mockup-main">
+            <div class="m-h2">My Profile</div>
+            <div class="m-muted" style="margin-bottom:10px;">Your QR code: <code style="font-size:9px;">a1b2c3d4-...</code></div>
+            <div class="m-card">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);font-weight:700;margin-bottom:6px;">Personal Info</div>
+              <div class="m-label">Name</div><div class="m-input">Jane Doe</div>
+              <div class="m-label">Email</div><div class="m-input">jane@example.com</div>
+              <div class="m-label">Organization</div><div class="m-input">Acme Corp</div>
+              <div class="m-label">Phone</div><div class="m-input" style="color:var(--text-3);">(555) 123-4567</div>
+              <div style="margin-top:8px;font-size:10px;font-weight:600;color:var(--text-1);margin-bottom:4px;">Visible when others scan your QR:</div>
+              <div class="m-checkbox checked">Email</div>
+              <div class="m-checkbox checked">Organization</div>
+              <div class="m-checkbox">Phone</div>
+              <div class="m-checkbox checked">Links</div>
+              <div style="margin-top:8px;"><span class="m-btn m-btn-sky">Save Changes</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="divider"></div>
 
@@ -621,7 +747,55 @@
           <tr><td><code>event_inactive</code></td><td>Event is not currently active</td></tr>
         </tbody>
       </table></div>
-      <div class="img-placeholder" style="height:260px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-scanner.png --></div>
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app/scanner/</div></div>
+        <div class="mockup-sidebar">
+          <div class="mockup-nav">
+            <div style="width:20px;height:20px;background:var(--mint);border-radius:5px;font-size:9px;font-weight:700;display:grid;place-items:center;color:var(--bg);font-family:'Fraunces',serif;">T</div>
+            <div class="mockup-nav-dot"></div>
+            <div class="mockup-nav-dot"></div>
+            <div class="mockup-nav-dot active"></div>
+          </div>
+          <div class="mockup-main">
+            <div class="m-h2">Scanner</div>
+            <div class="m-card" style="margin-bottom:10px;padding:8px 12px;">
+              <div class="m-row"><span style="color:var(--mint);font-size:10px;font-weight:600;">● Spring Tech Meetup</span><span class="m-muted" style="margin-left:auto;">Lark Hall</span></div>
+            </div>
+            <div class="m-grid">
+              <div>
+                <div class="m-tab-bar">
+                  <div class="m-tab active">Attendance</div>
+                  <div class="m-tab">Discovery</div>
+                </div>
+                <div class="m-camera">
+                  <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Camera feed
+                </div>
+                <div class="m-card" style="padding:6px 10px;">
+                  <div class="m-muted" style="margin-bottom:3px;">Manual UUID Entry</div>
+                  <div class="m-row"><div class="m-input" style="margin:0;flex:1;">Paste UUID here…</div><span class="m-btn m-btn-sky" style="padding:4px 8px;">Go</span></div>
+                </div>
+                <div class="m-card" style="padding:6px 10px;margin-top:6px;">
+                  <div class="m-muted" style="margin-bottom:3px;">Search by Name</div>
+                  <div class="m-input" style="margin:0;">Search attendees…</div>
+                </div>
+              </div>
+              <div>
+                <div class="m-scan-ok">✓ <strong style="color:var(--text-1);">Alice Johnson</strong> — Checked in</div>
+                <div class="m-scan-dup">⚠ <strong style="color:var(--text-1);">Bob Smith</strong> — Already checked in</div>
+                <div class="m-card">
+                  <div class="m-h3">Scan History</div>
+                  <div style="display:flex;flex-direction:column;gap:3px;">
+                    <div class="m-row"><span style="color:var(--mint);">●</span><span>Alice Johnson</span><span class="m-muted" style="margin-left:auto;">2:14 PM</span></div>
+                    <div class="m-row"><span style="color:var(--lemon);">●</span><span>Bob Smith</span><span class="m-muted" style="margin-left:auto;">2:13 PM</span></div>
+                    <div class="m-row"><span style="color:var(--mint);">●</span><span>Carol Davis</span><span class="m-muted" style="margin-left:auto;">2:11 PM</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <h3>Discovery Mode (All Users)</h3>
       <div class="prose"><p>Used for networking and contact exchange. Scanning a QR code in Discovery mode fetches the person's contact card, showing only the fields they've made visible through their privacy settings.</p></div>
       <h3>Scanner Features</h3>
@@ -643,7 +817,26 @@
       <div class="section-title">Contact Sharing &amp; <span style="color:var(--sky)">Discovery</span></div>
       <h3>Public Contact Card</h3>
       <div class="prose"><p>Each user has a public contact card at <code>/contact/&lt;uuid&gt;/</code>. This page displays the user's name and any contact fields they've made visible. Email addresses render as <code>mailto:</code> links and phone numbers as <code>tel:</code> links.</p></div>
-      <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-contact-card.png --></div>
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app/contact/a1b2c3d4-…/</div></div>
+        <div class="mockup-body" style="display:flex;justify-content:center;">
+          <div class="m-card" style="max-width:300px;width:100%;">
+            <div class="m-h2">Jane Doe</div>
+            <div class="m-muted" style="margin-bottom:10px;">Contact Card</div>
+            <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;">
+              <div class="m-row"><span style="color:var(--text-3);">🏢</span> Acme Corp</div>
+              <div class="m-row"><span style="color:var(--text-3);">✉</span> <span style="color:var(--sky);">jane@example.com</span></div>
+              <div style="margin-top:6px;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);font-weight:700;">Links</div>
+              <div class="m-row"><span style="color:var(--text-3);">↗</span> <strong>GitHub:</strong> <span style="color:var(--sky);">github.com/janedoe</span></div>
+              <div class="m-row"><span style="color:var(--text-3);">↗</span> <strong>LinkedIn:</strong> <span style="color:var(--sky);">linkedin.com/in/janedoe</span></div>
+            </div>
+            <div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--s3);display:flex;justify-content:space-between;align-items:center;">
+              <span class="m-muted">Shared via Turnstil</span>
+              <span class="m-btn m-btn-outline">Get your QR code</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <h3>Profile Editing</h3>
       <div class="prose"><p>Users manage their contact information from the profile page, which has two tabs:</p>
         <ul>
@@ -677,7 +870,35 @@
           <li>Click-through to the event detail page</li>
         </ul>
       </div>
-      <div class="img-placeholder" style="height:220px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-dashboard.png --></div>
+      <div class="mockup">
+        <div class="mockup-bar"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-url">turnstil.app/dashboard/</div></div>
+        <div class="mockup-sidebar">
+          <div class="mockup-nav">
+            <div style="width:20px;height:20px;background:var(--mint);border-radius:5px;font-size:9px;font-weight:700;display:grid;place-items:center;color:var(--bg);font-family:'Fraunces',serif;">T</div>
+            <div class="mockup-nav-dot active"></div>
+            <div class="mockup-nav-dot"></div>
+            <div class="mockup-nav-dot"></div>
+          </div>
+          <div class="mockup-main">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div><div class="m-h2">Dashboard</div><div class="m-muted">Event management overview</div></div>
+              <div class="m-row" style="gap:4px;"><span class="m-btn m-btn-mint">+ Create Event</span><span class="m-btn m-btn-outline">My Events</span></div>
+            </div>
+            <div class="m-tab-bar">
+              <div class="m-tab active">Events</div>
+              <div class="m-tab">Users</div>
+            </div>
+            <table class="m-table">
+              <thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Reg</th><th>In</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td style="color:var(--text-1);font-weight:500;">Spring Tech Meetup</td><td>Mar 30</td><td>Lark Hall</td><td>42</td><td>28</td><td><span class="m-badge m-badge-mint">Active</span></td><td><span class="m-btn m-btn-outline" style="padding:2px 6px;">CSV</span></td></tr>
+                <tr><td style="color:var(--text-1);font-weight:500;">Hackathon Kickoff</td><td>Apr 2</td><td>Innovation Lab</td><td>87</td><td>0</td><td><span class="m-badge m-badge-sky">Upcoming</span></td><td><span class="m-btn m-btn-outline" style="padding:2px 6px;">CSV</span></td></tr>
+                <tr><td style="color:var(--text-1);font-weight:500;">Career Fair 2026</td><td>Apr 13</td><td>Grand Ballroom</td><td>200</td><td>0</td><td><span class="m-badge m-badge-sky">Upcoming</span></td><td><span class="m-btn m-btn-outline" style="padding:2px 6px;">CSV</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <h3>User Management (Admin Only)</h3>
       <div class="prose"><p>Admins see a <strong>Users</strong> tab on the dashboard with full user management capabilities:</p>
         <ul>
@@ -770,7 +991,36 @@
         <li><strong>Theme color</strong> — status bar and app frame use <code>#1c1c21</code> to match the dark UI</li>
       </ul></div>
       <div class="prose"><p>The PWA manifest is served at <code>/static/manifest.json</code> and referenced in the <code>&lt;head&gt;</code> of every page.</p></div>
-      <div class="img-placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><!-- REPLACE: screenshot-pwa-mobile.png --></div>
+      <div style="display:flex;gap:24px;justify-content:center;margin:16px 0 20px;">
+        <div class="m-phone">
+          <div class="m-phone-screen">
+            <div class="m-phone-notch"></div>
+            <div style="text-align:center;margin-bottom:8px;">
+              <div style="width:32px;height:32px;background:var(--mint);border-radius:8px;display:inline-grid;place-items:center;font-family:'Fraunces',serif;font-weight:700;font-size:14px;color:var(--bg);">T</div>
+            </div>
+            <div class="m-h3" style="text-align:center;font-size:12px;">Scanner</div>
+            <div class="m-camera" style="height:80px;margin:6px 0;">
+              <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span style="font-size:8px;">Camera</span>
+            </div>
+            <div class="m-scan-ok" style="padding:4px 8px;font-size:8px;margin-bottom:4px;">✓ Alice — Checked in</div>
+            <div class="m-muted" style="text-align:center;font-size:8px;">Standalone PWA mode</div>
+          </div>
+        </div>
+        <div class="m-phone">
+          <div class="m-phone-screen">
+            <div class="m-phone-notch"></div>
+            <div style="text-align:center;margin-bottom:8px;">
+              <div style="width:32px;height:32px;background:var(--mint);border-radius:8px;display:inline-grid;place-items:center;font-family:'Fraunces',serif;font-weight:700;font-size:14px;color:var(--bg);">T</div>
+            </div>
+            <div class="m-h3" style="text-align:center;font-size:12px;">My QR Code</div>
+            <div class="m-qr" style="width:64px;height:64px;margin:6px auto;"><div class="m-qr-inner"></div></div>
+            <div style="text-align:center;font-size:9px;color:var(--text-1);font-weight:500;">Jane Doe</div>
+            <div class="m-muted" style="text-align:center;font-size:8px;margin-bottom:6px;">Acme Corp</div>
+            <div style="text-align:center;"><span class="m-btn m-btn-outline" style="font-size:8px;padding:3px 8px;">Download</span></div>
+          </div>
+        </div>
+      </div>
       <h3>Camera &amp; HTTPS</h3>
       <div class="prose"><p>QR scanning requires camera access, which browsers only allow over HTTPS. For local development, <a href="https://ngrok.com" target="_blank" rel="noopener">ngrok</a> can be used to provide an HTTPS tunnel.</p></div>
       <div class="code-block"><pre><span class="hl-comment"># Expose local dev server via ngrok</span>
