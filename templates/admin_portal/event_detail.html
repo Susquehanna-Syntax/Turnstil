@@ -49,7 +49,7 @@
     <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
 
     {% if user.is_authenticated %}
-        <form method="post" style="margin:0; height:100%;">
+        <form method="post" style="margin:0; display:flex;">
             {% csrf_token %}
             {% if is_registered %}
                 <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
@@ -62,7 +62,7 @@
     <a href="{% url 'scanner' %}" class="btn btn-filled-lemon btn-block">Open Scanner</a>
 
     {% if user.is_organizer_or_above or event.created_by == user %}
-    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin:0; height:100%;">
+    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin:0; display:flex;">
         {% csrf_token %}
         {% if event.allow_walkins %}
             <button type="submit" class="btn btn-filled-mint btn-block">Walk-ins ON</button>

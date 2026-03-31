@@ -112,18 +112,14 @@
         .sidebar-logo {
             width: 38px;
             height: 38px;
-            background: var(--lavender);
             border-radius: var(--r-sm);
             display: grid;
             place-items: center;
-            font-family: 'Fraunces', serif;
-            font-weight: 700;
-            font-size: 17px;
-            color: var(--bg);
             text-decoration: none;
             transition: transform 0.5s var(--ease-out-expo);
             margin-bottom: 14px;
             flex-shrink: 0;
+            overflow: hidden;
         }
         .sidebar-logo:hover { transform: rotate(-8deg) scale(1.08); text-decoration: none; }
         .sidebar-spacer { flex: 1; }
@@ -606,6 +602,9 @@
         button[type="submit"], button[type="button"] {
             margin-top: 20px;
         }
+        .stat-grid button[type="submit"], .stat-grid button[type="button"] {
+            margin-top: 0;
+        }
         .form-styled input,
         .form-styled select,
         .form-styled textarea {
@@ -924,7 +923,7 @@
 
     {# ── Sidebar ── #}
     <aside class="sidebar">
-        <a href="{% url 'home' %}" class="sidebar-logo" data-tip="Turnstil">⎔</a>
+        <a href="{% url 'home' %}" class="sidebar-logo" data-tip="Turnstil"><img src="/static/icons/turnstilLogo.png" alt="Turnstil" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;"></a>
 
         {% with url_name=request.resolver_match.url_name %}
 
