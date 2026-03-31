@@ -19,6 +19,7 @@ import logging
 from datetime import datetime
 
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
@@ -256,8 +257,14 @@ def event_create_page(request):
 
         serializer = EventCreateSerializer(data=data)
         if serializer.is_valid():
-            # Save the event, passing created_by separately
-            event = serializer.save(created_by=request.user)
+            try:
+                # Save the event, passing created_by separately
+                event = serializer.save(created_by=request.user)
+            except ValidationError as e:
+                return render(request, 'admin_portal/event_create.html', {
+                    'errors': e.message_dict if hasattr(e, 'message_dict') else {'__all__': e.messages},
+                    'data': data
+                })
             event.staff.add(request.user)
 <<<<<<< HEAD
 =======
