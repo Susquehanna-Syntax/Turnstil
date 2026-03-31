@@ -6,21 +6,129 @@
     <h2>My Events</h2>
 </div>
 
+<<<<<<< HEAD
 <div style="margin-bottom: 24px;" class="fade-up fade-up-1">
+=======
+<div class="flex gap-8 fade-up fade-up-1" style="margin-bottom:24px; flex-wrap:wrap;">
+    <a href="{% url 'dashboard' %}" class="btn btn-filled-rose">← Dashboard</a>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create New Event</a>
 </div>
 
 <div class="fade-up fade-up-2">
     {% for event in events %}
+<<<<<<< HEAD
     <div class="list-item">
         <div style="flex: 1;">
             <strong>{{ event.name }}</strong>
             <small class="text-muted" style="display: block; margin-top: 2px;">{{ event.start_time|date:"M j, Y" }}</small>
         </div>
         <a href="{% url 'event-edit' event.id %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Edit</a>
+=======
+    <div class="list-item"
+         data-event-id="{{ event.id }}"
+         data-event-name="{{ event.name }}"
+         data-event-description="{{ event.description }}"
+         data-event-location="{{ event.location }}"
+         data-event-start="{{ event.start_time|date:'Y-m-d\TH:i' }}"
+         data-event-end="{{ event.end_time|date:'Y-m-d\TH:i' }}"
+         data-event-reg-open="{{ event.reg_open|date:'Y-m-d\TH:i' }}"
+         data-event-reg-close="{{ event.reg_close|date:'Y-m-d\TH:i' }}"
+         data-event-capacity="{{ event.capacity }}"
+         data-event-link="{{ event.external_link|default_if_none:'' }}">
+        <div style="flex:1;">
+            <strong>{{ event.name }}</strong>
+            <small class="text-muted" style="display:block; margin-top:2px;">
+                {{ event.start_time|date:"M j, Y" }}
+                {% if event.location %} · {{ event.location }}{% endif %}
+            </small>
+        </div>
+        <button type="button" class="btn btn-filled-peach btn-sm" style="font-size:12px; padding:7px 16px;" onclick="openEditModal(this.closest('.list-item'))">Edit</button>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     </div>
     {% empty %}
     <p class="text-muted">No events yet.</p>
     {% endfor %}
 </div>
+<<<<<<< HEAD
+=======
+
+<!-- Edit event modal -->
+<div id="edit-modal" class="modal-overlay" onclick="closeModal('edit-modal')">
+    <div class="modal-card modal-card-md" onclick="event.stopPropagation()">
+        <div class="flex-between mb-16">
+            <h3 id="edit-modal-title" style="margin:0;">Edit Event</h3>
+            <button type="button" class="btn btn-ghost" style="padding:4px 8px; margin:0; font-size:18px;" onclick="closeModal('edit-modal')">✕</button>
+        </div>
+        <form id="edit-form" method="post" style="margin:0;">
+            {% csrf_token %}
+            <div class="form-styled">
+                <label for="edit-name">Name</label>
+                <input type="text" id="edit-name" name="name" required>
+
+                <label for="edit-description">Description</label>
+                <textarea id="edit-description" name="description"></textarea>
+
+                <label for="edit-location">Location</label>
+                <input type="text" id="edit-location" name="location">
+
+                <div class="two-col-grid" style="gap:12px;">
+                    <div>
+                        <label for="edit-start">Start Time</label>
+                        <input type="datetime-local" id="edit-start" name="start_time" required>
+                    </div>
+                    <div>
+                        <label for="edit-end">End Time</label>
+                        <input type="datetime-local" id="edit-end" name="end_time" required>
+                    </div>
+                    <div>
+                        <label for="edit-reg-open">Registration Open</label>
+                        <input type="datetime-local" id="edit-reg-open" name="reg_open" required>
+                    </div>
+                    <div>
+                        <label for="edit-reg-close">Registration Close</label>
+                        <input type="datetime-local" id="edit-reg-close" name="reg_close" required>
+                    </div>
+                </div>
+
+                <div class="two-col-grid" style="gap:12px;">
+                    <div>
+                        <label for="edit-capacity">Capacity (0 = unlimited)</label>
+                        <input type="number" id="edit-capacity" name="capacity" min="0" value="0">
+                    </div>
+                    <div>
+                        <label for="edit-link">External Link</label>
+                        <input type="url" id="edit-link" name="external_link">
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-8 mt-24">
+                <button type="submit" class="btn btn-filled-lav" style="flex:1; min-width:120px; justify-content:center; margin:0;">Save Changes</button>
+                <button type="button" class="btn btn-outline" style="flex:1; min-width:120px; justify-content:center; margin:0;" onclick="closeModal('edit-modal')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openEditModal(el) {
+        const d = el.dataset;
+        document.getElementById('edit-modal-title').textContent = 'Edit ' + d.eventName;
+        document.getElementById('edit-form').action = '/organizer_event_create/' + d.eventId + '/edit/';
+        document.getElementById('edit-name').value = d.eventName;
+        document.getElementById('edit-description').value = d.eventDescription;
+        document.getElementById('edit-location').value = d.eventLocation;
+        document.getElementById('edit-start').value = d.eventStart;
+        document.getElementById('edit-end').value = d.eventEnd;
+        document.getElementById('edit-reg-open').value = d.eventRegOpen;
+        document.getElementById('edit-reg-close').value = d.eventRegClose;
+        document.getElementById('edit-capacity').value = d.eventCapacity;
+        document.getElementById('edit-link').value = d.eventLink;
+        openModal('edit-modal');
+        document.getElementById('edit-name').focus();
+    }
+</script>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 {% endblock %}

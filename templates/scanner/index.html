@@ -16,7 +16,11 @@
 {# ── STAFF: EVENT SELECTION MODE ──────────────────────────────── #}
 <div class="card fade-up fade-up-1" style="max-width: 520px; width: 100%;">
     <div class="section-label" style="margin-top: 0;">Select Event</div>
+<<<<<<< HEAD
     <p>C  hoose the event you are working before scanning begins.</p>
+=======
+    <p>Choose the event you are working before scanning begins.</p>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
     {% if events %}
     <form method="post" action="{% url 'select-event' %}">
@@ -121,14 +125,27 @@
 {% if is_staff and not active_event %}
 {# No JS needed on the event selection screen #}
 {% else %}
+<<<<<<< HEAD
+=======
+<div id="scanner-config"
+     data-is-staff="{% if is_staff %}true{% else %}false{% endif %}"
+     data-event-uuid="{% if is_staff and active_event %}{{ active_event.id }}{% endif %}"
+     hidden></div>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
     // ── State ──
     // Staff default to attendance mode when an event is active; attendees always discover.
+<<<<<<< HEAD
     let mode = {% if is_staff %}'attendance'{% else %}'discovery'{% endif %};
     {% if is_staff and active_event %}
     const EVENT_UUID = "{{ active_event.id }}";
     {% endif %}
+=======
+    const _cfg = document.getElementById('scanner-config').dataset;
+    let mode = _cfg.isStaff === 'true' ? 'attendance' : 'discovery';
+    const EVENT_UUID = _cfg.eventUuid || null;
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     let lastScanTime = 0;
     const SCAN_COOLDOWN = 2000;
     const scanHistory = [];

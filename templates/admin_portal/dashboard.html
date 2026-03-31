@@ -7,15 +7,22 @@
     <p>Event management overview</p>
 </div>
 
+<<<<<<< HEAD
 <div class="flex gap-8 fade-up fade-up-1" style="margin-bottom: 24px; flex-wrap: wrap;">
     {% if user.is_organizer_or_above %}
         <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create Event</a>
     {% endif %}
     {% if request.user.is_organizer_or_above %}
+=======
+<div class="flex gap-8 fade-up fade-up-1" style="margin-bottom:24px; flex-wrap:wrap;">
+    {% if user.is_organizer_or_above %}
+        <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create Event</a>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         <a href="{% url 'organizer-event-list' %}" class="btn btn-outline">My Events</a>
     {% endif %}
 </div>
 
+<<<<<<< HEAD
 <div class="section-label fade-up fade-up-2">All Events</div>
 <div class="table-wrap fade-up fade-up-2">
     <table>
@@ -53,4 +60,203 @@
         </tbody>
     </table>
 </div>
+=======
+{% if user.role == 'admin' %}
+<div class="tab-bar fade-up fade-up-2">
+    <button class="tab-btn active" data-tab="events" data-color="rose" onclick="switchTab('events', this)">Events</button>
+    <button class="tab-btn" data-tab="users" data-color="lavender" onclick="switchTab('users', this)">Users</button>
+</div>
+{% endif %}
+
+<!-- Tab 1: Events -->
+<div id="tab-events" class="{% if user.role == 'admin' %}tab-panel active{% endif %} fade-up fade-up-2">
+    <div class="section-label" style="margin-top:0;">All Events</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Event</th><th>Date</th><th>Location</th><th>Registered</th><th>Checked In</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td><a href="{% url 'event-detail' uuid=event.id %}">{{ event.name }}</a></td>
+                    <td>{{ event.start_time|date:"M j, Y g:i A" }}</td>
+                    <td>{{ event.location }}</td>
+                    <td>{{ event.registration_count }}{% if event.capacity %} / {{ event.capacity }}{% endif %}</td>
+                    <td>{{ event.checkin_count }}</td>
+                    <td>
+                        {% if event.is_active %}
+                            <span class="ticket-badge badge-checked_in">Live</span>
+                        {% elif event.is_upcoming %}
+                            <span class="ticket-badge badge-issued">Upcoming</span>
+                        {% else %}
+                            <span class="ticket-badge badge-canceled">Ended</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.role == 'admin' or event.created_by == user or user in event.staff.all %}
+                            <a href="/api/events/{{ event.id }}/attendees.csv"
+                               class="btn btn-filled-sky btn-sm"
+                               title="Export attendee list as CSV">↓ CSV</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted" style="text-align:center; padding:24px;">No events yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if user.role == 'admin' %}
+<!-- Tab 2: Users -->
+<div id="tab-users" class="tab-panel fade-up fade-up-2">
+
+    <!-- Add User -->
+    <details class="collapsible" style="margin-top:0;">
+        <summary>+ Add User</summary>
+        <form method="post" action="{% url 'admin-create-user' %}" style="padding:0 16px 16px;">
+            {% csrf_token %}
+            <div class="two-col-grid" style="gap:12px;">
+                <div>
+                    <label for="new-username">Username</label>
+                    <input type="text" id="new-username" name="username" required>
+                </div>
+                <div>
+                    <label for="new-password">Password</label>
+                    <input type="password" id="new-password" name="password" required>
+                </div>
+                <div>
+                    <label for="new-name">Full Name</label>
+                    <input type="text" id="new-name" name="name">
+                </div>
+                <div>
+                    <label for="new-email">Email</label>
+                    <input type="email" id="new-email" name="email">
+                </div>
+                <div>
+                    <label for="new-role">Role</label>
+                    <select id="new-role" name="role">
+                        {% for value, label in role_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-filled-peach mt-16">Create User</button>
+        </form>
+    </details>
+
+    <!-- User list -->
+    <div class="section-label">All Users ({{ users|length }})</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.person.name }}</td>
+                    <td>{{ u.email|default:"—" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'admin-change-role' user_id=u.id %}" style="margin:0;">
+                            {% csrf_token %}
+                            <select name="role" style="width:auto; padding:5px 10px; font-size:12px;" onchange="this.form.submit()">
+                                {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if u.role == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        <div class="flex flex-wrap gap-8">
+                            <button type="button" class="btn btn-filled-lemon btn-sm" onclick="openRegModal({{ u.id }}, '{{ u.username }}')">Register</button>
+                            {% if u != user %}
+                            <form method="post" action="{% url 'admin-delete-user' user_id=u.id %}" style="margin:0;" onsubmit="return confirm('Delete {{ u.username }}? This cannot be undone.')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-filled-rose btn-sm">Delete</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted" style="text-align:center; padding:24px;">No users.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Register-for-event modal -->
+<div id="reg-modal" class="modal-overlay" onclick="closeModal('reg-modal')">
+    <div class="modal-card modal-card-sm" style="display:flex; flex-direction:column; overflow:hidden;" onclick="event.stopPropagation()">
+        <div class="flex-between mb-16">
+            <h3 id="reg-modal-title" style="margin:0;">Register User</h3>
+            <button type="button" class="btn btn-ghost" style="padding:4px 8px; margin:0; font-size:18px;" onclick="closeModal('reg-modal')">✕</button>
+        </div>
+        <input type="search" id="reg-event-search" placeholder="Search events..." oninput="filterRegEvents(this.value)" style="margin-bottom:12px;">
+        <div id="reg-event-list" style="overflow-y:auto; flex:1; max-height:50vh;"></div>
+        <form id="reg-form" method="post" style="display:none; margin:0;">
+            {% csrf_token %}
+            <input type="hidden" name="event_uuid" id="reg-event-uuid">
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if user.role == 'admin' %}
+<div id="events-data"
+     data-events='[{% for ev in all_events %}{"id":"{{ ev.id }}","name":"{{ ev.name }}","date":"{{ ev.start_time|date:"M j" }}","location":"{{ ev.location }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+     hidden></div>
+<script>
+    const allEvents = JSON.parse(document.getElementById('events-data').dataset.events);
+    let regUserId = null;
+
+    function openRegModal(userId, username) {
+        regUserId = userId;
+        document.getElementById('reg-modal-title').textContent = 'Register ' + username;
+        document.getElementById('reg-event-search').value = '';
+        renderRegEvents(allEvents);
+        openModal('reg-modal');
+        document.getElementById('reg-event-search').focus();
+    }
+
+    function filterRegEvents(query) {
+        const q = query.toLowerCase();
+        renderRegEvents(allEvents.filter(ev =>
+            ev.name.toLowerCase().includes(q) || ev.location.toLowerCase().includes(q)
+        ));
+    }
+
+    function renderRegEvents(events) {
+        const list = document.getElementById('reg-event-list');
+        if (events.length === 0) {
+            list.innerHTML = '<p class="text-muted" style="text-align:center; padding:16px;"><small>No matching events.</small></p>';
+            return;
+        }
+        list.innerHTML = events.map(ev =>
+            '<div class="list-item" onclick="submitReg(\'' + ev.id + '\')">' +
+                '<div style="flex:1;"><strong>' + ev.name + '</strong><br>' +
+                '<small class="text-muted">' + ev.date + (ev.location ? ' · ' + ev.location : '') + '</small></div>' +
+                '<span class="btn btn-filled-mint btn-sm" style="pointer-events:none;">Select</span>' +
+            '</div>'
+        ).join('');
+    }
+
+    function submitReg(eventUuid) {
+        if (!regUserId) return;
+        const form = document.getElementById('reg-form');
+        form.action = '/dashboard/users/' + regUserId + '/register/';
+        document.getElementById('reg-event-uuid').value = eventUuid;
+        form.submit();
+    }
+</script>
+{% endif %}
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 {% endblock %}

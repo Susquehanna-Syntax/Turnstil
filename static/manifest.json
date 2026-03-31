@@ -1,0 +1,17 @@
+{
+  "name": "Turnstil",
+  "short_name": "Turnstil",
+  "description": "QR-based event check-in and contact sharing",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1c1c21",
+  "theme_color": "#1c1c21",
+  "icons": [
+    {
+      "src": "/static/icons/turnstilLogo.png",
+      "sizes": "816x816",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

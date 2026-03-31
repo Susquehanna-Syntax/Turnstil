@@ -107,10 +107,18 @@ class EventSerializer(serializers.ModelSerializer):
 class EventCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
+<<<<<<< HEAD
         fields = ['name', 'description', 'location', 'start_time', 'end_time', 'capacity', 'reg_open', 'reg_close']
         extra_kwargs = {
             'reg_open': {'required': False, 'allow_null': True},
             'reg_close': {'required': False, 'allow_null': True},
+=======
+        fields = ['name', 'description', 'location', 'start_time', 'end_time', 'capacity', 'reg_open', 'reg_close', 'external_link']
+        extra_kwargs = {
+            'reg_open': {'required': False, 'allow_null': True},
+            'reg_close': {'required': False, 'allow_null': True},
+            'external_link': {'required': False, 'allow_null': True},
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         }
 
 

@@ -12,7 +12,18 @@
 {% endif %}
 
 {% if event.location %}
+<<<<<<< HEAD
     <p class="fade-up fade-up-1" style="color: var(--text-2);"><i data-lucide="map-pin" style="width: 14px; height: 14px; vertical-align: -2px;"></i> {{ event.location }}</p>
+=======
+    <p class="fade-up fade-up-1 text-muted"><i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:-2px;"></i> {{ event.location }}</p>
+{% endif %}
+
+{% if event.external_link %}
+    <p class="fade-up fade-up-1 text-muted">
+        <i data-lucide="link" style="width:14px;height:14px;vertical-align:-2px;"></i>
+        <a href="{{ event.external_link }}" target="_blank" rel="noopener">{{ event.external_link }}</a>
+    </p>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 {% endif %}
 
 <!-- Stats -->
@@ -37,6 +48,7 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 <!-- Register button for attendees -->
 
 <!-- Action buttons -->
@@ -54,10 +66,24 @@
             {% elif not event.is_full %}
                 <!-- register button -->
                 <button type="submit" name="register" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Register for This Event</button>
+=======
+<!-- Action buttons -->
+<div class="stat-grid fade-up fade-up-3 mt-16">
+    <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
+
+    {% if user.is_authenticated %}
+        <form method="post" style="margin:0; height:100%;">
+            {% csrf_token %}
+            {% if is_registered %}
+                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
+            {% elif not event.is_full %}
+                <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             {% endif %}
         </form>
     {% endif %}
 
+<<<<<<< HEAD
     <a href="{% url 'scanner' %}" class="btn btn-filled-lemon" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Open Scanner</a>
 
     {% if user.is_organizer_or_above or event.created_by == user %}
@@ -71,6 +97,20 @@
     </form>
     {% endif %}
 
+=======
+    <a href="{% url 'scanner' %}" class="btn btn-filled-lemon btn-block">Open Scanner</a>
+
+    {% if user.is_organizer_or_above or event.created_by == user %}
+    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin:0; height:100%;">
+        {% csrf_token %}
+        {% if event.allow_walkins %}
+            <button type="submit" class="btn btn-filled-mint btn-block">Walk-ins ON</button>
+        {% else %}
+            <button type="submit" class="btn btn-outline btn-block">Enable Walk-ins</button>
+        {% endif %}
+    </form>
+    {% endif %}
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 </div>
 
 {% if user.is_staff_or_above %}
@@ -86,18 +126,26 @@
 <!-- Tab 1: Attendees -->
 <div id="tab-attendees" class="tab-panel active fade-up fade-up-4">
     <div class="section-label">Attendance Ratio</div>
+<<<<<<< HEAD
     <progress id="attendance-ratio" value="{{ event.checkin_count }}" max="{{ event.registration_count|default:1 }}" style="display: block; width: 100%; margin: 12px 0 20px;">{{ event.checkin_count }}/{{ event.registration_count }}</progress>
+=======
+    <progress id="attendance-ratio" value="{{ event.checkin_count }}" max="{{ event.registration_count|default:1 }}" style="display:block; width:100%; margin:12px 0 20px;">{{ event.checkin_count }}/{{ event.registration_count }}</progress>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
     <div class="section-label">Attendees</div>
     <div class="table-wrap">
         <table>
             <thead>
+<<<<<<< HEAD
                 <tr>
                     <th>Name</th>
                     <th>Organization</th>
                     <th>Status</th>
                     <th>Checked In At</th>
                 </tr>
+=======
+                <tr><th>Name</th><th>Organization</th><th>Status</th><th>Checked In At</th></tr>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             </thead>
             <tbody>
                 {% for ticket in tickets %}
@@ -108,7 +156,11 @@
                     <td>{% if ticket.checked_in_at %}{{ ticket.checked_in_at|date:"g:i A" }}{% else %}—{% endif %}</td>
                 </tr>
                 {% empty %}
+<<<<<<< HEAD
                 <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No registrations yet.</td></tr>
+=======
+                <tr><td colspan="4" class="text-muted" style="text-align:center; padding:24px;">No registrations yet.</td></tr>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
                 {% endfor %}
             </tbody>
         </table>
@@ -120,6 +172,7 @@
 <div id="tab-staff" class="tab-panel fade-up fade-up-4">
     <div class="card">
         {% if event_staff %}
+<<<<<<< HEAD
         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
             {% for member in event_staff %}
             <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="margin: 0;">
@@ -128,11 +181,22 @@
                 <input type="hidden" name="user_id" value="{{ member.id }}">
                 <button type="submit" class="btn btn-outline" style="font-size: 13px; padding: 5px 12px;">
                     {{ member.username }} <span style="opacity: 0.5; margin-left: 4px;">✕</span>
+=======
+        <div class="flex flex-wrap gap-8 mb-16">
+            {% for member in event_staff %}
+            <form method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <input type="hidden" name="user_id" value="{{ member.id }}">
+                <button type="submit" class="btn btn-outline btn-sm" style="font-size:13px;">
+                    {{ member.username }} <span style="opacity:0.5; margin-left:4px;">✕</span>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
                 </button>
             </form>
             {% endfor %}
         </div>
         {% else %}
+<<<<<<< HEAD
         <p class="text-muted" style="margin-bottom: 16px;"><small>No staff assigned yet.</small></p>
         {% endif %}
 
@@ -142,6 +206,17 @@
         </div>
         <ul id="staff-search-results" style="list-style: none; padding: 0; margin: 8px 0 0;"></ul>
         <form id="add-staff-form" method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display: none; margin: 0;">
+=======
+        <p class="text-muted mb-16"><small>No staff assigned yet.</small></p>
+        {% endif %}
+
+        {% if available_staff %}
+        <div class="flex gap-8">
+            <input type="search" id="staff-search" placeholder="Search staff by name..." style="flex:1;" oninput="searchStaff(this.value)">
+        </div>
+        <ul id="staff-search-results" style="list-style:none; padding:0; margin:8px 0 0;"></ul>
+        <form id="add-staff-form" method="post" action="{% url 'manage-event-staff' uuid=event.id %}" style="display:none; margin:0;">
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             {% csrf_token %}
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="user_id" id="add-staff-user-id">
@@ -158,12 +233,16 @@
     <div class="table-wrap">
         <table>
             <thead>
+<<<<<<< HEAD
                 <tr>
                     <th>Action</th>
                     <th>Attendee</th>
                     <th>Scanner</th>
                     <th>Time</th>
                 </tr>
+=======
+                <tr><th>Action</th><th>Attendee</th><th>Scanner</th><th>Time</th></tr>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             </thead>
             <tbody>
                 {% for log in logs %}
@@ -174,7 +253,11 @@
                     <td>{{ log.timestamp }}</td>
                 </tr>
                 {% empty %}
+<<<<<<< HEAD
                 <tr><td colspan="4" style="color: var(--text-2); text-align: center; padding: 24px;">No Logs Yet</td></tr>
+=======
+                <tr><td colspan="4" class="text-muted" style="text-align:center; padding:24px;">No Logs Yet</td></tr>
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
                 {% endfor %}
             </tbody>
         </table>
@@ -185,6 +268,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<<<<<<< HEAD
 <script>
     function switchTab(tabName, btn) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -200,6 +284,12 @@
         { id: "{{ member.id }}", name: "{{ member.username }}", role: "{{ member.role }}" },
         {% endfor %}
     ];
+=======
+{% if available_staff %}
+<div id="available-staff-data" data-staff='[{% for member in available_staff %}{"id":"{{ member.id }}","name":"{{ member.username }}","role":"{{ member.role }}"}{% if not forloop.last %},{% endif %}{% endfor %}]' hidden></div>
+<script>
+    const availableStaff = JSON.parse(document.getElementById('available-staff-data').dataset.staff);
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
     function searchStaff(query) {
         const list = document.getElementById('staff-search-results');

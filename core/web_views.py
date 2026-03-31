@@ -2,6 +2,7 @@
 Turnstil web views — server-rendered pages.
 These handle the HTML interface; the API handles data operations.
 """
+<<<<<<< HEAD
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -13,6 +14,25 @@ from .forms import EventForm
 from datetime import datetime
 from .serializers import EventCreateSerializer
 
+=======
+import logging
+from datetime import datetime
+
+from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate, get_user_model
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+
+from .forms import EventForm
+from .models import Person, Event, Ticket, ScanLog
+from .serializers import RegisterSerializer, EventCreateSerializer
+
+logger = logging.getLogger(__name__)
+
+User = get_user_model()
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
 def home(request):
     """Landing page with upcoming events."""
@@ -204,7 +224,18 @@ def dashboard_page(request):
     if request.user.role not in ('staff', 'admin', 'organizer'):
         return redirect('home')
     events = Event.objects.all()
+<<<<<<< HEAD
     return render(request, 'admin_portal/dashboard.html', {'events': events})
+=======
+    context = {'events': events}
+
+    if request.user.role == 'admin':
+        context['users'] = User.objects.select_related('person').order_by('username')
+        context['all_events'] = Event.objects.filter(end_time__gte=timezone.now()).order_by('start_time')
+        context['role_choices'] = User.Role.choices
+
+    return render(request, 'admin_portal/dashboard.html', context)
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
 
 @login_required
@@ -228,6 +259,28 @@ def event_create_page(request):
             # Save the event, passing created_by separately
             event = serializer.save(created_by=request.user)
             event.staff.add(request.user)
+<<<<<<< HEAD
+=======
+
+            users = User.objects.all()
+
+            subject = f"New Event: {event.name}"
+            message = (
+                f"A new event has been created!\n\n"
+                f"Event: {event.name}\n"
+                f"Start: {event.start_time}\n"
+                f"Location: {event.location}\n\n"
+                f"Register now in the app."
+            )
+
+            recipient_list = [user.email for user in users if user.email]
+
+            try:
+                send_mail(subject, message, None, recipient_list)
+            except Exception:
+                logger.exception("Failed to send event creation email for %s", event.name)
+
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             return redirect('event-detail', uuid=event.id)
 
         # If serializer invalid, show errors
@@ -254,7 +307,11 @@ def event_detail_page(request, uuid):
                 person=person,
                 event=event,
             ).exists()
+<<<<<<< HEAD
         except:
+=======
+        except Person.DoesNotExist:
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             pass
 
     # Handle registration from web (with added cancel feature)
@@ -278,7 +335,10 @@ def event_detail_page(request, uuid):
 
     logs = ScanLog.objects.filter(event=event).select_related('person', 'actor').order_by('-timestamp')
 
+<<<<<<< HEAD
     User = get_user_model()
+=======
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     event_staff = event.staff.all()
     available_staff = User.objects.filter(
         role__in=['staff', 'organizer', 'admin']
@@ -301,7 +361,10 @@ def manage_event_staff(request, uuid):
         return redirect('event-detail', uuid=uuid)
 
     if request.method == 'POST':
+<<<<<<< HEAD
         User = get_user_model()
+=======
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         action = request.POST.get('action')
         user_id = request.POST.get('user_id', '').strip()
         if not user_id:
@@ -368,6 +431,29 @@ def event_edit_page(request, uuid):
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
+<<<<<<< HEAD
+=======
+
+            attendees = User.objects.filter(
+                person__tickets__event=event
+            ).distinct()
+
+            subject = f"Update for {event.name}"
+            message = (
+                f'The event "{event.name}" has been updated.\n\n'
+                f"Start: {event.start_time}\n"
+                f"Location: {event.location}\n\n"
+                f"Please check the app for details."
+            )
+
+            recipient_list = [user.email for user in attendees if user.email]
+
+            try:
+                send_mail(subject, message, None, recipient_list)
+            except Exception:
+                logger.exception("Failed to send event update email for %s", event.name)
+
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             return redirect('organizer-event-list')
     else:
         form = EventForm(instance=event)
@@ -377,3 +463,107 @@ def event_edit_page(request, uuid):
         'event': event
     })
 
+<<<<<<< HEAD
+=======
+
+# ── Admin user management ──────────────────────────────────────
+
+def _is_admin(request):
+    return request.user.is_authenticated and request.user.role == 'admin'
+
+
+@login_required
+def admin_create_user(request):
+    if not _is_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    username = request.POST.get('username', '').strip()
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '').strip()
+    name = request.POST.get('name', '').strip()
+    role = request.POST.get('role', 'attendee')
+
+    if not username or not password:
+
+        messages.error(request, 'Username and password are required.')
+        return redirect('dashboard')
+
+    if User.objects.filter(username=username).exists():
+
+        messages.error(request, f'Username "{username}" already exists.')
+        return redirect('dashboard')
+
+    user = User.objects.create_user(username=username, email=email, password=password, role=role)
+    Person.objects.create(user=user, name=name or username, email=email)
+
+
+    messages.success(request, f'User "{username}" created.')
+    return redirect('dashboard')
+
+
+@login_required
+def admin_delete_user(request, user_id):
+    if not _is_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    target = get_object_or_404(User, id=user_id)
+    if target == request.user:
+
+        messages.error(request, "You can't delete your own account.")
+        return redirect('dashboard')
+
+    username = target.username
+    target.delete()
+
+    messages.success(request, f'User "{username}" deleted.')
+    return redirect('dashboard')
+
+
+@login_required
+def admin_change_role(request, user_id):
+    if not _is_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    target = get_object_or_404(User, id=user_id)
+    new_role = request.POST.get('role', '').strip()
+    valid_roles = [r[0] for r in User.Role.choices]
+    if new_role not in valid_roles:
+        return redirect('dashboard')
+
+    target.role = new_role
+    target.save(update_fields=['role'])
+
+    messages.success(request, f'Changed {target.username} to {new_role}.')
+    return redirect('dashboard')
+
+
+@login_required
+def admin_register_user_for_event(request, user_id):
+    if not _is_admin(request):
+        return redirect('home')
+    if request.method != 'POST':
+        return redirect('dashboard')
+
+    target = get_object_or_404(User, id=user_id)
+    event_uuid = request.POST.get('event_uuid', '').strip()
+    if not event_uuid:
+        return redirect('dashboard')
+
+    event = get_object_or_404(Event, id=event_uuid)
+    person = target.person
+    Ticket.objects.get_or_create(
+        person=person,
+        event=event,
+        defaults={'status': Ticket.Status.ISSUED},
+    )
+
+    messages.success(request, f'Registered {target.username} for {event.name}.')
+    return redirect('dashboard')
+
+>>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
