@@ -44,25 +44,31 @@
     </div>
 </div>
 
+{% if user.is_authenticated %}
 <!-- Action buttons -->
 <div class="stat-grid fade-up fade-up-3 mt-16">
     <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
 
-    {% if user.is_authenticated %}
-        {% if event.disable_gui_registration %}
-            {% if event.external_link %}
-                <a href="{{ event.external_link }}" target="_blank" rel="noopener" class="btn btn-filled-lav btn-block">Register Externally</a>
-            {% else %}
-                <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration via API only</span>
-            {% endif %}
+    {% if event.disable_gui_registration %}
+        {% if event.external_link %}
+            <a href="{{ event.external_link }}" target="_blank" rel="noopener" class="btn btn-filled-lav btn-block">Register Externally</a>
+        {% else %}
+            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration via API only</span>
+        {% endif %}
+    {% else %}
+        {% if is_registered %}
+            <form method="post" style="margin:0; display:flex;">
+                {% csrf_token %}
+                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
+            </form>
+        {% elif not reg_open %}
+            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration Closed</span>
+        {% elif event.is_full %}
+            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Event Full</span>
         {% else %}
             <form method="post" style="margin:0; display:flex;">
                 {% csrf_token %}
-                {% if is_registered %}
-                    <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
-                {% elif not event.is_full %}
-                    <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
-                {% endif %}
+                <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
             </form>
         {% endif %}
     {% endif %}
@@ -80,6 +86,11 @@
     </form>
     {% endif %}
 </div>
+{% else %}
+<div class="fade-up fade-up-3 mt-16" style="text-align:center;">
+    <a href="{% url 'register' %}" class="btn btn-filled-lav">Create an Account to Register</a>
+</div>
+{% endif %}
 
 {% if user.is_staff_or_above %}
 <!-- Tabs -->

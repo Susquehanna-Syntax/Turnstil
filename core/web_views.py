@@ -295,7 +295,6 @@ def event_create_page(request):
     return render(request, 'admin_portal/event_create.html')
 
 
-@login_required
 def event_detail_page(request, uuid):
     event = get_object_or_404(Event, id=uuid)
     tickets = event.tickets.select_related('person').order_by('-issued_at')
@@ -313,10 +312,10 @@ def event_detail_page(request, uuid):
             pass
 
     # Handle registration from web (with added cancel feature)
-    if request.method == 'POST' and not event.disable_gui_registration:
+    if request.method == 'POST' and request.user.is_authenticated and not event.disable_gui_registration:
         person = request.user.person
 
-        if 'register' in request.POST:
+        if 'register' in request.POST and event.registration_is_open() and not event.is_full:
             Ticket.objects.get_or_create(
                 person=person,
                 event=event,
@@ -345,6 +344,7 @@ def event_detail_page(request, uuid):
         'event_staff': event_staff,
         'available_staff': available_staff,
         'is_registered': is_registered,
+        'reg_open': event.registration_is_open(),
     })
 
 
