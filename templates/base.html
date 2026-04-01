@@ -49,6 +49,28 @@
             --spring:        cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        /* ── Light mode overrides ── */
+        [data-theme="light"] {
+            --bg:      #f4f3f1;
+            --s1:      #ffffff;
+            --s2:      #eeedf0;
+            --s3:      #e4e3e7;
+            --s4:      #d5d4d9;
+            --border:  #d0cfd4;
+            --text-1:  #1c1c21;
+            --text-2:  #5c5966;
+            --text-3:  #8a8793;
+        }
+        [data-theme="light"] { color-scheme: light; }
+        [data-theme="light"] .btn-filled-lav,
+        [data-theme="light"] .btn-filled-mint,
+        [data-theme="light"] .btn-filled-rose,
+        [data-theme="light"] .btn-filled-sky,
+        [data-theme="light"] .btn-filled-peach,
+        [data-theme="light"] .btn-filled-lemon,
+        [data-theme="light"] .btn-filled-coral { color: #1c1c21; }
+        [data-theme="light"] .sidebar-icon.active { color: #ffffff; }
+
         /* ── Base ── */
         html { color-scheme: dark; }
         body {
@@ -98,7 +120,7 @@
             top: 0; left: 0;
             width: 68px;
             height: 100vh;
-            background: rgba(35, 35, 41, 0.7);
+            background: color-mix(in srgb, var(--s1) 70%, transparent);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-right: 1px solid var(--border);
@@ -1005,6 +1027,21 @@
 
         <div class="sidebar-spacer"></div>
 
+        <button class="sidebar-icon" data-tip="Toggle Light/Dark" onclick="toggleTheme()" id="theme-toggle">
+            <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
+
         {% if user.is_authenticated %}
         <div class="sidebar-avatar" data-tip="{{ user.username }}">
             {{ user.username|first|upper }}
@@ -1089,6 +1126,26 @@ document.addEventListener('keydown', function(e) {
         });
     }
 });
+
+/* Theme toggle */
+function toggleTheme() {
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    var theme = isLight ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+    localStorage.setItem('theme', theme);
+    updateThemeIcon(theme);
+}
+function updateThemeIcon(theme) {
+    document.getElementById('theme-icon-sun').style.display = theme === 'light' ? 'block' : 'none';
+    document.getElementById('theme-icon-moon').style.display = theme === 'light' ? 'none' : 'block';
+}
+(function() {
+    var saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.documentElement.style.colorScheme = saved;
+    updateThemeIcon(saved);
+})();
 </script>
 </body>
 </html>
