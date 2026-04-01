@@ -49,14 +49,22 @@
     <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
 
     {% if user.is_authenticated %}
-        <form method="post" style="margin:0; display:flex;">
-            {% csrf_token %}
-            {% if is_registered %}
-                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
-            {% elif not event.is_full %}
-                <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
+        {% if event.disable_gui_registration %}
+            {% if event.external_link %}
+                <a href="{{ event.external_link }}" target="_blank" rel="noopener" class="btn btn-filled-lav btn-block">Register Externally</a>
+            {% else %}
+                <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration via API only</span>
             {% endif %}
-        </form>
+        {% else %}
+            <form method="post" style="margin:0; display:flex;">
+                {% csrf_token %}
+                {% if is_registered %}
+                    <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
+                {% elif not event.is_full %}
+                    <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
+                {% endif %}
+            </form>
+        {% endif %}
     {% endif %}
 
     <a href="{% url 'scanner' %}" class="btn btn-filled-lemon btn-block">Open Scanner</a>

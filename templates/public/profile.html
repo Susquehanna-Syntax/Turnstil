@@ -54,7 +54,10 @@
                     </label>
                 </fieldset>
 
-                <button type="submit" class="btn btn-filled-sky" style="margin-top: 20px;">Save Changes</button>
+                <div class="flex flex-wrap gap-8" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-filled-sky" style="flex:1; min-width:120px; justify-content:center; margin:0;">Save Changes</button>
+                    <button type="button" class="btn btn-filled-coral" style="flex:1; min-width:120px; justify-content:center; margin:0;" onclick="openModal('notif-modal')">Notifications</button>
+                </div>
             </form>
         </div>
     </div>
@@ -92,6 +95,46 @@
                 <p class="text-muted">No tickets yet. <a href="{% url 'home' %}">Browse events</a></p>
             {% endif %}
         </div>
+    </div>
+</div>
+<!-- Notification preferences modal -->
+<div id="notif-modal" class="modal-overlay" onclick="closeModal('notif-modal')">
+    <div class="modal-card modal-card-sm" onclick="event.stopPropagation()">
+        <div class="flex-between mb-16">
+            <h3 style="margin:0;">Notification Settings</h3>
+            <button type="button" class="btn btn-ghost" style="padding:4px 8px; margin:0; font-size:18px;" onclick="closeModal('notif-modal')">&#10005;</button>
+        </div>
+        <form method="post" action="{% url 'save-notifications' %}" style="margin:0;">
+            {% csrf_token %}
+            <p class="text-muted" style="text-align:center; margin-bottom:20px;">Choose which email notifications you'd like to receive.</p>
+            <table style="margin:0 auto; border:none; border-collapse:collapse;">
+                <tr style="border:none;">
+                    <td style="border:none; padding:6px 8px 6px 0; vertical-align:middle;"><input type="checkbox" name="notif_event_reminders" {% if notif_prefs.event_reminders %}checked{% endif %}></td>
+                    <td style="border:none; padding:6px 0; vertical-align:middle;">
+                        <span>Event reminders</span><br>
+                        <small class="text-muted">Reminded before events you're registered for</small>
+                    </td>
+                </tr>
+                <tr style="border:none;">
+                    <td style="border:none; padding:6px 8px 6px 0; vertical-align:middle;"><input type="checkbox" name="notif_event_updates" {% if notif_prefs.event_updates %}checked{% endif %}></td>
+                    <td style="border:none; padding:6px 0; vertical-align:middle;">
+                        <span>Event updates</span><br>
+                        <small class="text-muted">When events you're registered for change</small>
+                    </td>
+                </tr>
+                <tr style="border:none;">
+                    <td style="border:none; padding:6px 8px 6px 0; vertical-align:middle;"><input type="checkbox" name="notif_new_events" {% if notif_prefs.new_events %}checked{% endif %}></td>
+                    <td style="border:none; padding:6px 0; vertical-align:middle;">
+                        <span>New events</span><br>
+                        <small class="text-muted">When new events are created on the platform</small>
+                    </td>
+                </tr>
+            </table>
+            <div class="flex flex-wrap gap-8 mt-24">
+                <button type="submit" class="btn btn-filled-coral" style="flex:1; min-width:120px; justify-content:center; margin:0;">Save Preferences</button>
+                <button type="button" class="btn btn-outline" style="flex:1; min-width:120px; justify-content:center; margin:0;" onclick="closeModal('notif-modal')">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

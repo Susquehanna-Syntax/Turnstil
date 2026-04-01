@@ -23,7 +23,8 @@
          data-event-reg-open="{{ event.reg_open|date:'Y-m-d\TH:i' }}"
          data-event-reg-close="{{ event.reg_close|date:'Y-m-d\TH:i' }}"
          data-event-capacity="{{ event.capacity }}"
-         data-event-link="{{ event.external_link|default_if_none:'' }}">
+         data-event-link="{{ event.external_link|default_if_none:'' }}"
+         data-event-disable-gui-reg="{{ event.disable_gui_registration|yesno:'true,false' }}">
         <div style="flex:1;">
             <strong>{{ event.name }}</strong>
             <small class="text-muted" style="display:block; margin-top:2px;">
@@ -85,6 +86,12 @@
                         <label for="edit-link">External Link</label>
                         <input type="url" id="edit-link" name="external_link">
                     </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0; white-space:nowrap;">
+                            <input type="checkbox" id="edit-disable-gui-reg" name="disable_gui_registration">
+                            <span>Disable web registration (API/external only)</span>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="flex flex-wrap gap-8 mt-24">
@@ -111,6 +118,7 @@
         document.getElementById('edit-reg-close').value = d.eventRegClose;
         document.getElementById('edit-capacity').value = d.eventCapacity;
         document.getElementById('edit-link').value = d.eventLink;
+        document.getElementById('edit-disable-gui-reg').checked = d.eventDisableGuiReg === 'true';
         openModal('edit-modal');
         document.getElementById('edit-name').focus();
     }

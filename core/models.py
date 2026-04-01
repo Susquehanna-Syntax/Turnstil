@@ -59,6 +59,10 @@ class Person(models.Model):
         default=dict, blank=True,
         help_text='Which fields are public, e.g. {"email": true, "phone": false}'
     )
+    notification_preferences = models.JSONField(
+        default=dict, blank=True,
+        help_text='Notification settings, e.g. {"event_reminders": true, "event_updates": true, "new_events": true}'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -91,6 +95,20 @@ class Person(models.Model):
             'phone': False,
             'links': True,
         }
+
+    @property
+    def default_notification_preferences(self):
+        return {
+            'event_reminders': True,
+            'event_updates': True,
+            'new_events': True,
+        }
+
+    def get_notification_preferences(self):
+        """Return notification preferences with defaults for any missing keys."""
+        defaults = self.default_notification_preferences
+        defaults.update(self.notification_preferences)
+        return defaults
 
     def generate_qr_code(self):
         """Generate QR code PNG as bytes. QR contains ONLY the UUID."""
@@ -135,6 +153,10 @@ class Event(models.Model):
     allow_walkins = models.BooleanField(
         default=False,
         help_text='Allow check-in for people not pre-registered',
+    )
+    disable_gui_registration = models.BooleanField(
+        default=False,
+        help_text='Hide web registration button; only API/external registration allowed',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     external_link = models.URLField(blank=True, null=True)

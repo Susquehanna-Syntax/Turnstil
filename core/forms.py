@@ -14,4 +14,5 @@ class EventForm(ModelForm):
             'reg_close',
             'capacity',
             'external_link',
+            'disable_gui_registration',
         ]

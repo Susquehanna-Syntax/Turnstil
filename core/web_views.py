@@ -96,10 +96,26 @@ def profile_page(request):
         person.visibility = visibility
         person.save()
 
+    notif_prefs = person.get_notification_preferences()
+
     return render(request, 'public/profile.html', {
         'person': person,
         'tickets': tickets,
+        'notif_prefs': notif_prefs,
     })
+
+
+@login_required
+def save_notification_preferences(request):
+    if request.method == 'POST':
+        person = request.user.person
+        person.notification_preferences = {
+            'event_reminders': request.POST.get('notif_event_reminders') == 'on',
+            'event_updates': request.POST.get('notif_event_updates') == 'on',
+            'new_events': request.POST.get('notif_new_events') == 'on',
+        }
+        person.save(update_fields=['notification_preferences'])
+    return redirect('profile')
 
 
 @login_required
@@ -297,7 +313,7 @@ def event_detail_page(request, uuid):
             pass
 
     # Handle registration from web (with added cancel feature)
-    if request.method == 'POST':
+    if request.method == 'POST' and not event.disable_gui_registration:
         person = request.user.person
 
         if 'register' in request.POST:
