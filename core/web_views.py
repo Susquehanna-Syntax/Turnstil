@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 
 from django.contrib import messages
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -23,8 +24,16 @@ User = get_user_model()
 
 def home(request):
     """Landing page with upcoming events."""
-    events = Event.objects.filter(end_time__gte=timezone.now()).order_by('start_time')[:10]
-    return render(request, 'public/home.html', {'events': events})
+    q = request.GET.get('q', '').strip()
+    events = Event.objects.filter(end_time__gte=timezone.now())
+    if q:
+        events = events.filter(
+            Q(name__icontains=q) |
+            Q(location__icontains=q) |
+            Q(description__icontains=q)
+        )
+    events = events.order_by('start_time')[:10]
+    return render(request, 'public/home.html', {'events': events, 'search_query': q})
 
 
 def register_page(request):

@@ -26,7 +26,15 @@
 </div>
 {% endif %}
 
-<div class="section-label">Upcoming Events</div>
+<div class="flex-between flex-wrap gap-8 fade-up" style="margin-bottom: 8px; align-items: center;">
+    <div class="section-label" style="margin-bottom: 0;">{% if search_query %}Search Results{% else %}Upcoming Events{% endif %}</div>
+    <form method="get" action="{% url 'home' %}" style="display: flex; gap: 8px; align-items: center;">
+        <input type="search" name="q" value="{{ search_query }}" placeholder="Search events…"
+               style="width: 220px; margin: 0;">
+        <button type="submit" class="btn btn-filled-lav" style="padding: 11px 20px; font-size: 13px; margin: 0;">Search</button>
+        {% if search_query %}<a href="{% url 'home' %}" class="btn btn-ghost" style="padding: 11px 12px; font-size: 13px; margin: 0;">Clear</a>{% endif %}
+    </form>
+</div>
 
 {% if events %}
     {% for event in events %}
@@ -50,6 +58,6 @@
     </div>
     {% endfor %}
 {% else %}
-    <p class="text-muted">No upcoming events yet.</p>
+    <p class="text-muted">{% if search_query %}No events matching "{{ search_query }}".{% else %}No upcoming events yet.{% endif %}</p>
 {% endif %}
 {% endblock %}
