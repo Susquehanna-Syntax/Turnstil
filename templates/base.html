@@ -107,8 +107,8 @@
 
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--s4); border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 3px; }
 
         /* ── Layout ── */
         .layout {
@@ -123,15 +123,15 @@
             top: 0; left: 0;
             width: 68px;
             height: 100vh;
-            background: color-mix(in srgb, var(--s1) 70%, transparent);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid var(--border);
+            background: rgba(28, 28, 33, 0.78);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-right: 1px solid rgba(255,255,255,0.04);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 18px 0 18px;
-            gap: 6px;
+            gap: 4px;
             z-index: 100;
         }
         .sidebar-logo {
@@ -142,7 +142,7 @@
             place-items: center;
             text-decoration: none;
             transition: transform 0.5s var(--ease-out-expo);
-            margin-bottom: 14px;
+            margin-bottom: 24px;
             flex-shrink: 0;
             overflow: hidden;
         }
@@ -234,9 +234,9 @@
                 padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
                 gap: 0;
                 border-right: none;
-                border-top: 1px solid var(--border);
+                border-top: 1px solid rgba(255,255,255,0.04);
                 overflow: visible;
-                background: var(--s1);
+                background: rgba(28, 28, 33, 0.78);
             }
             .sidebar-logo { display: none; }
             .sidebar-spacer { display: none; }
@@ -265,7 +265,6 @@
                 border-radius: var(--r-lg);
                 padding: 6px;
                 min-width: 200px;
-                box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
                 z-index: 300;
             }
             .mobile-popover:not(.open) { display: none; }
@@ -364,10 +363,11 @@
             background: var(--s1);
             border-radius: var(--r-lg);
             padding: 22px;
+            cursor: pointer;
             transition: transform 0.5s var(--ease-out-expo), background 0.3s;
-            border: 1px solid var(--border);
         }
-        .card:hover { background: var(--s2); }
+        .card:hover { transform: translateY(-4px); background: var(--s2); }
+        .card:active { transform: translateY(-1px) scale(0.98); transition-duration: 0.12s; }
         .card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
         .card-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 0; }
         .card-footer {
@@ -400,7 +400,6 @@
             padding: 18px 14px;
             background: var(--s1);
             border-radius: var(--r-lg);
-            border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -531,8 +530,20 @@
             position: relative;
             overflow: hidden;
         }
-        .btn:hover { text-decoration: none; opacity: 0.88; transform: translateY(-1px); }
-        .btn:active { transform: translateY(0) scale(0.97); transition-duration: 0.1s; }
+        .btn:hover { text-decoration: none; transform: translateY(-2px); }
+        .btn:active { transform: translateY(0) scale(0.96); transition-duration: 0.1s; }
+        /* Ripple */
+        .btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transform: scale(0);
+            animation: rippleAnim 0.6s var(--ease-out-expo);
+            pointer-events: none;
+        }
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
         .btn-filled-lav   { background: var(--lavender); color: var(--bg); }
         .btn-filled-mint  { background: var(--mint);     color: var(--bg); }
         .btn-filled-rose  { background: var(--rose);     color: var(--bg); }
@@ -594,7 +605,7 @@
         input[type="search"],
         select,
         textarea {
-            background: var(--s2);
+            background: var(--s1);
             border: 1.5px solid var(--border);
             border-radius: var(--r-md);
             padding: 11px 16px;
@@ -633,7 +644,7 @@
         .form-styled input,
         .form-styled select,
         .form-styled textarea {
-            background: var(--s2);
+            background: var(--s1);
             border: 1.5px solid var(--border);
             border-radius: var(--r-md);
             padding: 11px 16px;
@@ -714,17 +725,15 @@
         #name-search-results li {
             padding: 10px 14px;
             border-radius: var(--r-sm);
-            border: 1px solid var(--border);
-            background: var(--surface-1);
-            color: var(--text-primary);
+            background: var(--s1);
+            color: var(--text-1);
             font-size: 14px;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
+            transition: background 0.15s;
             margin-bottom: 6px;
         }
         #name-search-results li:hover {
-            background: var(--surface-2);
-            border-color: var(--lav);
+            background: var(--s2);
         }
         #name-search-results li:last-child {
             margin-bottom: 0;
@@ -774,10 +783,10 @@
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 1.5px;
             color: var(--text-3);
-            margin-bottom: 12px;
-            margin-top: 28px;
+            margin-bottom: 20px;
+            margin-top: 48px;
         }
 
         /* ── Collapsible / details ── */
@@ -909,7 +918,6 @@
         .modal-card {
             background: var(--s1);
             border-radius: var(--r-lg);
-            border: 1px solid var(--border);
             padding: 22px;
             width: 100%;
             max-height: 80vh;
@@ -1101,6 +1109,21 @@ document.addEventListener('click', function(e) {
 </script>
 <script>
 lucide.createIcons();
+
+/* Ripple effect for buttons */
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn');
+    if (!btn) return;
+    var circle = document.createElement('span');
+    var rect = btn.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height);
+    circle.style.width = circle.style.height = size + 'px';
+    circle.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    circle.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    circle.classList.add('ripple');
+    btn.appendChild(circle);
+    circle.addEventListener('animationend', function() { circle.remove(); });
+});
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
 }
