@@ -324,3 +324,31 @@ class ScanLog(models.Model):
             self.Result.EVENT_INACTIVE: 'Event Inactive',
         }
         return labels.get(self.result, self.result)
+
+
+class ScanConfirmation(models.Model):
+    """
+    Attendee-facing confirmation for a successful check-in scan.
+    Shown as a popup on the attendee's device to prevent screenshot fraud.
+    """
+
+    class Response(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        CONFIRMED = 'confirmed', 'Confirmed — attendee said yes'
+        DENIED = 'denied', 'Denied — attendee said no'
+        EXPIRED = 'expired', 'Expired'
+
+    scan_log = models.OneToOneField(
+        ScanLog, on_delete=models.CASCADE, related_name='confirmation'
+    )
+    response = models.CharField(
+        max_length=20, choices=Response.choices, default=Response.PENDING
+    )
+    responded_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Confirmation for {self.scan_log} — {self.response}"

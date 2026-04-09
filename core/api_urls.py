@@ -32,4 +32,8 @@ urlpatterns = [
 
     # Logs
     path('logs', views.ScanLogListView.as_view(), name='api-logs'),
+
+    # Scan confirmation (attendee popup)
+    path('scan-confirmation/pending', views.ScanConfirmationPendingView.as_view(), name='api-scan-confirmation-pending'),
+    path('scan-confirmation/<int:pk>/respond', views.ScanConfirmationRespondView.as_view(), name='api-scan-confirmation-respond'),
 ]
