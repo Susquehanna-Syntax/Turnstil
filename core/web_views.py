@@ -19,6 +19,7 @@ import logging
 from datetime import datetime
 
 from django.contrib import messages
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth import login, logout, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -37,8 +38,16 @@ User = get_user_model()
 
 def home(request):
     """Landing page with upcoming events."""
-    events = Event.objects.filter(end_time__gte=timezone.now()).order_by('start_time')[:10]
-    return render(request, 'public/home.html', {'events': events})
+    q = request.GET.get('q', '').strip()
+    events = Event.objects.filter(end_time__gte=timezone.now())
+    if q:
+        events = events.filter(
+            Q(name__icontains=q) |
+            Q(location__icontains=q) |
+            Q(description__icontains=q)
+        )
+    events = events.order_by('start_time')[:10]
+    return render(request, 'public/home.html', {'events': events, 'search_query': q})
 
 
 def register_page(request):
@@ -110,10 +119,26 @@ def profile_page(request):
         person.visibility = visibility
         person.save()
 
+    notif_prefs = person.get_notification_preferences()
+
     return render(request, 'public/profile.html', {
         'person': person,
         'tickets': tickets,
+        'notif_prefs': notif_prefs,
     })
+
+
+@login_required
+def save_notification_preferences(request):
+    if request.method == 'POST':
+        person = request.user.person
+        person.notification_preferences = {
+            'event_reminders': request.POST.get('notif_event_reminders') == 'on',
+            'event_updates': request.POST.get('notif_event_updates') == 'on',
+            'new_events': request.POST.get('notif_new_events') == 'on',
+        }
+        person.save(update_fields=['notification_preferences'])
+    return redirect('profile')
 
 
 @login_required
@@ -300,7 +325,6 @@ def event_create_page(request):
     return render(request, 'admin_portal/event_create.html')
 
 
-@login_required
 def event_detail_page(request, uuid):
     event = get_object_or_404(Event, id=uuid)
     tickets = event.tickets.select_related('person').order_by('-issued_at')
@@ -322,10 +346,10 @@ def event_detail_page(request, uuid):
             pass
 
     # Handle registration from web (with added cancel feature)
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated and not event.disable_gui_registration:
         person = request.user.person
 
-        if 'register' in request.POST:
+        if 'register' in request.POST and event.registration_is_open() and not event.is_full:
             Ticket.objects.get_or_create(
                 person=person,
                 event=event,
@@ -358,6 +382,7 @@ def event_detail_page(request, uuid):
         'event_staff': event_staff,
         'available_staff': available_staff,
         'is_registered': is_registered,
+        'reg_open': event.registration_is_open(),
     })
 
 

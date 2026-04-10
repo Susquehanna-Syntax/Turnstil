@@ -55,7 +55,11 @@
         <label for="external_link">External Link (optional)</label>
         <input type="url" id="external_link" name="external_link" value="{{ data.external_link|default:'' }}">
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
+        <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
+            <input type="checkbox" name="disable_gui_registration" {% if data.disable_gui_registration %}checked{% endif %}>
+            <span>Disable web registration (API/external only)</span>
+        </label>
+
         <button type="submit" class="btn btn-filled-peach" style="margin-top: 24px;">Create Event</button>
     </form>
 </div>

@@ -17,5 +17,6 @@ class EventForm(ModelForm):
         ]
 =======
             'external_link',
+            'disable_gui_registration',
         ]
 >>>>>>> 6489d758485c56fa294002f439ead7fee94f3161

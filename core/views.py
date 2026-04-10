@@ -22,7 +22,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 >>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
-from .models import Person, Event, Ticket, ScanLog
+from .models import Person, Event, Ticket, ScanLog, ScanConfirmation
 from .serializers import (
     RegisterSerializer, UserSerializer,
     PersonSerializer, PersonContactSerializer, ContactUpdateSerializer,
@@ -521,10 +521,11 @@ class CheckInView(APIView):
 
         # --- Success! Check them in ---
         ticket.check_in()
-        self._log_scan(
+        scan_log = self._log_scan(
             event_id=event, person=person, actor=request.user,
             result=ScanLog.Result.SUCCESS,
         )
+        ScanConfirmation.objects.create(scan_log=scan_log)
 
         return Response({
             'status': 'success',
@@ -537,7 +538,7 @@ class CheckInView(APIView):
 
     def _log_scan(self, event_id, person, actor, result, scanned_value='', metadata=None):
         """Log every scan attempt for audit trail."""
-        ScanLog.objects.create(
+        return ScanLog.objects.create(
             event=event_id if isinstance(event_id, Event) else None,
             person=person,
             actor=actor,
@@ -562,3 +563,99 @@ class ScanLogListView(generics.ListAPIView):
         if result:
             qs = qs.filter(result=result)
         return qs
+
+
+# ── Scan Confirmation ─────────────────────────────────────────────
+
+class ScanConfirmationPendingView(APIView):
+    """
+    GET: Returns the most recent pending scan confirmation for the
+    authenticated user's person, if one exists within the last 5 minutes.
+    Used by the attendee's browser to poll for the confirmation popup.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            person = request.user.person
+        except Exception:
+            return Response({'status': 'success', 'data': None})
+
+        cutoff = timezone.now() - timezone.timedelta(minutes=5)
+        confirmation = (
+            ScanConfirmation.objects
+            .filter(
+                scan_log__person=person,
+                response=ScanConfirmation.Response.PENDING,
+                created_at__gte=cutoff,
+            )
+            .select_related('scan_log__event')
+            .order_by('-created_at')
+            .first()
+        )
+
+        if not confirmation:
+            return Response({'status': 'success', 'data': None})
+
+        return Response({
+            'status': 'success',
+            'data': {
+                'id': confirmation.pk,
+                'event_name': confirmation.scan_log.event.name if confirmation.scan_log.event else 'Unknown Event',
+                'scanned_at': confirmation.scan_log.timestamp.isoformat(),
+            },
+        })
+
+
+class ScanConfirmationRespondView(APIView):
+    """
+    POST: Record the attendee's yes/no response to a scan confirmation.
+    Body: {"confirmed": true} or {"confirmed": false}
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            person = request.user.person
+        except Exception:
+            return Response(
+                {'status': 'error', 'message': 'No person profile found.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            confirmation = ScanConfirmation.objects.select_related('scan_log__person').get(
+                pk=pk,
+                scan_log__person=person,
+            )
+        except ScanConfirmation.DoesNotExist:
+            return Response(
+                {'status': 'error', 'message': 'Confirmation not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if confirmation.response != ScanConfirmation.Response.PENDING:
+            return Response(
+                {'status': 'error', 'message': 'Already responded.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        confirmed = request.data.get('confirmed')
+        if confirmed is None:
+            return Response(
+                {'status': 'error', 'message': '"confirmed" field required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        confirmation.response = (
+            ScanConfirmation.Response.CONFIRMED if confirmed
+            else ScanConfirmation.Response.DENIED
+        )
+        confirmation.responded_at = timezone.now()
+        confirmation.save(update_fields=['response', 'responded_at'])
+
+        if not confirmed:
+            confirmation.scan_log.metadata['attendee_denied'] = True
+            confirmation.scan_log.save(update_fields=['metadata'])
+
+        return Response({'status': 'success'})

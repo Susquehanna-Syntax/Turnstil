@@ -48,39 +48,33 @@
     </div>
 </div>
 
-<<<<<<< HEAD
-<!-- Register button for attendees -->
-
-<!-- Action buttons -->
-<div class="stat-grid fade-up fade-up-3" style="margin-top: 16px;">
-    <a href="{% url 'dashboard' %}" class="btn btn-filled-rose" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">← Dashboard</a>
-
-    {% if user.is_authenticated %}
-        <form method="post" style="margin: 0; height: 100%;">
-            {% csrf_token %}
-
-            {% if is_registered %}
-                <!-- cancel button -->
-                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Cancel Registration</button>
-
-            {% elif not event.is_full %}
-                <!-- register button -->
-                <button type="submit" name="register" value="1" class="btn btn-filled-lav" style="width: 100%; height: 100%; justify-content: center; margin: 0; box-sizing: border-box;">Register for This Event</button>
-=======
+{% if user.is_authenticated %}
 <!-- Action buttons -->
 <div class="stat-grid fade-up fade-up-3 mt-16">
     <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
 
-    {% if user.is_authenticated %}
-        <form method="post" style="margin:0; display:flex;">
-            {% csrf_token %}
-            {% if is_registered %}
+    {% if event.disable_gui_registration %}
+        {% if event.external_link %}
+            <a href="{{ event.external_link }}" target="_blank" rel="noopener" class="btn btn-filled-lav btn-block">Register Externally</a>
+        {% else %}
+            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration via API only</span>
+        {% endif %}
+    {% else %}
+        {% if is_registered %}
+            <form method="post" style="margin:0; display:flex;">
+                {% csrf_token %}
                 <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
-            {% elif not event.is_full %}
+            </form>
+        {% elif not reg_open %}
+            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration Closed</span>
+        {% elif event.is_full %}
+            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Event Full</span>
+        {% else %}
+            <form method="post" style="margin:0; display:flex;">
+                {% csrf_token %}
                 <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
-            {% endif %}
-        </form>
+            </form>
+        {% endif %}
     {% endif %}
 
 <<<<<<< HEAD
@@ -110,8 +104,12 @@
         {% endif %}
     </form>
     {% endif %}
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 </div>
+{% else %}
+<div class="fade-up fade-up-3 mt-16" style="text-align:center;">
+    <a href="{% url 'register' %}" class="btn btn-filled-lav">Create an Account to Register</a>
+</div>
+{% endif %}
 
 {% if user.is_staff_or_above %}
 <!-- Tabs -->
