@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-=======
     <meta name="theme-color" content="#1c1c21">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Turnstil">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/static/icons/turnstilLogo.png">
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     <title>{% block title %}Turnstil{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -221,14 +218,6 @@
             .two-col-grid { grid-template-columns: 1fr; }
             .four-col-grid { grid-template-columns: 1fr 1fr; }
         }
-<<<<<<< HEAD
-        @media (max-width: 560px) {
-            .layout { grid-template-columns: 52px 1fr; }
-            .sidebar { width: 52px; }
-            .four-col-grid { grid-template-columns: 1fr; }
-            .main-content { padding: 24px 16px 40px; }
-            .stat-grid { grid-template-columns: 1fr 1fr; }
-=======
         @media (max-width: 768px) {
             /* Layout */
             .layout { grid-template-columns: 1fr; }
@@ -349,7 +338,6 @@
             .stat-grid { grid-template-columns: 1fr; }
             .main-content { padding: 16px 12px 96px; }
             .table-wrap { max-width: calc(100vw - 24px); }
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         }
 
         /* ── Page header ── */
@@ -582,8 +570,6 @@
         .btn-group .btn { border-radius: 0; }
         .btn-group .btn:first-child { border-radius: var(--r-md) 0 0 var(--r-md); }
         .btn-group .btn:last-child  { border-radius: 0 var(--r-md) var(--r-md) 0; }
-<<<<<<< HEAD
-=======
         /* Mobile btn-group: after component for cascade priority */
         @media (max-width: 768px) {
             .btn-group { flex-direction: column; width: 100%; gap: 8px; }
@@ -595,7 +581,6 @@
                 justify-content: center;
             }
         }
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
         /* ── Inputs / Forms ── */
         label {
@@ -698,14 +683,11 @@
             grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 16px;
         }
-<<<<<<< HEAD
-=======
         /* Grid overrides after definitions for cascade priority */
         @media (max-width: 900px) {
             .two-col-grid { grid-template-columns: 1fr; }
             .four-col-grid { grid-template-columns: 1fr 1fr; }
         }
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
         /* ── Scan results ── */
         .scan-result {
@@ -912,21 +894,14 @@
         .mt-16 { margin-top: 16px; }
         .mt-24 { margin-top: 24px; }
         .mb-0  { margin-bottom: 0; }
-<<<<<<< HEAD
-        .flex  { display: flex; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-=======
         .mb-16 { margin-bottom: 16px; }
         .flex  { display: flex; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         .gap-8  { gap: 8px; }
         .gap-12 { gap: 12px; }
         .flex-wrap { flex-wrap: wrap; }
         .text-muted { color: var(--text-2); }
 
-<<<<<<< HEAD
-=======
         /* ── Modal ── */
         .modal-overlay {
             display: none;
@@ -973,7 +948,6 @@
             .mobile-popover { display: none; }
         }
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         {% block extra_css %}{% endblock %}
     </style>
 </head>
@@ -1028,9 +1002,6 @@
                 <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
         </a>
-<<<<<<< HEAD
-        {% endif %}
-=======
         {# ── Mobile More menu (staff only — Dashboard access) ── #}
         <div class="sidebar-more-wrap">
             <button class="sidebar-icon" data-tip="More" onclick="toggleMobileMenu(event)">
@@ -1063,7 +1034,6 @@
         </div>
         {% endif %}
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         {% endif %}
 
         <div class="sidebar-spacer"></div>

@@ -159,10 +159,7 @@ class Event(models.Model):
         help_text='Hide web registration button; only API/external registration allowed',
     )
     created_at = models.DateTimeField(auto_now_add=True)
-<<<<<<< HEAD
-=======
     external_link = models.URLField(blank=True, null=True)
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
     class Meta:
         ordering = ['-start_time']
@@ -263,8 +260,6 @@ class Ticket(models.Model):
         self.save(update_fields=['status', 'checked_in_at'])
 
 
-<<<<<<< HEAD
-=======
 class EventReminder(models.Model):
     """Tracks which reminder emails have been sent for each event."""
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='reminders')
@@ -278,7 +273,6 @@ class EventReminder(models.Model):
         return f"{self.event.name} — {self.hours_before}h reminder"
 
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 class ScanLog(models.Model):
     """Audit trail for every scan attempt, successful or not."""
 

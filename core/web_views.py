@@ -2,19 +2,6 @@
 Turnstil web views — server-rendered pages.
 These handle the HTML interface; the API handles data operations.
 """
-<<<<<<< HEAD
-from django.contrib.auth import login, logout, authenticate, get_user_model
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
-
-from .models import Person, Event, Ticket, ScanLog
-from .serializers import RegisterSerializer
-from .forms import EventForm
-from datetime import datetime
-from .serializers import EventCreateSerializer
-
-=======
 import logging
 from datetime import datetime
 
@@ -34,7 +21,6 @@ from .serializers import RegisterSerializer, EventCreateSerializer
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
 def home(request):
     """Landing page with upcoming events."""
@@ -250,9 +236,6 @@ def dashboard_page(request):
     if request.user.role not in ('staff', 'admin', 'organizer'):
         return redirect('home')
     events = Event.objects.all()
-<<<<<<< HEAD
-    return render(request, 'admin_portal/dashboard.html', {'events': events})
-=======
     context = {'events': events}
 
     if request.user.role == 'admin':
@@ -261,7 +244,6 @@ def dashboard_page(request):
         context['role_choices'] = User.Role.choices
 
     return render(request, 'admin_portal/dashboard.html', context)
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
 
 @login_required
@@ -291,8 +273,6 @@ def event_create_page(request):
                     'data': data
                 })
             event.staff.add(request.user)
-<<<<<<< HEAD
-=======
 
             users = User.objects.all()
 
@@ -312,7 +292,6 @@ def event_create_page(request):
             except Exception:
                 logger.exception("Failed to send event creation email for %s", event.name)
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             return redirect('event-detail', uuid=event.id)
 
         # If serializer invalid, show errors
@@ -338,11 +317,7 @@ def event_detail_page(request, uuid):
                 person=person,
                 event=event,
             ).exists()
-<<<<<<< HEAD
-        except:
-=======
         except Person.DoesNotExist:
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             pass
 
     # Handle registration from web (with added cancel feature)
@@ -366,10 +341,6 @@ def event_detail_page(request, uuid):
 
     logs = ScanLog.objects.filter(event=event).select_related('person', 'actor').order_by('-timestamp')
 
-<<<<<<< HEAD
-    User = get_user_model()
-=======
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     event_staff = event.staff.all()
     available_staff = User.objects.filter(
         role__in=['staff', 'organizer', 'admin']
@@ -393,10 +364,6 @@ def manage_event_staff(request, uuid):
         return redirect('event-detail', uuid=uuid)
 
     if request.method == 'POST':
-<<<<<<< HEAD
-        User = get_user_model()
-=======
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         action = request.POST.get('action')
         user_id = request.POST.get('user_id', '').strip()
         if not user_id:
@@ -463,8 +430,6 @@ def event_edit_page(request, uuid):
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
-<<<<<<< HEAD
-=======
 
             attendees = User.objects.filter(
                 person__tickets__event=event
@@ -485,7 +450,6 @@ def event_edit_page(request, uuid):
             except Exception:
                 logger.exception("Failed to send event update email for %s", event.name)
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
             return redirect('organizer-event-list')
     else:
         form = EventForm(instance=event)
@@ -495,8 +459,6 @@ def event_edit_page(request, uuid):
         'event': event
     })
 
-<<<<<<< HEAD
-=======
 
 # ── Admin user management ──────────────────────────────────────
 
@@ -598,4 +560,3 @@ def admin_register_user_for_event(request, user_id):
     messages.success(request, f'Registered {target.username} for {event.name}.')
     return redirect('dashboard')
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161

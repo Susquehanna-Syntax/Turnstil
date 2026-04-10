@@ -7,53 +7,6 @@
     <p>Your QR code: <code>{{ person.id }}</code></p>
 </div>
 
-<<<<<<< HEAD
-<div class="two-col-grid">
-    <div class="card fade-up fade-up-1">
-        <div class="section-label" style="margin-top: 0;">Personal Info</div>
-        <form method="post">
-            {% csrf_token %}
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" value="{{ person.name }}" required>
-
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" value="{{ person.email }}">
-
-            <label for="organization">Organization</label>
-            <input type="text" id="organization" name="organization" value="{{ person.organization }}">
-
-            <label for="phone">Phone</label>
-            <input type="tel" id="phone" name="phone" value="{{ person.phone }}">
-
-            <label for="links">Links</label>
-            <input type="url" id="links" name="links" value="{{ person.links }}">
-
-            <fieldset style="margin-top: 20px;">
-                <legend>Visible when others scan your QR:</legend>
-                <label>
-                    <input type="checkbox" name="vis_email" {% if person.visibility.email %}checked{% endif %}>
-                    Email
-                </label>
-                <label>
-                    <input type="checkbox" name="vis_organization" {% if person.visibility.organization %}checked{% endif %}>
-                    Organization
-                </label>
-                <label>
-                    <input type="checkbox" name="vis_phone" {% if person.visibility.phone %}checked{% endif %}>
-                    Phone
-                </label>
-                <label>
-                    <input type="checkbox" name="vis_links" {% if person.visibility.links %}checked{% endif %}>
-                    Links
-                </label>
-            </fieldset>
-
-            <button type="submit" class="btn btn-filled-sky" style="margin-top: 20px;">Save Changes</button>
-        </form>
-    </div>
-
-    <div>
-=======
 {# ── Mobile-only tab bar ── #}
 <div class="profile-tabs tab-bar fade-up" style="margin-bottom: 20px;">
     <button class="tab-btn active" data-color="sky" onclick="switchProfileTab('info', this)">Info</button>
@@ -110,7 +63,6 @@
     </div>
 
     <div class="profile-tab-panel" id="ptab-qr">
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         <div class="card fade-up fade-up-2" style="margin-bottom: 14px;">
             <div class="section-label" style="margin-top: 0;">My QR Code</div>
             <div class="qr-container">
@@ -186,8 +138,6 @@
     </div>
 </div>
 {% endblock %}
-<<<<<<< HEAD
-=======
 
 {% block extra_js %}
 <script>
@@ -199,4 +149,3 @@ function switchProfileTab(tab, btn) {
 }
 </script>
 {% endblock %}
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161

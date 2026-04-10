@@ -6,25 +6,13 @@
     <h2>My Events</h2>
 </div>
 
-<<<<<<< HEAD
-<div style="margin-bottom: 24px;" class="fade-up fade-up-1">
-=======
 <div class="flex gap-8 fade-up fade-up-1" style="margin-bottom:24px; flex-wrap:wrap;">
     <a href="{% url 'dashboard' %}" class="btn btn-filled-rose">← Dashboard</a>
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create New Event</a>
 </div>
 
 <div class="fade-up fade-up-2">
     {% for event in events %}
-<<<<<<< HEAD
-    <div class="list-item">
-        <div style="flex: 1;">
-            <strong>{{ event.name }}</strong>
-            <small class="text-muted" style="display: block; margin-top: 2px;">{{ event.start_time|date:"M j, Y" }}</small>
-        </div>
-        <a href="{% url 'event-edit' event.id %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Edit</a>
-=======
     <div class="list-item"
          data-event-id="{{ event.id }}"
          data-event-name="{{ event.name }}"
@@ -45,14 +33,11 @@
             </small>
         </div>
         <button type="button" class="btn btn-filled-peach btn-sm" style="font-size:12px; padding:7px 16px;" onclick="openEditModal(this.closest('.list-item'))">Edit</button>
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
     </div>
     {% empty %}
     <p class="text-muted">No events yet.</p>
     {% endfor %}
 </div>
-<<<<<<< HEAD
-=======
 
 <!-- Edit event modal -->
 <div id="edit-modal" class="modal-overlay" onclick="closeModal('edit-modal')">
@@ -138,5 +123,4 @@
         document.getElementById('edit-name').focus();
     }
 </script>
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 {% endblock %}

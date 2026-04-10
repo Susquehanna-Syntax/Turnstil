@@ -52,35 +52,15 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-<<<<<<< HEAD
-            ],
-        },
-    },
-]
-
-WSGI_APPLICATION = 'config.wsgi.application'
-
-=======
                 ],
             },
     },
 ]
 WSGI_APPLICATION = 'config.wsgi.application'
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 # --- Database ---
 # Default: SQLite for quick prototyping. Swap to PostgreSQL for production.
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 if DATABASE_URL.startswith('postgresql'):
-<<<<<<< HEAD
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'turnstil'),
-            'USER': os.environ.get('DB_USER', 'turnstil'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'turnstil'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-=======
     DATABASES = { 'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'turnstil'),
@@ -88,7 +68,6 @@ if DATABASE_URL.startswith('postgresql'):
         'PASSWORD': os.environ.get('DB_PASSWORD', 'turnstil'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         }
     }
 else:
@@ -98,23 +77,12 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-<<<<<<< HEAD
-
-# --- Auth ---
-AUTH_USER_MODEL = 'core.User'
-
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-]
-
-=======
 # --- Auth ---
 AUTH_USER_MODEL = 'core.User'
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME':
          'django.contrib.auth.password_validation.MinimumLengthValidator'},
 ]
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 # --- DRF ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -128,36 +96,21 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-<<<<<<< HEAD
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25,
-}
-
-=======
     'DEFAULT_PAGINATION_CLASS':
         'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
 }
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 # --- i18n ---
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/New_York'
 USE_I18N = True
 USE_TZ = True
-<<<<<<< HEAD
-
-=======
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 # --- Static / Media ---
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']

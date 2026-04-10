@@ -2,13 +2,9 @@
 Turnstil API views.
 """
 import uuid
-<<<<<<< HEAD
-
-=======
 import csv
 
 from django.http import HttpResponse
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -17,10 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-<<<<<<< HEAD
-=======
 from rest_framework.permissions import IsAuthenticated
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 
 from .models import Person, Event, Ticket, ScanLog, ScanConfirmation
 from .serializers import (
@@ -358,8 +351,6 @@ class EventDashboardView(APIView):
         })
 
 
-<<<<<<< HEAD
-=======
 class EventAttendeesCSVView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -402,7 +393,6 @@ class EventAttendeesCSVView(APIView):
         return response
 
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 # ── Check-in (the critical endpoint) ────────────────────────────
 
 class CheckInView(APIView):

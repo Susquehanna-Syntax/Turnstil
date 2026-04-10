@@ -7,60 +7,13 @@
     <p>Event management overview</p>
 </div>
 
-<<<<<<< HEAD
-<div class="flex gap-8 fade-up fade-up-1" style="margin-bottom: 24px; flex-wrap: wrap;">
-    {% if user.is_organizer_or_above %}
-        <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create Event</a>
-    {% endif %}
-    {% if request.user.is_organizer_or_above %}
-=======
 <div class="flex gap-8 fade-up fade-up-1" style="margin-bottom:24px; flex-wrap:wrap;">
     {% if user.is_organizer_or_above %}
         <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create Event</a>
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         <a href="{% url 'organizer-event-list' %}" class="btn btn-outline">My Events</a>
     {% endif %}
 </div>
 
-<<<<<<< HEAD
-<div class="section-label fade-up fade-up-2">All Events</div>
-<div class="table-wrap fade-up fade-up-2">
-    <table>
-        <thead>
-            <tr>
-                <th>Event</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Registered</th>
-                <th>Checked In</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for event in events %}
-            <tr>
-                <td><a href="{% url 'event-detail' uuid=event.id %}">{{ event.name }}</a></td>
-                <td>{{ event.start_time|date:"M j, Y g:i A" }}</td>
-                <td>{{ event.location }}</td>
-                <td>{{ event.registration_count }}{% if event.capacity %} / {{ event.capacity }}{% endif %}</td>
-                <td>{{ event.checkin_count }}</td>
-                <td>
-                    {% if event.is_active %}
-                        <span class="ticket-badge badge-checked_in">Live</span>
-                    {% elif event.is_upcoming %}
-                        <span class="ticket-badge badge-issued">Upcoming</span>
-                    {% else %}
-                        <span class="ticket-badge badge-canceled">Ended</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" style="color: var(--text-2); text-align: center; padding: 24px;">No events yet.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-=======
 {% if user.role == 'admin' %}
 <div class="tab-bar fade-up fade-up-2">
     <button class="tab-btn active" data-tab="events" data-color="rose" onclick="switchTab('events', this)">Events</button>
@@ -258,5 +211,4 @@
     }
 </script>
 {% endif %}
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
 {% endblock %}
