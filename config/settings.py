@@ -146,4 +146,4 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Reminder windows (hours before event start) for periodic email reminders
 REMINDER_WINDOWS = [24, 1]
 
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
+

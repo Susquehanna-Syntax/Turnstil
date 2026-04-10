@@ -112,7 +112,6 @@ class EventCreateSerializer(serializers.ModelSerializer):
             'reg_open': {'required': False, 'allow_null': True},
             'reg_close': {'required': False, 'allow_null': True},
             'external_link': {'required': False, 'allow_null': True},
->>>>>>> 6489d758485c56fa294002f439ead7fee94f3161
         }
 
 
