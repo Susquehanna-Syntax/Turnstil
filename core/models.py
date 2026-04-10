@@ -326,6 +326,34 @@ class ScanLog(models.Model):
         return labels.get(self.result, self.result)
 
 
+class EventPhoto(models.Model):
+    """Up to 10 organizer-uploaded photos per event, stored as base64."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='photos')
+    image_data = models.TextField(help_text='Base64-encoded image data URI')
+    caption = models.CharField(max_length=200, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='uploaded_photos',
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'uploaded_at']
+
+    def __str__(self):
+        return f"Photo for {self.event.name} by {self.uploaded_by}"
+
+    def clean(self):
+        if not self.pk and self.event_id:
+            count = EventPhoto.objects.filter(event_id=self.event_id).count()
+            if count >= 10:
+                raise ValidationError('An event may have at most 10 photos.')
+
+
 class ScanConfirmation(models.Model):
     """
     Attendee-facing confirmation for a successful check-in scan.

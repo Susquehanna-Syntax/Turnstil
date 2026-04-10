@@ -15,7 +15,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
 from .forms import EventForm
-from .models import Person, Event, Ticket, ScanLog
+from .models import Person, Event, Ticket, ScanLog, EventPhoto
 from .serializers import RegisterSerializer, EventCreateSerializer
 
 logger = logging.getLogger(__name__)
@@ -346,6 +346,11 @@ def event_detail_page(request, uuid):
         role__in=['staff', 'organizer', 'admin']
     ).exclude(id__in=event_staff.values_list('id', flat=True))
 
+    photos = event.photos.all()
+    is_organizer = request.user.is_authenticated and (
+        request.user.is_organizer_or_above() or event.created_by == request.user
+    )
+
     return render(request, 'admin_portal/event_detail.html', {
         'event': event,
         'tickets': tickets,
@@ -354,7 +359,47 @@ def event_detail_page(request, uuid):
         'available_staff': available_staff,
         'is_registered': is_registered,
         'reg_open': event.registration_is_open(),
+        'photos': photos,
+        'is_organizer': is_organizer,
+        'can_add_photo': is_organizer and photos.count() < 10,
     })
+
+
+@login_required
+def upload_event_photo(request, uuid):
+    event = get_object_or_404(Event, id=uuid)
+    if not (request.user.is_organizer_or_above() or event.created_by == request.user):
+        return redirect('event-detail', uuid=uuid)
+
+    if request.method == 'POST':
+        file = request.FILES.get('photo')
+        if file and event.photos.count() < 10:
+            import base64
+            data = base64.b64encode(file.read()).decode('utf-8')
+            mime = file.content_type or 'image/jpeg'
+            photo = EventPhoto(
+                event=event,
+                image_data=f'data:{mime};base64,{data}',
+                caption=request.POST.get('caption', '').strip(),
+                uploaded_by=request.user,
+                order=event.photos.count(),
+            )
+            photo.full_clean()
+            photo.save()
+
+    return redirect('event-detail', uuid=uuid)
+
+
+@login_required
+def delete_event_photo(request, uuid, photo_id):
+    event = get_object_or_404(Event, id=uuid)
+    if not (request.user.is_organizer_or_above() or event.created_by == request.user):
+        return redirect('event-detail', uuid=uuid)
+
+    if request.method == 'POST':
+        EventPhoto.objects.filter(id=photo_id, event=event).delete()
+
+    return redirect('event-detail', uuid=uuid)
 
 
 @login_required
