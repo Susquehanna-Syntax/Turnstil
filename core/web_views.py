@@ -254,6 +254,20 @@ def event_create_page(request):
     if request.method == 'POST':
         data = request.POST.copy()
 
+        # limit active events per user
+        active_events_count = Event.objects.filter(
+            created_by=request.user,
+            end_time__gte=timezone.now()
+        ).count()
+
+        if active_events_count >= 10:
+            return render(request, 'admin_portal/event_create.html', {
+                'errors': {
+                    '__all__': ['You can only have up to 10 active events at a time']
+                },
+                'data': data
+            })
+
         # Convert reg_open and reg_close to datetime if they exist
         for field in ['reg_open', 'reg_close']:
             if field in data and data[field]:
