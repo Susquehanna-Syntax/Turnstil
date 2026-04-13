@@ -21,6 +21,7 @@
 .event-gallery-col {
     margin: 0 -16px 20px;
     flex-shrink: 0;
+    position: relative;
 }
 
 /* Gallery strip */
@@ -81,9 +82,53 @@
     flex-shrink: 0;
 }
 
+/* Drop zone */
+.photo-drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--r-md);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    color: var(--text-3);
+    user-select: none;
+}
+.photo-drop-zone:hover, .photo-drop-zone.drop-active {
+    border-color: var(--mint);
+    background: rgba(126,221,181,0.07);
+    color: var(--mint);
+}
+.photo-drop-zone.drop-active { border-style: solid; }
+
+/* Gallery photo card rows */
+.photo-card-row {
+    display: flex;
+    gap: 4px;
+    height: 32px;
+    margin-top: 4px;
+}
+.photo-card-row input[type="text"] {
+    height: 32px;
+    padding: 0 8px;
+    font-size: 11px;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+}
+.photo-card-row .btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.photo-card-row form { margin: 0; display: flex; flex: 1; }
+.photo-card-row form .btn { width: 100%; justify-content: center; }
+
 /* Nav buttons */
 .gallery-nav-btn {
-    display: none;
+    display: flex;
     position: absolute;
     top: calc(50% - 16px);
     transform: translateY(-50%);
@@ -131,10 +176,6 @@
 
     .event-gallery-placeholder {
         height: min(75vh, 680px);
-    }
-
-    .gallery-nav-btn {
-        display: flex;
     }
 
     .event-info-col {
@@ -356,42 +397,55 @@
 {% if user.is_organizer_or_above or event.created_by == user %}
 <div id="tab-gallery" class="tab-panel fade-up fade-up-4">
     <div class="card">
+
         {% if photos %}
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
             {% for photo in photos %}
-            <div style="position:relative;">
-                <img src="{{ photo.image_data }}" alt="{{ photo.caption }}"
-                     style="width:140px; height:100px; object-fit:cover; border-radius:var(--r-md); cursor:pointer;"
-                     onclick="openPhotoModal('{{ photo.image_data }}', '{{ photo.caption|escapejs }}')">
-                {% if photo.caption %}
-                <div style="font-size:11px; color:var(--text-2); margin-top:4px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ photo.caption }}</div>
-                {% endif %}
-                <form method="post" action="{% url 'delete-event-photo' uuid=event.id photo_id=photo.id %}" style="margin:4px 0 0;">
+            <div style="width:160px;">
+                <div style="position:relative;">
+                    <img src="{{ photo.image_data }}" alt="{{ photo.caption }}"
+                         style="width:160px; height:110px; object-fit:cover; border-radius:var(--r-md); cursor:pointer; display:block;"
+                         onclick="openPhotoModal('{{ photo.image_data }}', '{{ photo.caption|escapejs }}')">
+                    {% if forloop.first %}
+                    <div style="position:absolute; top:6px; left:6px; background:var(--lemon); color:#1c1c21; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; pointer-events:none;">Cover</div>
+                    {% endif %}
+                </div>
+                <form method="post" action="{% url 'update-photo-caption' uuid=event.id photo_id=photo.id %}" class="photo-card-row" style="margin-top:6px;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline btn-sm" style="font-size:11px; padding:2px 8px; color:var(--rose);">Remove</button>
+                    <input type="text" name="caption" value="{{ photo.caption }}" maxlength="200" placeholder="Caption…">
+                    <button type="submit" class="btn btn-filled-mint">Save</button>
                 </form>
+                <div class="photo-card-row">
+                    {% if not forloop.first %}
+                    <form method="post" action="{% url 'set-photo-thumbnail' uuid=event.id photo_id=photo.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-filled-lemon">Cover</button>
+                    </form>
+                    {% else %}
+                    <div style="flex:1;"></div>
+                    {% endif %}
+                    <form method="post" action="{% url 'delete-event-photo' uuid=event.id photo_id=photo.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-filled-rose">Remove</button>
+                    </form>
+                </div>
             </div>
             {% endfor %}
         </div>
-        {% else %}
-        <p class="text-muted mb-16"><small>No photos uploaded yet.</small></p>
         {% endif %}
 
         {% if can_add_photo %}
-        <form method="post" action="{% url 'upload-event-photo' uuid=event.id %}" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
-            {% csrf_token %}
-            <div>
-                <label style="font-size:12px; color:var(--text-2); display:block; margin-bottom:4px;">Photos ({{ photos.count }}/10)</label>
-                <input type="file" name="photo" accept="image/*" multiple required style="font-size:13px;">
-            </div>
-            <div style="flex:1; min-width:160px;">
-                <label style="font-size:12px; color:var(--text-2); display:block; margin-bottom:4px;">Caption (optional)</label>
-                <input type="text" name="caption" maxlength="200" placeholder="Add a caption..." style="width:100%;">
-            </div>
-            <button type="submit" class="btn btn-filled-mint" style="white-space:nowrap;">Upload Photo</button>
-        </form>
+        <input type="file" id="gallery-file-input" accept="image/*" multiple hidden>
+        <div id="photo-drop-zone" class="photo-drop-zone"
+             data-upload-url="{% url 'upload-event-photo' uuid=event.id %}">
+            <i data-lucide="upload-cloud" style="width:32px; height:32px; margin-bottom:8px;"></i>
+            <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Drop photos here or click to select</div>
+            <div style="font-size:12px;">{{ photos.count }}/10 used · JPG, PNG, WEBP</div>
+            <div id="upload-status" style="font-size:12px; margin-top:8px; min-height:18px; color:var(--mint);"></div>
+        </div>
+        <form id="csrf-form" hidden>{% csrf_token %}</form>
         {% else %}
-        <p class="text-muted"><small>Maximum of 10 photos reached.</small></p>
+        <p class="text-muted" style="margin:0;"><small>Maximum of 10 photos reached.</small></p>
         {% endif %}
     </div>
 </div>
@@ -518,6 +572,45 @@ function openPhotoModal(src, caption) {
         const next = Math.max(0, Math.min(count - 1, currentIndex + dir));
         window.galleryScrollTo(next);
     };
+})();
+
+// ── Drag-and-drop upload ──
+(function() {
+    const zone = document.getElementById('photo-drop-zone');
+    const input = document.getElementById('gallery-file-input');
+    if (!zone || !input) return;
+
+    const uploadUrl = zone.dataset.uploadUrl;
+    const csrf = () => document.querySelector('#csrf-form [name="csrfmiddlewaretoken"]').value;
+
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drop-active'); });
+    zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drop-active'); });
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drop-active');
+        handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+    input.addEventListener('change', function() {
+        handleFiles(Array.from(this.files));
+        this.value = '';
+    });
+
+    async function handleFiles(files) {
+        if (!files.length) return;
+        const status = document.getElementById('upload-status');
+        zone.style.pointerEvents = 'none';
+        zone.style.opacity = '0.6';
+        for (let i = 0; i < files.length; i++) {
+            status.textContent = 'Uploading ' + (i + 1) + ' of ' + files.length + '…';
+            const fd = new FormData();
+            fd.append('photo', files[i]);
+            fd.append('csrfmiddlewaretoken', csrf());
+            try { await fetch(uploadUrl, { method: 'POST', body: fd }); } catch(_) {}
+        }
+        status.textContent = 'Done — refreshing…';
+        window.location.reload();
+    }
 })();
 </script>
 {% endblock %}

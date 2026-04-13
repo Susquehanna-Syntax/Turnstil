@@ -27,6 +27,8 @@ urlpatterns = [
     path('events/<uuid:uuid>/staff/', web_views.manage_event_staff, name='manage-event-staff'),
     path('events/<uuid:uuid>/photos/upload/', web_views.upload_event_photo, name='upload-event-photo'),
     path('events/<uuid:uuid>/photos/<uuid:photo_id>/delete/', web_views.delete_event_photo, name='delete-event-photo'),
+    path('events/<uuid:uuid>/photos/<uuid:photo_id>/caption/', web_views.update_photo_caption, name='update-photo-caption'),
+    path('events/<uuid:uuid>/photos/<uuid:photo_id>/thumbnail/', web_views.set_photo_thumbnail, name='set-photo-thumbnail'),
 
     # Organizer
     path('organizer_event_create/', web_views.organizer_event_list, name='organizer-event-list'),

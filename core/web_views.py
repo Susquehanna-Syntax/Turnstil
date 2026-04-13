@@ -407,6 +407,32 @@ def upload_event_photo(request, uuid):
 
 
 @login_required
+def update_photo_caption(request, uuid, photo_id):
+    event = get_object_or_404(Event, id=uuid)
+    if not (request.user.is_organizer_or_above() or event.created_by == request.user):
+        return redirect('event-detail', uuid=uuid)
+    if request.method == 'POST':
+        EventPhoto.objects.filter(id=photo_id, event=event).update(
+            caption=request.POST.get('caption', '').strip()
+        )
+    return redirect('event-detail', uuid=uuid)
+
+
+@login_required
+def set_photo_thumbnail(request, uuid, photo_id):
+    event = get_object_or_404(Event, id=uuid)
+    if not (request.user.is_organizer_or_above() or event.created_by == request.user):
+        return redirect('event-detail', uuid=uuid)
+    if request.method == 'POST':
+        # Set selected photo to order=0, push all others up
+        photos = list(event.photos.exclude(id=photo_id).order_by('order', 'uploaded_at'))
+        EventPhoto.objects.filter(id=photo_id, event=event).update(order=0)
+        for i, photo in enumerate(photos, start=1):
+            EventPhoto.objects.filter(id=photo.id).update(order=i)
+    return redirect('event-detail', uuid=uuid)
+
+
+@login_required
 def delete_event_photo(request, uuid, photo_id):
     event = get_object_or_404(Event, id=uuid)
     if not (request.user.is_organizer_or_above() or event.created_by == request.user):
