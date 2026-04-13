@@ -1065,9 +1065,14 @@
         </button>
 
         {% if user.is_authenticated %}
-        <div class="sidebar-avatar" data-tip="{{ user.username }}">
+        <a href="{% url 'profile' %}" class="sidebar-avatar" data-tip="{{ user.username }}"
+           style="text-decoration:none; overflow:hidden; background:var(--{{ user.person.card_color|default:'peach' }});">
+            {% if user.person.avatar %}
+            <img src="{{ user.person.avatar }}" alt="{{ user.username }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block;">
+            {% else %}
             {{ user.username|first|upper }}
-        </div>
+            {% endif %}
+        </a>
         <a href="{% url 'logout' %}" class="sidebar-icon" data-tip="Sign Out" style="margin-top:6px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

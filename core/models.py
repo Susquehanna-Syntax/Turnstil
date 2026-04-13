@@ -63,6 +63,18 @@ class Person(models.Model):
         default=dict, blank=True,
         help_text='Notification settings, e.g. {"event_reminders": true, "event_updates": true, "new_events": true}'
     )
+    avatar = models.TextField(blank=True, default='', help_text='Base64-encoded profile image data URI')
+
+    CARD_COLORS = [
+        ('rose', 'Rose'),
+        ('lavender', 'Lavender'),
+        ('mint', 'Mint'),
+        ('peach', 'Peach'),
+        ('sky', 'Sky'),
+        ('lemon', 'Lemon'),
+    ]
+    card_color = models.CharField(max_length=20, choices=CARD_COLORS, default='peach', blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -380,3 +392,22 @@ class ScanConfirmation(models.Model):
 
     def __str__(self):
         return f"Confirmation for {self.scan_log} — {self.response}"
+
+
+class ScannedContact(models.Model):
+    """Records when a person scans another person's QR in Discovery mode."""
+    scanner = models.ForeignKey(
+        Person, on_delete=models.CASCADE, related_name='scanned_contacts'
+    )
+    scanned = models.ForeignKey(
+        Person, on_delete=models.CASCADE, related_name='scanned_by'
+    )
+    scanned_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['scanner', 'scanned']
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.scanner.name} → {self.scanned.name}"

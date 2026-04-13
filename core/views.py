@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Person, Event, Ticket, ScanLog, ScanConfirmation
+from .models import Person, Event, Ticket, ScanLog, ScanConfirmation, ScannedContact
 from .serializers import (
     RegisterSerializer, UserSerializer,
     PersonSerializer, PersonContactSerializer, ContactUpdateSerializer,
@@ -136,10 +136,24 @@ class PersonContactView(APIView):
     def get(self, request, uuid):
         person = get_object_or_404(Person, id=uuid)
         if person.user == request.user:
-            # Owner sees everything
             data = PersonSerializer(person).data
         else:
             data = person.get_visible_contact()
+            data['card_color'] = person.card_color
+            data['avatar'] = person.avatar
+            # Record discovery scan
+            if request.user.is_authenticated:
+                try:
+                    scanner_person = request.user.person
+                    obj, created = ScannedContact.objects.get_or_create(
+                        scanner=scanner_person,
+                        scanned=person,
+                    )
+                    if not created:
+                        # Touch updated_at so it floats to top of list
+                        ScannedContact.objects.filter(pk=obj.pk).update(updated_at=timezone.now())
+                except Exception:
+                    pass
         return Response({'status': 'success', 'data': data})
 
     def patch(self, request, uuid):

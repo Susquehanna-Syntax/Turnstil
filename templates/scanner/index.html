@@ -111,6 +111,25 @@
                 <p><small class="text-muted">Scans will appear here...</small></p>
             </div>
         </div>
+
+        <!-- Saved Contacts -->
+        {% if scanned_contacts %}
+        <div class="card" style="margin-top: 12px;">
+            <div class="flex-between" style="margin-bottom:10px;">
+                <div class="section-label" style="margin-top:0;">Contacts</div>
+                <small class="text-muted">{{ scanned_contacts|length }}</small>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                {% for sc in scanned_contacts %}
+                <a href="{% url 'contact-view' uuid=sc.scanned.id %}" title="{{ sc.scanned.name }}"
+                   style="width:38px; height:38px; border-radius:11px; background:var(--{{ sc.scanned.card_color|default:'peach' }}); display:grid; place-items:center; font-size:13px; font-weight:700; color:var(--bg); text-decoration:none; overflow:hidden; flex-shrink:0; border:2px solid var(--s3); transition:transform 0.25s; position:relative;"
+                   onmouseover="this.style.transform='scale(1.12) translateY(-3px)'" onmouseout="this.style.transform=''">
+                    {% if sc.scanned.avatar %}<img src="{{ sc.scanned.avatar }}" alt="{{ sc.scanned.name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}{{ sc.scanned.name|first|upper }}{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

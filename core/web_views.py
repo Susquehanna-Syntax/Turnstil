@@ -15,7 +15,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
 from .forms import EventForm
-from .models import Person, Event, Ticket, ScanLog, EventPhoto
+from .models import Person, Event, Ticket, ScanLog, EventPhoto, ScannedContact
 from .serializers import RegisterSerializer, EventCreateSerializer
 
 logger = logging.getLogger(__name__)
@@ -107,10 +107,17 @@ def profile_page(request):
 
     notif_prefs = person.get_notification_preferences()
 
+    scanned_contacts = (
+        ScannedContact.objects.filter(scanner=person)
+        .select_related('scanned')
+        .order_by('-updated_at')
+    )
+
     return render(request, 'public/profile.html', {
         'person': person,
         'tickets': tickets,
         'notif_prefs': notif_prefs,
+        'scanned_contacts': scanned_contacts,
     })
 
 
@@ -184,10 +191,22 @@ def scanner_page(request):
                     events.filter(created_by_id=user.id)
             ).distinct()
 
+    scanned_contacts = []
+    if request.user.is_authenticated:
+        try:
+            scanned_contacts = (
+                ScannedContact.objects.filter(scanner=request.user.person)
+                .select_related('scanned')
+                .order_by('-updated_at')
+            )
+        except Exception:
+            pass
+
     return render(request, 'scanner/index.html', {
         'events': events,
         'active_event': active_event,
         'is_staff': is_staff,
+        'scanned_contacts': scanned_contacts,
     })
 
 
@@ -646,4 +665,37 @@ def admin_register_user_for_event(request, user_id):
 
     messages.success(request, f'Registered {target.username} for {event.name}.')
     return redirect('dashboard')
+
+
+@login_required
+def save_card_color(request):
+    if request.method != 'POST':
+        return redirect('profile')
+    color = request.POST.get('card_color', '').strip()
+    valid = [c[0] for c in Person.CARD_COLORS]
+    if color in valid:
+        person = request.user.person
+        person.card_color = color
+        person.save(update_fields=['card_color'])
+    return redirect('profile')
+
+
+@login_required
+def upload_avatar(request):
+    if request.method != 'POST':
+        return redirect('profile')
+    import base64
+    file = request.FILES.get('avatar')
+    if not file:
+        return redirect('profile')
+
+    data = file.read()
+    mime = file.content_type or 'image/jpeg'
+    b64 = base64.b64encode(data).decode('ascii')
+    data_uri = f'data:{mime};base64,{b64}'
+
+    person = request.user.person
+    person.avatar = data_uri
+    person.save(update_fields=['avatar'])
+    return redirect('profile')
 

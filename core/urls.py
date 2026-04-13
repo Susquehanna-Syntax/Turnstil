@@ -17,6 +17,8 @@ urlpatterns = [
     path('profile/', web_views.profile_page, name='profile'),
     path('profile/qr/', web_views.qr_display, name='qr-display'),
     path('profile/notifications/', web_views.save_notification_preferences, name='save-notifications'),
+    path('profile/avatar/', web_views.upload_avatar, name='upload-avatar'),
+    path('profile/color/', web_views.save_card_color, name='save-card-color'),
     path('scanner/', web_views.scanner_page, name='scanner'),
     path('scanner/select-event', web_views.select_event, name='select-event'),
 
