@@ -1,119 +1,258 @@
 {% extends "base.html" %}
 {% block title %}{{ event.name }} — Turnstil{% endblock %}
+{% block main_class %}event-detail-wide{% endblock %}
+
+{% block extra_css %}
+.event-detail-wide {
+    max-width: none;
+    padding-left: clamp(16px, 3vw, 40px);
+    padding-right: clamp(16px, 3vw, 40px);
+}
+
+/* ── Event detail layout ── */
+.event-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 28px;
+}
+
+/* Gallery column */
+.event-gallery-col {
+    margin: 0 -16px 20px;
+    flex-shrink: 0;
+}
+
+/* Gallery strip */
+.event-gallery-strip {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    height: 240px;
+    background: var(--s3);
+}
+.event-gallery-strip::-webkit-scrollbar { display: none; }
+
+.event-gallery-strip > div {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.event-gallery-strip img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+}
+
+.event-gallery-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, var(--s3) 0%, var(--s4) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Info column */
+.event-info-col {
+    min-width: 0;
+}
+
+/* Dots */
+.gallery-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 0 0;
+}
+.gallery-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+/* Desktop: side-by-side, equal height */
+@media (min-width: 900px) {
+    .event-hero {
+        flex-direction: row;
+        gap: 28px;
+        align-items: stretch;
+        margin-bottom: 32px;
+    }
+
+    .event-gallery-col {
+        width: 42%;
+        margin: 0;
+        border-radius: var(--r-xl);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-gallery-strip {
+        flex: 1;
+        min-height: 420px;
+        height: auto;
+    }
+
+    .event-gallery-placeholder {
+        flex: 1;
+        min-height: 420px;
+        height: auto;
+    }
+
+    .event-info-col {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-info-col h2 {
+        font-size: 2rem;
+    }
+}
+{% endblock %}
 
 {% block content %}
-<div class="page-header fade-up">
-    <h2>{{ event.name }}</h2>
-    <p>{{ event.start_time|date:"l, M j, Y · g:i A" }} — {{ event.end_time|date:"g:i A" }}</p>
-</div>
 
-{% if event.description %}
-    <p class="fade-up fade-up-1">{{ event.description }}</p>
-{% endif %}
+<!-- ── Hero: gallery + info side by side on desktop ── -->
+<div class="event-hero fade-up">
 
-{% if event.location %}
-    <p class="fade-up fade-up-1 text-muted"><i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:-2px;"></i> {{ event.location }}</p>
-{% endif %}
-
-{% if event.external_link %}
-    <p class="fade-up fade-up-1 text-muted">
-        <i data-lucide="link" style="width:14px;height:14px;vertical-align:-2px;"></i>
-        <a href="{{ event.external_link }}" target="_blank" rel="noopener">{{ event.external_link }}</a>
-    </p>
-{% endif %}
-
-<!-- Stats -->
-<div class="stat-grid fade-up fade-up-2">
-    <div class="stat-card stat-card-filled stat-card-rose">
-        <div class="number">{{ event.registration_count }}</div>
-        <div class="label">Registered</div>
-    </div>
-    <div class="stat-card stat-card-filled stat-card-lav">
-        <div class="number">{{ event.checkin_count }}</div>
-        <div class="label">Checked In</div>
-    </div>
-    <div class="stat-card stat-card-filled stat-card-lemon">
-        <div class="number">{% if event.capacity %}{{ event.capacity }}{% else %}∞{% endif %}</div>
-        <div class="label">Capacity</div>
-    </div>
-    <div class="stat-card stat-card-filled stat-card-mint">
-        <div class="number">
-            {% if event.is_active %}Active{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
+    <!-- Gallery column -->
+    <div class="event-gallery-col">
+        {% if photos %}
+        <div id="event-gallery-strip" class="event-gallery-strip">
+            {% for photo in photos %}
+            <div style="flex-shrink:0; scroll-snap-align:start; position:relative; height:100%;">
+                <img src="{{ photo.image_data }}" alt="{{ photo.caption }}"
+                     onclick="openPhotoModal('{{ photo.image_data }}', '{{ photo.caption|escapejs }}')">
+                {% if photo.caption %}
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:8px 12px; background:linear-gradient(transparent, rgba(0,0,0,0.6)); font-size:12px; color:#fff;">{{ photo.caption }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
-        <div class="label">Status</div>
+        {% if photos|length > 1 %}
+        <div class="gallery-dots">
+            {% for photo in photos %}
+            <div class="gallery-dot" data-index="{{ forloop.counter0 }}"
+                 style="background:{% if forloop.first %}var(--text-1){% else %}var(--text-3){% endif %};"
+                 onclick="galleryScrollTo({{ forloop.counter0 }})"></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="event-gallery-placeholder">
+            <i data-lucide="image" style="width:36px; height:36px; color:var(--text-3);"></i>
+            <span style="color:var(--text-3); font-size:13px;">No photos yet</span>
+        </div>
+        {% endif %}
     </div>
-</div>
 
-{% if user.is_authenticated %}
-<!-- Action buttons -->
-<div class="stat-grid fade-up fade-up-3 mt-16">
-    <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
+    <!-- Info column -->
+    <div class="event-info-col">
+        <h2 style="margin-bottom:4px;">{{ event.name }}</h2>
+        <p class="text-muted" style="font-size:13px; margin-bottom:12px;">
+            {{ event.start_time|date:"l, M j, Y · g:i A" }} — {{ event.end_time|date:"g:i A" }}
+        </p>
 
-    {% if event.disable_gui_registration %}
+        {% if event.location %}
+        <p class="text-muted" style="font-size:13px; margin-bottom:4px;">
+            <i data-lucide="map-pin" style="width:13px;height:13px;vertical-align:-2px;"></i> {{ event.location }}
+        </p>
+        {% endif %}
+
         {% if event.external_link %}
-            <a href="{{ event.external_link }}" target="_blank" rel="noopener" class="btn btn-filled-lav btn-block">Register Externally</a>
-        {% else %}
-            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration via API only</span>
+        <p class="text-muted" style="font-size:13px; margin-bottom:12px;">
+            <i data-lucide="link" style="width:13px;height:13px;vertical-align:-2px;"></i>
+            <a href="{{ event.external_link }}" target="_blank" rel="noopener">{{ event.external_link }}</a>
+        </p>
         {% endif %}
-    {% else %}
-        {% if is_registered %}
-            <form method="post" style="margin:0; display:flex;">
+
+        <!-- Stats -->
+        <div class="stat-grid" style="margin-bottom:16px;">
+            <div class="stat-card stat-card-filled stat-card-rose">
+                <div class="number">{{ event.registration_count }}</div>
+                <div class="label">Registered</div>
+            </div>
+            <div class="stat-card stat-card-filled stat-card-lav">
+                <div class="number">{{ event.checkin_count }}</div>
+                <div class="label">Checked In</div>
+            </div>
+            <div class="stat-card stat-card-filled stat-card-lemon">
+                <div class="number">{% if event.capacity %}{{ event.capacity }}{% else %}∞{% endif %}</div>
+                <div class="label">Capacity</div>
+            </div>
+            <div class="stat-card stat-card-filled stat-card-mint">
+                <div class="number">
+                    {% if event.is_active %}Active{% elif event.is_upcoming %}Upcoming{% else %}Ended{% endif %}
+                </div>
+                <div class="label">Status</div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        {% if user.is_authenticated %}
+        <div class="stat-grid">
+            <a href="{% url 'dashboard' %}" class="btn btn-filled-rose btn-block">← Dashboard</a>
+
+            {% if event.disable_gui_registration %}
+                {% if event.external_link %}
+                    <a href="{{ event.external_link }}" target="_blank" rel="noopener" class="btn btn-filled-lav btn-block">Register Externally</a>
+                {% else %}
+                    <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration via API only</span>
+                {% endif %}
+            {% else %}
+                {% if is_registered %}
+                    <form method="post" style="margin:0; display:flex;">
+                        {% csrf_token %}
+                        <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
+                    </form>
+                {% elif not reg_open %}
+                    <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration Closed</span>
+                {% elif event.is_full %}
+                    <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Event Full</span>
+                {% else %}
+                    <form method="post" style="margin:0; display:flex;">
+                        {% csrf_token %}
+                        <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+
+            <a href="{% url 'scanner' %}" class="btn btn-filled-lemon btn-block">Open Scanner</a>
+
+            {% if user.is_organizer_or_above or event.created_by == user %}
+            <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin:0; display:flex;">
                 {% csrf_token %}
-                <button type="submit" name="unregister" value="1" class="btn btn-filled-lav btn-block">Cancel Registration</button>
+                {% if event.allow_walkins %}
+                    <button type="submit" class="btn btn-filled-mint btn-block">Walk-ins ON</button>
+                {% else %}
+                    <button type="submit" class="btn btn-outline btn-block">Enable Walk-ins</button>
+                {% endif %}
             </form>
-        {% elif not reg_open %}
-            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Registration Closed</span>
-        {% elif event.is_full %}
-            <span class="btn btn-outline btn-block" style="pointer-events:none; opacity:0.6;">Event Full</span>
-        {% else %}
-            <form method="post" style="margin:0; display:flex;">
-                {% csrf_token %}
-                <button type="submit" name="register" value="1" class="btn btn-filled-lav btn-block">Register for This Event</button>
-            </form>
-        {% endif %}
-    {% endif %}
-
-    <a href="{% url 'scanner' %}" class="btn btn-filled-lemon btn-block">Open Scanner</a>
-
-    {% if user.is_organizer_or_above or event.created_by == user %}
-    <form method="post" action="{% url 'toggle-walkins' uuid=event.id %}" style="margin:0; display:flex;">
-        {% csrf_token %}
-        {% if event.allow_walkins %}
-            <button type="submit" class="btn btn-filled-mint btn-block">Walk-ins ON</button>
-        {% else %}
-            <button type="submit" class="btn btn-outline btn-block">Enable Walk-ins</button>
-        {% endif %}
-    </form>
-    {% endif %}
-</div>
-{% else %}
-<div class="fade-up fade-up-3 mt-16" style="text-align:center;">
-    <a href="{% url 'register' %}" class="btn btn-filled-lav">Create an Account to Register</a>
-</div>
-{% endif %}
-
-{% if photos and not is_organizer %}
-<!-- Attendee photo strip -->
-<div class="fade-up fade-up-3" style="margin-top:24px;">
-    <div class="section-label">Gallery</div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
-        {% for photo in photos %}
-        <div style="position:relative;">
-            <img src="{{ photo.image_data }}" alt="{{ photo.caption }}"
-                 style="width:140px; height:100px; object-fit:cover; border-radius:var(--r-md); cursor:pointer;"
-                 onclick="openPhotoModal('{{ photo.image_data }}', '{{ photo.caption|escapejs }}')">
-            {% if photo.caption %}
-            <div style="font-size:11px; color:var(--text-2); margin-top:4px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ photo.caption }}</div>
             {% endif %}
         </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
+        {% else %}
+        <div style="text-align:center;">
+            <a href="{% url 'register' %}" class="btn btn-filled-lav">Create an Account to Register</a>
+        </div>
+        {% endif %}
 
-{% if user.is_staff_or_above %}
-<!-- Tabs -->
-<div class="tab-bar fade-up fade-up-4">
+        {% if user.is_staff_or_above %}
+        <!-- Tabs -->
+        <div class="tab-bar fade-up fade-up-4">
     <button class="tab-btn active" data-tab="attendees" data-color="rose" onclick="switchTab('attendees', this)">Attendees</button>
     {% if user.is_organizer_or_above or event.created_by == user %}
     <button class="tab-btn" data-tab="staff" data-color="lavender" onclick="switchTab('staff', this)">Staff</button>
@@ -255,7 +394,15 @@
     </div>
 </div>
 
-{% endif %}
+        {% endif %}
+
+        {% if event.description %}
+        <div class="section-label" style="margin-top:24px;">About</div>
+        <p style="margin-top:8px; color:var(--text-2); line-height:1.7;">{{ event.description }}</p>
+        {% endif %}
+
+    </div><!-- /event-info-col -->
+</div><!-- /event-hero -->
 
 <!-- Photo lightbox modal -->
 <div class="modal-overlay" id="photo-modal" onclick="closeModal('photo-modal')" style="display:none;">
@@ -305,6 +452,31 @@ function openPhotoModal(src, caption) {
     document.getElementById('photo-modal-img').src = src;
     document.getElementById('photo-modal-caption').textContent = caption;
     openModal('photo-modal');
+}
+
+(function() {
+    const strip = document.getElementById('event-gallery-strip');
+    const dots = document.querySelectorAll('.gallery-dot');
+    if (!strip || dots.length === 0) return;
+
+    strip.addEventListener('scroll', () => {
+        const imgs = strip.querySelectorAll('img');
+        let closest = 0, minDist = Infinity;
+        imgs.forEach((img, i) => {
+            const dist = Math.abs(img.getBoundingClientRect().left - strip.getBoundingClientRect().left);
+            if (dist < minDist) { minDist = dist; closest = i; }
+        });
+        dots.forEach((d, i) => {
+            d.style.background = i === closest ? 'var(--text-1)' : 'var(--text-3)';
+        });
+    }, { passive: true });
+})();
+
+function galleryScrollTo(index) {
+    const strip = document.getElementById('event-gallery-strip');
+    if (!strip) return;
+    const imgs = strip.querySelectorAll('img');
+    if (imgs[index]) imgs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
 }
 </script>
 {% endblock %}

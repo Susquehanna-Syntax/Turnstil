@@ -38,24 +38,38 @@
 
 {% if events %}
     {% for event in events %}
-    <div class="card fade-up" style="margin-bottom: 12px;">
-        <div class="flex-between flex-wrap gap-8">
-            <div>
-                <div class="card-title">
-                    <a href="{% url 'event-detail' uuid=event.id %}" style="color: var(--text-1);">{{ event.name }}</a>
-                </div>
-                <small>{{ event.start_time|date:"M j, Y g:i A" }} · {{ event.location }}</small>
+    {% with thumb=event.photos.all.0 %}
+    <div class="card fade-up" style="margin-bottom: 12px; padding: 0; overflow: hidden;">
+        <a href="{% url 'event-detail' uuid=event.id %}" style="display:block; text-decoration:none;">
+            {% if thumb %}
+            <img src="{{ thumb.image_data }}" alt="{{ event.name }}"
+                 style="width:100%; height:160px; object-fit:cover; display:block;">
+            {% else %}
+            <div style="width:100%; height:160px; background:linear-gradient(135deg, var(--s3) 0%, var(--s4) 100%); display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="calendar" style="width:36px; height:36px; color:var(--text-3);"></i>
             </div>
-            {% if event.is_full %}<span class="badge badge-rose">Full</span>{% endif %}
+            {% endif %}
+        </a>
+        <div style="padding: 14px 16px 0;">
+            <div class="flex-between flex-wrap gap-8">
+                <div>
+                    <div class="card-title">
+                        <a href="{% url 'event-detail' uuid=event.id %}" style="color: var(--text-1);">{{ event.name }}</a>
+                    </div>
+                    <small>{{ event.start_time|date:"M j, Y g:i A" }}{% if event.location %} · {{ event.location }}{% endif %}</small>
+                </div>
+                {% if event.is_full %}<span class="badge badge-rose">Full</span>{% endif %}
+            </div>
+            {% if event.description %}
+                <p class="card-desc" style="margin-top: 10px;">{{ event.description|truncatewords:30 }}</p>
+            {% endif %}
         </div>
-        {% if event.description %}
-            <p class="card-desc" style="margin-top: 10px;">{{ event.description|truncatewords:30 }}</p>
-        {% endif %}
-        <div class="card-footer">
+        <div class="card-footer" style="padding: 12px 16px 14px;">
             <small class="text-muted">{{ event.registration_count }} registered{% if event.capacity %} / {{ event.capacity }} capacity{% endif %}</small>
             <a href="{% url 'event-detail' uuid=event.id %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">View →</a>
         </div>
     </div>
+    {% endwith %}
     {% endfor %}
 {% else %}
     <p class="text-muted">{% if search_query %}No events matching "{{ search_query }}".{% else %}No upcoming events yet.{% endif %}</p>

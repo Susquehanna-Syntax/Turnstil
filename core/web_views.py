@@ -32,7 +32,7 @@ def home(request):
             Q(location__icontains=q) |
             Q(description__icontains=q)
         )
-    events = events.order_by('start_time')[:10]
+    events = events.prefetch_related('photos').order_by('start_time')[:10]
     return render(request, 'public/home.html', {'events': events, 'search_query': q})
 
 
