@@ -81,12 +81,39 @@
     flex-shrink: 0;
 }
 
-/* Desktop: side-by-side, equal height */
+/* Nav buttons */
+.gallery-nav-btn {
+    display: none;
+    position: absolute;
+    top: calc(50% - 16px);
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 20px;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+    padding: 0;
+}
+.gallery-nav-btn:hover { background: rgba(0,0,0,0.7); transform: translateY(-50%) scale(1.08); }
+.gallery-nav-prev { left: 12px; }
+.gallery-nav-next { right: 12px; }
+
+/* Desktop: side-by-side */
 @media (min-width: 900px) {
     .event-hero {
         flex-direction: row;
         gap: 28px;
-        align-items: stretch;
+        align-items: flex-start;
         margin-bottom: 32px;
     }
 
@@ -95,27 +122,24 @@
         margin: 0;
         border-radius: var(--r-xl);
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        position: relative;
     }
 
     .event-gallery-strip {
-        flex: 1;
-        min-height: 420px;
-        height: auto;
+        height: min(75vh, 680px);
     }
 
     .event-gallery-placeholder {
-        flex: 1;
-        min-height: 420px;
-        height: auto;
+        height: min(75vh, 680px);
+    }
+
+    .gallery-nav-btn {
+        display: flex;
     }
 
     .event-info-col {
         flex: 1;
         min-width: 0;
-        display: flex;
-        flex-direction: column;
     }
 
     .event-info-col h2 {
@@ -144,6 +168,8 @@
             {% endfor %}
         </div>
         {% if photos|length > 1 %}
+        <button class="gallery-nav-btn gallery-nav-prev" onclick="galleryNav(-1)" aria-label="Previous">&#8249;</button>
+        <button class="gallery-nav-btn gallery-nav-next" onclick="galleryNav(1)" aria-label="Next">&#8250;</button>
         <div class="gallery-dots">
             {% for photo in photos %}
             <div class="gallery-dot" data-index="{{ forloop.counter0 }}"
@@ -355,8 +381,8 @@
         <form method="post" action="{% url 'upload-event-photo' uuid=event.id %}" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
             {% csrf_token %}
             <div>
-                <label style="font-size:12px; color:var(--text-2); display:block; margin-bottom:4px;">Photo ({{ photos.count }}/10)</label>
-                <input type="file" name="photo" accept="image/*" required style="font-size:13px;">
+                <label style="font-size:12px; color:var(--text-2); display:block; margin-bottom:4px;">Photos ({{ photos.count }}/10)</label>
+                <input type="file" name="photo" accept="image/*" multiple required style="font-size:13px;">
             </div>
             <div style="flex:1; min-width:160px;">
                 <label style="font-size:12px; color:var(--text-2); display:block; margin-bottom:4px;">Caption (optional)</label>
@@ -457,26 +483,41 @@ function openPhotoModal(src, caption) {
 (function() {
     const strip = document.getElementById('event-gallery-strip');
     const dots = document.querySelectorAll('.gallery-dot');
-    if (!strip || dots.length === 0) return;
+    if (!strip) return;
+
+    let currentIndex = 0;
+    const count = strip.querySelectorAll('img').length;
+
+    function updateDots(index) {
+        dots.forEach((d, i) => {
+            d.style.background = i === index ? 'var(--text-1)' : 'var(--text-3)';
+        });
+        currentIndex = index;
+    }
 
     strip.addEventListener('scroll', () => {
-        const imgs = strip.querySelectorAll('img');
+        if (count === 0) return;
+        const stripLeft = strip.getBoundingClientRect().left;
+        const slides = strip.querySelectorAll('img');
         let closest = 0, minDist = Infinity;
-        imgs.forEach((img, i) => {
-            const dist = Math.abs(img.getBoundingClientRect().left - strip.getBoundingClientRect().left);
+        slides.forEach((img, i) => {
+            const dist = Math.abs(img.getBoundingClientRect().left - stripLeft);
             if (dist < minDist) { minDist = dist; closest = i; }
         });
-        dots.forEach((d, i) => {
-            d.style.background = i === closest ? 'var(--text-1)' : 'var(--text-3)';
-        });
+        updateDots(closest);
     }, { passive: true });
-})();
 
-function galleryScrollTo(index) {
-    const strip = document.getElementById('event-gallery-strip');
-    if (!strip) return;
-    const imgs = strip.querySelectorAll('img');
-    if (imgs[index]) imgs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-}
+    window.galleryScrollTo = function(index) {
+        const slides = strip.querySelectorAll('img');
+        if (slides[index]) {
+            strip.scrollTo({ left: strip.clientWidth * index, behavior: 'smooth' });
+        }
+    };
+
+    window.galleryNav = function(dir) {
+        const next = Math.max(0, Math.min(count - 1, currentIndex + dir));
+        window.galleryScrollTo(next);
+    };
+})();
 </script>
 {% endblock %}

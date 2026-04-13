@@ -386,15 +386,17 @@ def upload_event_photo(request, uuid):
         return redirect('event-detail', uuid=uuid)
 
     if request.method == 'POST':
-        file = request.FILES.get('photo')
-        if file and event.photos.count() < 10:
-            import base64
+        import base64
+        caption = request.POST.get('caption', '').strip()
+        for file in request.FILES.getlist('photo'):
+            if event.photos.count() >= 10:
+                break
             data = base64.b64encode(file.read()).decode('utf-8')
             mime = file.content_type or 'image/jpeg'
             photo = EventPhoto(
                 event=event,
                 image_data=f'data:{mime};base64,{data}',
-                caption=request.POST.get('caption', '').strip(),
+                caption=caption,
                 uploaded_by=request.user,
                 order=event.photos.count(),
             )
