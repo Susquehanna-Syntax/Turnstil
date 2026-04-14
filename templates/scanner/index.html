@@ -187,12 +187,22 @@
     }
 
     // ── Result Display ──
-    function showResult(type, message, detail) {
+    function showResult(type, message, detail, cardColor) {
         const el = document.getElementById('result');
         el.className = 'scan-result scan-' + type;
+        if (cardColor) {
+            // Use person's signature color — map name to hex
+            const colorMap = {
+                rose: '#f2a0b8', lavender: '#baa8e8', mint: '#7eddb5',
+                peach: '#f0b888', sky: '#82c4ee', lemon: '#e2d478'
+            };
+            const hex = colorMap[cardColor] || colorMap.peach;
+            el.style.cssText = `display:block; background:${hex}; color:rgba(0,0,0,0.7); border-color:transparent;`;
+        } else {
+            el.style.cssText = 'display:block;';
+        }
         el.innerHTML = '<strong>' + message + '</strong>' + (detail ? '<br><small>' + detail + '</small>' : '');
-        el.style.display = 'block';
-        setTimeout(() => { el.style.display = 'none'; }, 4000);
+        setTimeout(() => { el.style.display = 'none'; el.style.cssText = ''; }, 4000);
     }
 
     function addToHistory(result, name, time) {
@@ -249,12 +259,30 @@
 
             if (data.status === 'success') {
                 const c = data.data;
+                const color = c.card_color || 'peach';
+
+                // Avatar: photo or initial bubble
+                const colorMap = { rose:'#f2a0b8', lavender:'#baa8e8', mint:'#7eddb5', peach:'#f0b888', sky:'#82c4ee', lemon:'#e2d478' };
+                const hex = colorMap[color] || colorMap.peach;
+                let avatarHtml;
+                if (c.avatar) {
+                    avatarHtml = `<img src="${c.avatar}" style="width:48px;height:48px;border-radius:14px;object-fit:cover;flex-shrink:0;">`;
+                } else {
+                    const initial = c.name ? c.name[0].toUpperCase() : '?';
+                    avatarHtml = `<div style="width:48px;height:48px;border-radius:14px;background:rgba(0,0,0,0.15);display:grid;place-items:center;font-size:20px;font-weight:700;color:rgba(0,0,0,0.45);flex-shrink:0;">${initial}</div>`;
+                }
+
                 let detail = '';
-                if (c.email) detail += ICONS.mail + ' ' + c.email + '<br>';
                 if (c.organization) detail += ICONS.building + ' ' + c.organization + '<br>';
+                if (c.email) detail += ICONS.mail + ' ' + c.email + '<br>';
                 if (c.phone) detail += ICONS.phone + ' ' + c.phone + '<br>';
-                if (c.links) detail += ICONS.link + ' ' + c.links + '<br>';
-                showResult('info', ICONS.user + ' ' + c.name, detail || 'No additional info shared.');
+
+                const el = document.getElementById('result');
+                el.style.cssText = `display:block; background:${hex}; color:#000; border-color:transparent; padding:16px 18px;`;
+                el.className = 'scan-result';
+                el.innerHTML = `<div style="display:flex;align-items:center;gap:14px;text-align:left;">${avatarHtml}<div><strong style="font-size:16px;color:#000;">${c.name}</strong>${detail ? '<br><small style="color:#000;opacity:0.65;font-weight:400;">' + detail + '</small>' : ''}</div></div>`;
+                setTimeout(() => { el.style.cssText = ''; el.style.display = 'none'; }, 5000);
+
                 addToHistory('info', c.name, now);
             } else {
                 showResult('error', 'Not Found', 'QR code not recognized.');

@@ -96,7 +96,8 @@ def profile_page(request):
         person.email = request.POST.get('email', person.email)
         person.organization = request.POST.get('organization', person.organization)
         person.phone = request.POST.get('phone', person.phone)
-        person.links = request.POST.get('links', person.links)
+        raw_link = request.POST.get('links', '').strip()
+        person.links = raw_link if raw_link else ''
 
         # Handle visibility toggles
         visibility = {}
@@ -487,9 +488,23 @@ def contact_page(request, uuid):
     """Public contact card view (respects visibility)."""
     person = get_object_or_404(Person, id=uuid)
     contact = person.get_visible_contact()
+
+    # Authenticated viewer: pass their own scanned contacts for the "connections" scroll
+    viewer_contacts = []
+    if request.user.is_authenticated:
+        try:
+            viewer_contacts = (
+                ScannedContact.objects.filter(scanner=request.user.person)
+                .select_related('scanned')
+                .order_by('-updated_at')
+            )
+        except Exception:
+            pass
+
     return render(request, 'public/contact.html', {
         'person': person,
         'contact': contact,
+        'viewer_contacts': viewer_contacts,
     })
 
 @login_required

@@ -1,39 +1,104 @@
 {% extends "base.html" %}
 {% block title %}{{ contact.name }} — Turnstil{% endblock %}
 
+{% block extra_css %}
+.contact-hero {
+    background: var(--{{ person.card_color|default:'peach' }});
+    border-radius: var(--r-xl);
+    padding: 32px 28px 28px;
+    display: flex; align-items: center; gap: 20px;
+    margin-bottom: 20px;
+}
+.contact-hero-avatar {
+    width: 80px; height: 80px; border-radius: 20px;
+    background: rgba(0,0,0,0.15);
+    display: grid; place-items: center;
+    font-size: 28px; font-weight: 700; color: rgba(0,0,0,0.45);
+    overflow: hidden; flex-shrink: 0;
+}
+.contact-hero-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+.contact-hero h2 { margin: 0; color: rgba(0,0,0,0.72); font-size: 22px; }
+.contact-hero p  { margin: 4px 0 0; color: rgba(0,0,0,0.52); font-size: 13px; }
+/* Connections scroll */
+.connections-strip {
+    display: flex; gap: 10px; flex-wrap: wrap;
+}
+.conn-card {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--s2); border-radius: var(--r-lg);
+    padding: 10px 14px; text-decoration: none;
+    transition: transform 0.25s var(--ease-out-expo), background 0.15s;
+    min-width: 160px;
+}
+.conn-card:hover { transform: translateY(-3px); background: var(--s3); }
+.conn-avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 13px; font-weight: 700; color: var(--bg);
+    overflow: hidden; flex-shrink: 0;
+}
+.conn-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+{% endblock %}
+
 {% block content %}
-<div class="card fade-up" style="max-width: 480px; padding: 0; overflow: hidden;">
-    {# Colored header band #}
-    <div style="background:var(--{{ person.card_color|default:'peach' }}); padding: 28px 24px 20px; display:flex; align-items:center; gap:16px;">
-        <div style="width:64px; height:64px; border-radius:16px; background:rgba(0,0,0,0.15); display:grid; place-items:center; font-size:24px; font-weight:700; color:rgba(0,0,0,0.5); overflow:hidden; flex-shrink:0;">
-            {% if person.avatar %}<img src="{{ person.avatar }}" alt="{{ contact.name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}{{ contact.name|first|upper }}{% endif %}
+<div style="max-width: 560px;">
+    <div class="contact-hero fade-up">
+        <div class="contact-hero-avatar">
+            {% if person.avatar %}<img src="{{ person.avatar }}" alt="{{ contact.name }}">{% else %}{{ contact.name|first|upper }}{% endif %}
         </div>
         <div>
-            <h2 style="margin:0; color:rgba(0,0,0,0.75); font-size:20px;">{{ contact.name }}</h2>
-            {% if contact.organization %}<p style="margin:2px 0 0; color:rgba(0,0,0,0.55); font-size:13px;">{{ contact.organization }}</p>{% endif %}
+            <h2>{{ contact.name }}</h2>
+            {% if contact.organization %}<p>{{ contact.organization }}</p>{% endif %}
         </div>
     </div>
 
-    <div style="padding: 20px 24px;">
+    <div class="card fade-up fade-up-1">
         {% if contact.email %}
-            <p><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: -2px;"></i> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+            <p><i data-lucide="mail" style="width:14px;height:14px;vertical-align:-2px;"></i>
+               <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
         {% endif %}
-
         {% if contact.phone %}
-            <p><i data-lucide="phone" style="width: 14px; height: 14px; vertical-align: -2px;"></i> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+            <p><i data-lucide="phone" style="width:14px;height:14px;vertical-align:-2px;"></i>
+               <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
         {% endif %}
-
         {% if contact.links %}
-            <div class="section-label" style="margin-top: 16px;">Links</div>
-            {% for key, url in contact.links.items %}
-                <p><i data-lucide="external-link" style="width: 14px; height: 14px; vertical-align: -2px;"></i> <strong>{{ key }}:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
-            {% endfor %}
+            <div class="section-label" style="margin-top:16px;">Links</div>
+            {% if contact.links.items %}
+                {% for key, url in contact.links.items %}
+                <p><i data-lucide="external-link" style="width:14px;height:14px;vertical-align:-2px;"></i>
+                   <strong>{{ key }}:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+                {% endfor %}
+            {% else %}
+                <p><i data-lucide="external-link" style="width:14px;height:14px;vertical-align:-2px;"></i>
+                   <a href="{{ contact.links }}" target="_blank">{{ contact.links }}</a></p>
+            {% endif %}
         {% endif %}
-
-        <div class="card-footer" style="margin-top: 20px;">
+        {% if not contact.email and not contact.phone and not contact.links %}
+            <p class="text-muted">No contact info shared.</p>
+        {% endif %}
+        <div class="card-footer">
             <small class="text-muted">Shared via Turnstil</small>
-            <a href="{% url 'home' %}" class="btn btn-outline" style="padding: 7px 16px; font-size: 12px;">Get your QR code</a>
+            <a href="{% url 'home' %}" class="btn btn-outline" style="padding:7px 16px;font-size:12px;">Get your QR code</a>
         </div>
     </div>
+
+    {% if viewer_contacts %}
+    <div class="fade-up fade-up-2" style="margin-top: 28px;">
+        <div class="section-label" style="margin-bottom: 12px;">Your connections</div>
+        <div class="connections-strip">
+            {% for sc in viewer_contacts %}
+            <a href="{% url 'contact-view' uuid=sc.scanned.id %}" class="conn-card">
+                <div class="conn-avatar" style="background:var(--{{ sc.scanned.card_color|default:'peach' }});">
+                    {% if sc.scanned.avatar %}<img src="{{ sc.scanned.avatar }}" alt="{{ sc.scanned.name }}">{% else %}{{ sc.scanned.name|first|upper }}{% endif %}
+                </div>
+                <div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-1);">{{ sc.scanned.name }}</div>
+                    {% if sc.scanned.organization %}<div style="font-size:11px; color:var(--text-muted);">{{ sc.scanned.organization }}</div>{% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
