@@ -723,6 +723,19 @@
         </ul>
         <p>All email sending is wrapped in try/except — delivery failures never crash the application. Without SMTP configuration, emails print to the console for development.</p>
       </div>
+      <h3>Event Photo Gallery</h3>
+      <div class="prose"><p>Organizers can upload up to <strong>10 photos</strong> per event. Photos are stored as base64 data URIs on the <code>EventPhoto</code> model. The gallery appears at the top of the event detail page as a scrollable strip.</p>
+        <ul>
+          <li><strong>Upload</strong> — drag-and-drop or click to select. Multiple files upload one at a time via <code>fetch()</code> to avoid platform-specific multipart issues</li>
+          <li><strong>Captions</strong> — each photo has an inline caption editor that saves on submit</li>
+          <li><strong>Cover photo</strong> — the "Set Cover" button promotes a photo to position 0, making it the thumbnail shown on event cards on the home page</li>
+          <li><strong>Delete</strong> — photos can be removed individually</li>
+          <li><strong>Navigation</strong> — prev/next arrow buttons overlay the gallery strip; dot indicators show current position</li>
+          <li><strong>Widescreen layout</strong> — on screens wider than 900px the gallery occupies 42% of the page width alongside the event info column</li>
+        </ul>
+        <p>Gallery routes: <code>POST /events/&lt;uuid&gt;/photos/upload/</code>, <code>DELETE /events/&lt;uuid&gt;/photos/&lt;photo_id&gt;/delete/</code>, <code>POST /events/&lt;uuid&gt;/photos/&lt;photo_id&gt;/caption/</code>, <code>POST /events/&lt;uuid&gt;/photos/&lt;photo_id&gt;/thumbnail/</code></p>
+      </div>
+
       <h3>CSV Export</h3>
       <div class="prose"><p>Staff and above can download an attendee list for any event as a CSV file. The export is available via the <strong>Download CSV</strong> button on the dashboard event table or via the API at <code>/api/events/&lt;uuid&gt;/attendees.csv</code>.</p>
         <p>The CSV includes columns: <strong>Name</strong>, <strong>Email</strong>, <strong>Organization</strong>, <strong>Phone</strong>, <strong>Status</strong>, <strong>Registered At</strong>, and <strong>Checked In At</strong>. Canceled registrations are excluded, and rows are sorted alphabetically by name.</p>
@@ -797,15 +810,24 @@
         </div>
       </div>
       <h3>Discovery Mode (All Users)</h3>
-      <div class="prose"><p>Used for networking and contact exchange. Scanning a QR code in Discovery mode fetches the person's contact card, showing only the fields they've made visible through their privacy settings.</p></div>
+      <div class="prose"><p>Used for networking and contact exchange. Scanning a QR code in Discovery mode fetches the person's contact card, showing only the fields they've made visible. The result popup is styled in that person's <strong>signature color</strong> and shows their avatar. The scan is also saved as a <code>ScannedContact</code> record, building the scanner's contacts gallery over time.</p></div>
+
+      <h3>Scan Confirmation (Anti-Fraud)</h3>
+      <div class="prose"><p>After every successful attendance check-in, a <code>ScanConfirmation</code> record is created for the attendee. The attendee's browser polls <code>/api/scan-confirmation/pending</code> every 5 seconds and — if a pending confirmation is found — displays a modal popup asking:</p>
+        <blockquote style="margin:12px 0;padding:10px 16px;border-left:3px solid var(--lavender);color:var(--text-2);font-style:italic;">"Did an event worker just scan your ticket?"</blockquote>
+        <p>The attendee responds <strong>Yes</strong> (confirmed) or <strong>No</strong> (denied). A "No" response flags the <code>ScanLog</code> entry's metadata with <code>attendee_denied: true</code> for organizer review. This prevents screenshot-based fraud — a static screenshot can't respond to the popup in real time.</p>
+        <p>Confirmations expire after 5 minutes if not responded to. The popup appears on any authenticated page, not just the QR display.</p>
+      </div>
+
       <h3>Scanner Features</h3>
       <div class="prose"><ul>
         <li><strong>Camera scanning</strong> — uses the device's rear-facing camera via the <code>html5-qrcode</code> library. Starts automatically when the scanner page loads (requires HTTPS for camera access)</li>
         <li><strong>Manual UUID entry</strong> — expandable fallback input for when the camera isn't available or a QR code is damaged. Paste or type the person's UUID and submit</li>
         <li><strong>Name search</strong> — staff can search attendees by name using the <code>/api/people/search/</code> endpoint. Returns the top 10 matches with name and organization. Clicking a result triggers a check-in (Attendance mode) or loads their contact card (Discovery mode)</li>
         <li><strong>Scan cooldown</strong> — 2-second cooldown between scans prevents accidental double-scans from the camera reading the same QR code repeatedly</li>
-        <li><strong>Scan history</strong> — recent scan results are displayed in a live feed on the page, showing the person's name, result status (success/duplicate/error), and timestamp</li>
-        <li><strong>Result messages</strong> — color-coded feedback banners shown for 4 seconds after each scan: green for success, yellow for duplicates, red for errors, blue for informational messages</li>
+        <li><strong>Scan history</strong> — recent scan results are displayed in a live feed on the page, showing the person's name, result status, and timestamp</li>
+        <li><strong>Discovery result styling</strong> — Discovery scan results display in the scanned person's signature color with their avatar and contact info</li>
+        <li><strong>Contacts panel</strong> — a saved contacts grid appears below the scan history, showing everyone the current user has scanned via Discovery mode. Each avatar links to their contact card</li>
         <li><strong>Event selection</strong> — in Attendance mode, staff must select an active event before scanning. The selected event persists in the server session across page loads</li>
         <li><strong>JWT authentication</strong> — the scanner page obtains a JWT token on load and uses it for all API calls, enabling direct <code>fetch()</code> requests to the REST endpoints</li>
       </ul></div>
@@ -837,13 +859,43 @@
           </div>
         </div>
       </div>
+      <h3>Contact Card Design</h3>
+      <div class="prose"><p>Each contact card is styled with the person's <strong>signature color</strong> — a pastel chosen on their profile page. The card header shows their avatar (photo or initial) and name against that color. Scrolling down reveals the viewer's full list of scanned contacts for quick navigation.</p></div>
+
+      <h3>Scanned Contacts</h3>
+      <div class="prose"><p>Every Discovery scan is saved as a <code>ScannedContact</code> record linking the scanner to the scanned person. These appear as an animated avatar stack on the profile page — hovering fans them apart, clicking any avatar navigates directly to their contact card. The same list appears in the scanner's right column for quick reference during events.</p>
+        <p>The stack is ordered by most recently scanned, and shows up to 15 avatars with a count badge for overflow.</p>
+      </div>
+
       <h3>Profile Editing</h3>
       <div class="prose"><p>Users manage their contact information from the profile page, which has two tabs:</p>
         <ul>
-          <li><strong>Info tab</strong> — edit name, email, organization, phone, and links. Each field (except name) has a visibility toggle: "Visible when others scan your QR." The <strong>Links</strong> field is stored as JSON and supports multiple URLs (e.g., personal website, LinkedIn, GitHub)</li>
+          <li><strong>Info tab</strong> — edit name, email, organization, phone, and website link. Each field (except name) has a visibility toggle: "Visible when others scan your QR." The <strong>Links</strong> field stores a single URL shown on the contact card</li>
           <li><strong>QR &amp; Tickets tab</strong> — shows the user's QR code with a link to the fullscreen view, and a list of their event registrations</li>
         </ul>
       </div>
+
+      <h3>Profile Pictures</h3>
+      <div class="prose"><p>Each user can upload a profile photo from the Info tab. Photos are stored as base64 data URIs on the <code>Person</code> model. The photo appears:</p>
+        <ul>
+          <li>As the sidebar avatar (bottom-left of every page)</li>
+          <li>At the top of the profile page Info tab</li>
+          <li>On the public contact card page</li>
+          <li>In scanned contacts stacks and the scanner contacts panel</li>
+        </ul>
+        <p>Click the avatar photo (or the initials placeholder) to open a file picker. The form submits immediately on file selection.</p>
+      </div>
+
+      <h3>Card Colors</h3>
+      <div class="prose"><p>Users choose a pastel signature color from six swatches on their profile page: Rose, Lavender, Mint, Peach, Sky, and Lemon. Clicking a swatch saves instantly. The color is used for:</p>
+        <ul>
+          <li>The sidebar avatar background</li>
+          <li>The contact card hero header</li>
+          <li>The user's avatar in other people's scanned contacts stacks</li>
+          <li>The Discovery scanner result popup</li>
+        </ul>
+      </div>
+
       <h3>Tickets</h3>
       <div class="prose"><p>The profile page shows the user's event registrations (tickets) with event name, date, location, and ticket status. Ticket statuses are:</p>
         <ul>
@@ -902,9 +954,10 @@
       <h3>User Management (Admin Only)</h3>
       <div class="prose"><p>Admins see a <strong>Users</strong> tab on the dashboard with full user management capabilities:</p>
         <ul>
-          <li><strong>View all users</strong> — table showing username, name, email, and role for every account</li>
+          <li><strong>View all users</strong> — table showing username, name, email, role, and event limit for every account</li>
           <li><strong>Create users</strong> — add new accounts with username, password, full name, email, and role via a collapsible form</li>
           <li><strong>Change roles</strong> — inline dropdown on each user row to change their role (attendee, staff, organizer, admin)</li>
+          <li><strong>Set event limit</strong> — number input on each user row; sets the maximum active events that user can create at once. Set to <code>0</code> for unlimited. Default is 10</li>
           <li><strong>Register for events</strong> — opens a searchable modal popup to select an event and register the user for it</li>
           <li><strong>Delete accounts</strong> — remove a user account (with confirmation prompt)</li>
         </ul>
@@ -915,10 +968,16 @@
         <tbody>
           <tr><td><code>/dashboard/users/create/</code></td><td>POST</td><td>Create a new user with username, password, name, email, and role</td></tr>
           <tr><td><code>/dashboard/users/&lt;id&gt;/role/</code></td><td>POST</td><td>Change a user's role (attendee, staff, organizer, admin)</td></tr>
+          <tr><td><code>/dashboard/users/&lt;id&gt;/event-limit/</code></td><td>POST</td><td>Set a user's active event cap (0 = unlimited)</td></tr>
           <tr><td><code>/dashboard/users/&lt;id&gt;/register/</code></td><td>POST</td><td>Register a user for an event via a searchable modal popup</td></tr>
           <tr><td><code>/dashboard/users/&lt;id&gt;/delete/</code></td><td>POST</td><td>Delete a user account (with confirmation prompt)</td></tr>
         </tbody>
       </table></div>
+
+      <h3>Organizer Self-Promotion</h3>
+      <div class="prose"><p>Any attendee can become an organizer without waiting for admin action. Clicking <strong>Create Event</strong> in the sidebar (the calendar icon) automatically promotes their role to <code>organizer</code> and redirects them to the event creation page. Staff, organizers, and admins go directly to event creation without promotion.</p>
+        <p>Once an organizer, they are subject to the <strong>active event limit</strong> set on their account (default 10). Admins can raise this at any time from the Users tab of the dashboard.</p>
+      </div>
       <h3>Event Detail Page</h3>
       <div class="prose"><p>The event detail page (<code>/events/&lt;uuid&gt;/</code>) provides different views based on role:</p>
         <ul>
