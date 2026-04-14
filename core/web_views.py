@@ -191,22 +191,10 @@ def scanner_page(request):
                     events.filter(created_by_id=user.id)
             ).distinct()
 
-    scanned_contacts = []
-    if request.user.is_authenticated:
-        try:
-            scanned_contacts = (
-                ScannedContact.objects.filter(scanner=request.user.person)
-                .select_related('scanned')
-                .order_by('-updated_at')
-            )
-        except Exception:
-            pass
-
     return render(request, 'scanner/index.html', {
         'events': events,
         'active_event': active_event,
         'is_staff': is_staff,
-        'scanned_contacts': scanned_contacts,
     })
 
 
