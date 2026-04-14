@@ -28,6 +28,10 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.ATTENDEE,
     )
+    event_limit = models.PositiveSmallIntegerField(
+        default=10,
+        help_text='Max active events this user may have at once (0 = unlimited)',
+    )
 
     def is_staff_or_above(self):
         return self.role in (self.Role.STAFF, self.Role.ORGANIZER, self.Role.ADMIN)

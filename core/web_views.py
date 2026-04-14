@@ -274,19 +274,20 @@ def event_create_page(request):
     if request.method == 'POST':
         data = request.POST.copy()
 
-        # limit active events per user
-        active_events_count = Event.objects.filter(
-            created_by=request.user,
-            end_time__gte=timezone.now()
-        ).count()
-
-        if active_events_count >= 10:
-            return render(request, 'admin_portal/event_create.html', {
-                'errors': {
-                    '__all__': ['You can only have up to 10 active events at a time']
-                },
-                'data': data
-            })
+        # limit active events per user (0 = unlimited)
+        limit = request.user.event_limit
+        if limit > 0:
+            active_events_count = Event.objects.filter(
+                created_by=request.user,
+                end_time__gte=timezone.now()
+            ).count()
+            if active_events_count >= limit:
+                return render(request, 'admin_portal/event_create.html', {
+                    'errors': {
+                        '__all__': [f'You can only have up to {limit} active events at a time']
+                    },
+                    'data': data
+                })
 
         # Convert reg_open and reg_close to datetime if they exist
         for field in ['reg_open', 'reg_close']:
@@ -679,6 +680,29 @@ def admin_register_user_for_event(request, user_id):
     )
 
     messages.success(request, f'Registered {target.username} for {event.name}.')
+    return redirect('dashboard')
+
+
+@login_required
+def promote_and_create(request):
+    """Auto-promote an attendee to organizer, then redirect to event creation."""
+    if request.user.role == 'attendee':
+        request.user.role = 'organizer'
+        request.user.save(update_fields=['role'])
+    return redirect('event-create')
+
+
+@login_required
+def admin_set_event_limit(request, user_id):
+    if not _is_admin(request) or request.method != 'POST':
+        return redirect('dashboard')
+    target = get_object_or_404(User, id=user_id)
+    try:
+        limit = int(request.POST.get('event_limit', 10))
+        target.event_limit = max(0, limit)
+        target.save(update_fields=['event_limit'])
+    except (ValueError, TypeError):
+        pass
     return redirect('dashboard')
 
 

@@ -10,7 +10,7 @@ SECRET_KEY = os.environ.get(
      'PRODUCTION-turnstil-dev-key-2024'
     )
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS','localhost,127.0.0.1,10.0.0.204').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS','localhost,127.0.0.1,10.0.0.53').split(',')
 
 # CSRF trusted origins (required for HTTPS proxies)
 CSRF_TRUSTED_ORIGINS = os.environ.get(
