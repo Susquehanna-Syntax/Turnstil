@@ -365,7 +365,7 @@
 
 <span class="hl-keyword">services</span>:
   <span class="hl-var">turnstil</span>:
-    <span class="hl-keyword">image</span>: <span class="hl-string">connorhaggerty/turnstil:latest</span>
+    <span class="hl-keyword">image</span>: <span class="hl-string">susquehannasyntax/turnstil:latest</span>
     <span class="hl-keyword">container_name</span>: <span class="hl-string">turnstil</span>
     <span class="hl-keyword">restart</span>: <span class="hl-string">unless-stopped</span>
     <span class="hl-keyword">ports</span>:
@@ -377,7 +377,7 @@
       - <span class="hl-var">db</span>
 
   <span class="hl-var">reminders</span>:
-    <span class="hl-keyword">image</span>: <span class="hl-string">connorhaggerty/turnstil:latest</span>
+    <span class="hl-keyword">image</span>: <span class="hl-string">susquehannasyntax/turnstil:latest</span>
     <span class="hl-keyword">container_name</span>: <span class="hl-string">turnstil-reminders</span>
     <span class="hl-keyword">restart</span>: <span class="hl-string">unless-stopped</span>
     <span class="hl-keyword">command</span>: <span class="hl-string">python manage.py send_reminders --loop</span>
