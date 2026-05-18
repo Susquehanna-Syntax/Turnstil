@@ -28,6 +28,10 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.ATTENDEE,
     )
+    event_limit = models.PositiveSmallIntegerField(
+        default=10,
+        help_text='Max active events this user may have at once (0 = unlimited)',
+    )
 
     def is_staff_or_above(self):
         return self.role in (self.Role.STAFF, self.Role.ORGANIZER, self.Role.ADMIN)
@@ -88,11 +92,15 @@ class Person(models.Model):
     def get_visible_contact(self):
         """Return only the fields the user has marked as visible."""
         contact = {'name': self.name}  # Name always visible
+        # Normalise links — may be stored as a plain URL string or a dict
+        links_value = self.links
+        if isinstance(links_value, dict) and not links_value:
+            links_value = ''  # treat empty dict as blank
         field_map = {
             'email': self.email,
             'organization': self.organization,
             'phone': self.phone,
-            'links': self.links,
+            'links': links_value,
         }
         for field, value in field_map.items():
             if self.visibility.get(field, False) and value:

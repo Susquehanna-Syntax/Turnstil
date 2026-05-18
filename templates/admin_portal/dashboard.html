@@ -106,7 +106,7 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th></th></tr>
+                <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Event Limit</th><th></th></tr>
             </thead>
             <tbody>
                 {% for u in users %}
@@ -122,6 +122,14 @@
                                 <option value="{{ value }}" {% if u.role == value %}selected{% endif %}>{{ label }}</option>
                                 {% endfor %}
                             </select>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'admin-set-event-limit' user_id=u.id %}" style="margin:0; display:flex; align-items:center; gap:4px;">
+                            {% csrf_token %}
+                            <input type="number" name="event_limit" value="{{ u.event_limit }}" min="0" max="9999"
+                                   style="width:60px; padding:5px 8px; font-size:12px; text-align:center;">
+                            <button type="submit" class="btn btn-outline btn-sm">Set</button>
                         </form>
                     </td>
                     <td>

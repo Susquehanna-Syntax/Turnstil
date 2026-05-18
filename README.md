@@ -44,12 +44,12 @@ Open http://localhost:8000
 
 ## Demo Accounts
 
-| Username | Password | Role |
-|----------|----------|------|
-| `admin` | `admin1234` | Admin (full access) |
-| `organizer` | `organize1234` | Organizer (create events, assign staff) |
-| `staff` | `staff1234` | Staff (scan check-ins) |
-| `alice` through `eve` | `attendee1234` | Attendees |
+| Username | Password | Role | Event Limit |
+|----------|----------|------|-------------|
+| `admin` | `admin1234` | Admin (full access) | Unlimited |
+| `organizer` | `organize1234` | Organizer (create events, assign staff) | 25 |
+| `staff` | `staff1234` | Staff (scan check-ins) | 10 |
+| `alice` through `eve` | `attendee1234` | Attendees | 10 |
 
 ## Project Structure
 
@@ -57,7 +57,7 @@ Open http://localhost:8000
 turnstil/
 ├── config/          # Django project settings
 ├── core/            # Main app (models, views, API, templates)
-│   ├── models.py        # User, Person, Event, Ticket, ScanLog
+│   ├── models.py        # User, Person, Event, Ticket, ScanLog, EventPhoto, ScannedContact
 │   ├── views.py         # REST API views
 │   ├── web_views.py     # Server-rendered page views
 │   ├── serializers.py   # DRF serializers
@@ -66,16 +66,23 @@ turnstil/
 ├── templates/       # Django templates (custom CSS)
 │   ├── scanner/         # QR scanner interface
 │   ├── admin_portal/    # Dashboard, event management
-│   ├── public/          # Home, profile, QR display
+│   ├── public/          # Home, profile, contact card, QR display
 │   └── registration/    # Login, register
-└── static/          # CSS, JS, images
+└── docs/            # wiki.html — full feature documentation
 ```
 
 ## Key Features
 
 - **Persistent QR Identity** — One UUID per person, works across all events
-- **Two Scanner Modes** — Attendance (check-in) and Discovery (networking)
+- **Two Scanner Modes** — Attendance (check-in) and Discovery (networking / contact exchange)
+- **Scanned Contacts** — Discovery scans are saved; view your collected contacts as an avatar stack on your profile
+- **Profile Pictures** — Upload a photo; appears in the sidebar, profile page, and contact cards
+- **Card Colors** — Each user picks a pastel signature color used on their contact card and avatar
+- **Event Photo Gallery** — Organizers upload up to 10 photos per event; shown in a scrollable gallery with drag-and-drop upload, captions, and cover selection
 - **Visibility Controls** — Users choose which contact fields to share
+- **Scan Confirmation** — After a successful check-in, the attendee's device receives a popup asking "Did an event worker just scan your ticket?" to prevent screenshot fraud
+- **Organizer Self-Promotion** — Any attendee can click "Create Event" in the sidebar to auto-promote to organizer
+- **Per-User Event Limits** — Admins can raise or lower each user's active event cap from the dashboard (0 = unlimited)
 - **Full Audit Trail** — Every scan attempt logged with timestamps
 - **Role-Based Access** — Attendee → Staff → Organizer → Admin
 - **REST API + JWT** — Full API alongside server-rendered pages
@@ -178,7 +185,7 @@ Return the current user's profile.
 ### People
 
 #### `GET /api/people/{uuid}/contact`
-Return a person's contact card. The owner sees all fields; others see only fields the person has marked visible.
+Return a person's contact card. The owner sees all fields; others see only fields the person has marked visible. Also records a `ScannedContact` entry when an authenticated user views someone else's card (used for the contacts gallery).
 
 **Auth:** JWT (any role)
 
@@ -186,7 +193,7 @@ Return a person's contact card. The owner sees all fields; others see only field
 ```json
 {
   "status": "success",
-  "data": { "name": "Jane Smith", "email": "j@example.com", "organization": "Acme", "phone": "...", "links": { ... } }
+  "data": { "name": "Jane Smith", "email": "j@example.com", "organization": "Acme", "phone": "...", "links": "https://...", "card_color": "mint", "avatar": "data:image/jpeg;base64,..." }
 }
 ```
 
@@ -204,7 +211,7 @@ Update contact fields. Owner only.
   "email": "new@example.com",
   "organization": "New Org",
   "phone": "555-1234",
-  "links": { "linkedin": "https://..." },
+  "links": "https://mysite.com",
   "visibility": { "email": true, "phone": false }
 }
 ```
@@ -314,7 +321,7 @@ List staff assigned to the event.
 ---
 
 #### `POST /api/events/{uuid}/staff`
-Assign a user as staff for the event. Only the event creator or an admin can do this.
+Assign a user as staff for the event.
 
 **Auth:** JWT (organizer or above, and must own the event)
 
@@ -364,7 +371,7 @@ Live event stats and the 20 most recent scan log entries.
 ### Check-in
 
 #### `POST /api/checkin`
-Process a QR scan for attendance check-in. Every attempt is logged regardless of outcome.
+Process a QR scan for attendance check-in. Every attempt is logged. On success, creates a `ScanConfirmation` record that triggers a popup on the attendee's device.
 
 **Auth:** JWT (must be staff for the specified event)
 
@@ -396,10 +403,37 @@ Process a QR scan for attendance check-in. Every attempt is logged regardless of
 
 ---
 
+### Scan Confirmation
+
+#### `GET /api/scan-confirmation/pending`
+Returns the most recent pending scan confirmation for the authenticated user's person (within the last 5 minutes). Polled every 5 seconds by the browser to trigger the confirmation popup.
+
+**Auth:** JWT (any role)
+
+**Response `200`:**
+```json
+{ "status": "success", "data": { "id": 1, "event_name": "Tech Meetup", "scanned_at": "..." } }
+```
+Returns `"data": null` when no pending confirmation exists.
+
+---
+
+#### `POST /api/scan-confirmation/{id}/respond`
+Record the attendee's yes/no response. A "No" response flags the scan log entry.
+
+**Auth:** JWT (must own the confirmation)
+
+**Request body:**
+```json
+{ "confirmed": true }
+```
+
+---
+
 ### Logs
 
 #### `GET /api/logs`
-Query the full scan audit log. Supports optional filtering.
+Query the full scan audit log.
 
 **Auth:** JWT (admin only)
 
@@ -408,11 +442,6 @@ Query the full scan audit log. Supports optional filtering.
 |-------|-------------|
 | `event` | Filter by event UUID |
 | `result` | Filter by result: `success`, `duplicate`, `not_registered`, `invalid` |
-
-**Example:**
-```
-GET /api/logs?event=<uuid>&result=success
-```
 
 **Response `200`:**
 ```json
@@ -448,4 +477,3 @@ Then add the ngrok domain to `ALLOWED_HOSTS` in settings.
 ## Tech Stack
 
 Django 5 · Django REST Framework · SimpleJWT · PostgreSQL/SQLite · html5-qrcode · Docker
-# Turnstil

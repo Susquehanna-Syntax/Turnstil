@@ -2,6 +2,21 @@
 {% block title %}My Profile — Turnstil{% endblock %}
 
 {% block extra_css %}
+.avatar-stack { display: flex; align-items: center; }
+.avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 700; color: var(--bg);
+    margin-left: -6px; border: 2.5px solid var(--s2);
+    transition: transform 0.4s var(--ease-out-expo), margin 0.4s var(--ease-out-expo);
+    cursor: pointer; overflow: hidden; flex-shrink: 0;
+    text-decoration: none; position: relative;
+}
+.avatar:first-child { margin-left: 0; }
+.avatar-stack:hover .avatar { margin-left: 2px; }
+.avatar-stack:hover .avatar:first-child { margin-left: 0; }
+.avatar:hover { transform: translateY(-4px) scale(1.12); z-index: 2; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .profile-avatar-lg {
     width: 80px; height: 80px; border-radius: 18px;
     display: grid; place-items: center;
@@ -30,43 +45,6 @@
 }
 .color-swatch:hover { transform: scale(1.15); }
 .color-swatch.active { border-color: var(--text); }
-/* Contact gallery */
-.contact-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 14px;
-    padding: 4px 2px;
-}
-.biz-card {
-    border-radius: var(--r-lg);
-    overflow: hidden;
-    text-decoration: none;
-    display: block;
-    background: var(--s2);
-    transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s;
-}
-.biz-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-}
-.biz-card-header {
-    padding: 18px 16px 14px;
-    display: flex; align-items: center; gap: 12px;
-}
-.biz-card-avatar {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: rgba(0,0,0,0.15);
-    display: grid; place-items: center;
-    font-size: 18px; font-weight: 700;
-    color: rgba(0,0,0,0.5);
-    overflow: hidden; flex-shrink: 0;
-}
-.biz-card-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.biz-card-name { font-weight: 700; font-size: 14px; color: rgba(0,0,0,0.75); margin: 0; }
-.biz-card-org  { font-size: 11px; color: rgba(0,0,0,0.55); margin: 2px 0 0; }
-.biz-card-body { padding: 10px 16px 14px; }
-.biz-card-body p { margin: 4px 0; font-size: 12px; color: var(--text-muted); }
-.biz-card-body svg { vertical-align: -2px; margin-right: 4px; }
 {% endblock %}
 
 {% block content %}
@@ -125,27 +103,17 @@
             </div>
             {% if scanned_contacts %}
             <div style="margin-bottom: 16px;">
-                <div class="section-label" style="margin-top:0; margin-bottom:10px; font-size:11px;">Scanned contacts</div>
-                <div class="contact-gallery-grid">
-                    {% for sc in scanned_contacts %}
-                    <a href="{% url 'contact-view' uuid=sc.scanned.id %}" class="biz-card">
-                        <div class="biz-card-header" style="background:var(--{{ sc.scanned.card_color|default:'peach' }});">
-                            <div class="biz-card-avatar">
-                                {% if sc.scanned.avatar %}<img src="{{ sc.scanned.avatar }}" alt="{{ sc.scanned.name }}">{% else %}{{ sc.scanned.name|first|upper }}{% endif %}
-                            </div>
-                            <div>
-                                <div class="biz-card-name">{{ sc.scanned.name }}</div>
-                                {% if sc.scanned.visibility.organization and sc.scanned.organization %}<div class="biz-card-org">{{ sc.scanned.organization }}</div>{% endif %}
-                            </div>
-                        </div>
-                        <div class="biz-card-body">
-                            {% if sc.scanned.visibility.email and sc.scanned.email %}<p><i data-lucide="mail" style="width:13px;height:13px;"></i> {{ sc.scanned.email }}</p>{% endif %}
-                            {% if sc.scanned.visibility.phone and sc.scanned.phone %}<p><i data-lucide="phone" style="width:13px;height:13px;"></i> {{ sc.scanned.phone }}</p>{% endif %}
-                            {% if sc.scanned.visibility.links and sc.scanned.links %}<p><i data-lucide="link" style="width:13px;height:13px;"></i> Links</p>{% endif %}
-                            {% if not sc.scanned.visibility.email and not sc.scanned.visibility.phone and not sc.scanned.visibility.links %}<p style="opacity:0.5;">Tap to view</p>{% endif %}
-                        </div>
+                <div class="section-label" style="margin-top:0; margin-bottom:8px; font-size:11px;">Scanned contacts</div>
+                <div class="avatar-stack">
+                    {% for sc in scanned_contacts|slice:":15" %}
+                    <a href="{% url 'contact-view' uuid=sc.scanned.id %}" class="avatar" title="{{ sc.scanned.name }}"
+                       style="background:var(--{{ sc.scanned.card_color|default:'peach' }});">
+                        {% if sc.scanned.avatar %}<img src="{{ sc.scanned.avatar }}" alt="{{ sc.scanned.name }}">{% else %}{{ sc.scanned.name|first|upper }}{% endif %}
                     </a>
                     {% endfor %}
+                    {% if scanned_contacts|length > 15 %}
+                    <div class="avatar" style="background:var(--s3); color:var(--text-muted); font-size:10px; border-color:var(--s3);">+{{ scanned_contacts|length|add:"-15" }}</div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -163,8 +131,9 @@
                 <label for="phone">Phone</label>
                 <input type="tel" id="phone" name="phone" value="{{ person.phone }}">
 
-                <label for="links">Links</label>
-                <input type="url" id="links" name="links" value="{{ person.links }}">
+                <label for="links">Website / Link</label>
+                <input type="url" id="links" name="links" placeholder="https://..."
+                       value="{% if person.links and person.links != '{}' %}{% if person.links.items %}{% else %}{{ person.links }}{% endif %}{% endif %}">
 
                 <fieldset style="margin-top: 20px;">
                     <legend>Visible when others scan your QR:</legend>

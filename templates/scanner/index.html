@@ -1,35 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Scanner — Turnstil{% endblock %}
 
-{% block extra_css %}
-.scan-biz-card {
-    border-radius: var(--r-lg);
-    overflow: hidden;
-    background: var(--s2);
-    animation: cardSlide 0.3s var(--ease-out-expo);
-}
-@keyframes cardSlide { from { transform: translateY(12px); opacity:0; } to { transform: none; opacity:1; } }
-.scan-biz-card .biz-header {
-    padding: 20px 18px 16px;
-    display: flex; align-items: center; gap: 14px;
-}
-.scan-biz-card .biz-avatar {
-    width: 50px; height: 50px; border-radius: 13px;
-    background: rgba(0,0,0,0.15);
-    display: grid; place-items: center;
-    font-size: 20px; font-weight: 700;
-    color: rgba(0,0,0,0.5);
-    overflow: hidden; flex-shrink: 0;
-}
-.scan-biz-card .biz-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
-.scan-biz-card .biz-name { font-weight: 700; font-size: 16px; color: rgba(0,0,0,0.75); margin:0; }
-.scan-biz-card .biz-org  { font-size: 12px; color: rgba(0,0,0,0.55); margin: 2px 0 0; }
-.scan-biz-card .biz-body { padding: 12px 18px 16px; }
-.scan-biz-card .biz-body p { margin: 5px 0; font-size: 13px; color: var(--text-muted); }
-.scan-biz-card .biz-body p svg { vertical-align: -2px; margin-right: 6px; }
-.scan-biz-card .biz-actions { display: flex; gap: 8px; margin-top: 14px; }
-{% endblock %}
-
 {% block main_class %}{% if is_staff and not active_event %}center-page{% endif %}{% endblock %}
 {% block content %}
 <div class="page-header fade-up">
@@ -141,6 +112,24 @@
             </div>
         </div>
 
+        <!-- Saved Contacts -->
+        {% if scanned_contacts %}
+        <div class="card" style="margin-top: 12px;">
+            <div class="flex-between" style="margin-bottom:10px;">
+                <div class="section-label" style="margin-top:0;">Contacts</div>
+                <small class="text-muted">{{ scanned_contacts|length }}</small>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                {% for sc in scanned_contacts %}
+                <a href="{% url 'contact-view' uuid=sc.scanned.id %}" title="{{ sc.scanned.name }}"
+                   style="width:38px; height:38px; border-radius:11px; background:var(--{{ sc.scanned.card_color|default:'peach' }}); display:grid; place-items:center; font-size:13px; font-weight:700; color:var(--bg); text-decoration:none; overflow:hidden; flex-shrink:0; border:2px solid var(--s3); transition:transform 0.25s; position:relative;"
+                   onmouseover="this.style.transform='scale(1.12) translateY(-3px)'" onmouseout="this.style.transform=''">
+                    {% if sc.scanned.avatar %}<img src="{{ sc.scanned.avatar }}" alt="{{ sc.scanned.name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}{{ sc.scanned.name|first|upper }}{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -198,12 +187,22 @@
     }
 
     // ── Result Display ──
-    function showResult(type, message, detail) {
+    function showResult(type, message, detail, cardColor) {
         const el = document.getElementById('result');
         el.className = 'scan-result scan-' + type;
+        if (cardColor) {
+            // Use person's signature color — map name to hex
+            const colorMap = {
+                rose: '#f2a0b8', lavender: '#baa8e8', mint: '#7eddb5',
+                peach: '#f0b888', sky: '#82c4ee', lemon: '#e2d478'
+            };
+            const hex = colorMap[cardColor] || colorMap.peach;
+            el.style.cssText = `display:block; background:${hex}; color:rgba(0,0,0,0.7); border-color:transparent;`;
+        } else {
+            el.style.cssText = 'display:block;';
+        }
         el.innerHTML = '<strong>' + message + '</strong>' + (detail ? '<br><small>' + detail + '</small>' : '');
-        el.style.display = 'block';
-        setTimeout(() => { el.style.display = 'none'; }, 4000);
+        setTimeout(() => { el.style.display = 'none'; el.style.cssText = ''; }, 4000);
     }
 
     function addToHistory(result, name, time) {
@@ -250,43 +249,6 @@
     }
 
     // ── Contact Fetch (discovery mode — available to all users) ──
-    function showContactCard(c, personUuid) {
-        const color = c.card_color || 'peach';
-        const avatar = c.avatar
-            ? `<img src="${c.avatar}" alt="${c.name}">`
-            : c.name.charAt(0).toUpperCase();
-
-        let bodyLines = '';
-        if (c.email) bodyLines += `<p>${ICONS.mail} <a href="mailto:${c.email}" style="color:var(--text-muted);">${c.email}</a></p>`;
-        if (c.organization) bodyLines += `<p>${ICONS.building} ${c.organization}</p>`;
-        if (c.phone) bodyLines += `<p>${ICONS.phone} <a href="tel:${c.phone}" style="color:var(--text-muted);">${c.phone}</a></p>`;
-        if (c.links && typeof c.links === 'object') {
-            for (const [key, url] of Object.entries(c.links)) {
-                bodyLines += `<p>${ICONS.link} <a href="${url}" target="_blank" style="color:var(--text-muted);">${key}</a></p>`;
-            }
-        } else if (c.links) {
-            bodyLines += `<p>${ICONS.link} <a href="${c.links}" target="_blank" style="color:var(--text-muted);">${c.links}</a></p>`;
-        }
-
-        const el = document.getElementById('result');
-        el.className = 'scan-biz-card';
-        el.innerHTML = `
-            <div class="biz-header" style="background:var(--${color});">
-                <div class="biz-avatar">${avatar}</div>
-                <div>
-                    <div class="biz-name">${c.name}</div>
-                    ${c.organization ? `<div class="biz-org">${c.organization}</div>` : ''}
-                </div>
-            </div>
-            <div class="biz-body">
-                ${bodyLines || '<p style="opacity:0.5;">No additional info shared.</p>'}
-                <div class="biz-actions">
-                    <a href="/contact/${personUuid}/" class="btn btn-outline" style="flex:1; justify-content:center; font-size:12px; padding:7px 12px;">View Profile</a>
-                </div>
-            </div>`;
-        el.style.display = 'block';
-    }
-
     async function fetchContact(personUuid) {
         try {
             const resp = await fetch('/api/people/' + personUuid + '/contact', {
@@ -296,8 +258,32 @@
             const now = new Date().toLocaleTimeString();
 
             if (data.status === 'success') {
-                showContactCard(data.data, personUuid);
-                addToHistory('info', data.data.name, now);
+                const c = data.data;
+                const color = c.card_color || 'peach';
+
+                // Avatar: photo or initial bubble
+                const colorMap = { rose:'#f2a0b8', lavender:'#baa8e8', mint:'#7eddb5', peach:'#f0b888', sky:'#82c4ee', lemon:'#e2d478' };
+                const hex = colorMap[color] || colorMap.peach;
+                let avatarHtml;
+                if (c.avatar) {
+                    avatarHtml = `<img src="${c.avatar}" style="width:48px;height:48px;border-radius:14px;object-fit:cover;flex-shrink:0;">`;
+                } else {
+                    const initial = c.name ? c.name[0].toUpperCase() : '?';
+                    avatarHtml = `<div style="width:48px;height:48px;border-radius:14px;background:rgba(0,0,0,0.15);display:grid;place-items:center;font-size:20px;font-weight:700;color:rgba(0,0,0,0.45);flex-shrink:0;">${initial}</div>`;
+                }
+
+                let detail = '';
+                if (c.organization) detail += ICONS.building + ' ' + c.organization + '<br>';
+                if (c.email) detail += ICONS.mail + ' ' + c.email + '<br>';
+                if (c.phone) detail += ICONS.phone + ' ' + c.phone + '<br>';
+
+                const el = document.getElementById('result');
+                el.style.cssText = `display:block; background:${hex}; color:#000; border-color:transparent; padding:16px 18px;`;
+                el.className = 'scan-result';
+                el.innerHTML = `<div style="display:flex;align-items:center;gap:14px;text-align:left;">${avatarHtml}<div><strong style="font-size:16px;color:#000;">${c.name}</strong>${detail ? '<br><small style="color:#000;opacity:0.65;font-weight:400;">' + detail + '</small>' : ''}</div></div>`;
+                setTimeout(() => { el.style.cssText = ''; el.style.display = 'none'; }, 5000);
+
+                addToHistory('info', c.name, now);
             } else {
                 showResult('error', 'Not Found', 'QR code not recognized.');
                 addToHistory('error', 'Unknown QR Code', now);

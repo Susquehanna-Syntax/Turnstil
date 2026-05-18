@@ -43,4 +43,6 @@ urlpatterns = [
     path('dashboard/users/<int:user_id>/delete/', web_views.admin_delete_user, name='admin-delete-user'),
     path('dashboard/users/<int:user_id>/role/', web_views.admin_change_role, name='admin-change-role'),
     path('dashboard/users/<int:user_id>/register/', web_views.admin_register_user_for_event, name='admin-register-user'),
+    path('dashboard/users/<int:user_id>/event-limit/', web_views.admin_set_event_limit, name='admin-set-event-limit'),
+    path('events/promote-and-create/', web_views.promote_and_create, name='promote-and-create'),
 ]
