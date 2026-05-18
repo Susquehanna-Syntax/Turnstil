@@ -3,6 +3,7 @@ name: Build & Publish
 on:
   push:
     tags:
+      - "*.*.*"
       - "v*.*.*"
   workflow_dispatch:
 
@@ -36,9 +37,7 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=ref,event=tag
             type=raw,value=latest
 
       - name: Build and push
