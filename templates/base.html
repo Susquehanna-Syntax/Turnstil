@@ -8,7 +8,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Turnstil">
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/static/icons/turnstilLogo.png">
+    <link rel="apple-touch-icon" href="/static/icons/turnstil-logo.png">
+    <link rel="icon" type="image/png" href="/static/icons/turnstil-logo.png">
     <title>{% block title %}Turnstil{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -957,7 +958,7 @@
 
     {# ── Sidebar ── #}
     <aside class="sidebar">
-        <a href="{% url 'home' %}" class="sidebar-logo" data-tip="Turnstil"><img src="/static/icons/turnstilLogo.png" alt="Turnstil" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;"></a>
+        <a href="{% url 'home' %}" class="sidebar-logo" data-tip="Turnstil"><img src="/static/icons/turnstil-logo.png" alt="Turnstil" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></a>
 
         {% with url_name=request.resolver_match.url_name %}
 

@@ -8,8 +8,8 @@
   "theme_color": "#1c1c21",
   "icons": [
     {
-      "src": "/static/icons/turnstilLogo.png",
-      "sizes": "816x816",
+      "src": "/static/icons/turnstil-logo.png",
+      "sizes": "1200x1200",
       "type": "image/png",
       "purpose": "any maskable"
     }
