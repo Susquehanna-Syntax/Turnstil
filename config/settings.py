@@ -28,6 +28,7 @@ INSTALLED_APPS = [ 'django.contrib.admin',
                    'rest_framework_simplejwt',
                    # Local
                    'core',
+    'civilsso',
                    ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -147,3 +148,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 REMINDER_WINDOWS = [24, 1]
 
 
+
+
+# Civil SSO (opt-in shared identity for the SQSY family). Unset = off.
+CIVIL_URL = os.environ.get("CIVIL_URL", "")
+CIVIL_APP_SLUG = os.environ.get("CIVIL_APP_SLUG", "turnstil")

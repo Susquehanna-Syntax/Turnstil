@@ -7,3 +7,4 @@ psycopg2-binary>=2.9
 python-dotenv>=1.0
 gunicorn>=22.0
 whitenoise>=6.5
+PyJWT[crypto]>=2.8,<3.0

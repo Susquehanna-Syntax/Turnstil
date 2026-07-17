@@ -10,6 +10,7 @@ urlpatterns = [
     path('manifest.json', static_serve, {'document_root': settings.BASE_DIR / 'static', 'path': 'manifest.json'}, name='manifest'),
     path('admin/', admin.site.urls),
     path('api/', include('core.api_urls')),
+    path('', include('civilsso.urls')),
     path('', include('core.urls')),
 ]
 
