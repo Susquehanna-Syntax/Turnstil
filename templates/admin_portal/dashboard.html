@@ -11,6 +11,7 @@
     {% if user.is_organizer_or_above %}
         <a href="{% url 'event-create' %}" class="btn btn-filled-lav">+ Create Event</a>
         <a href="{% url 'organizer-event-list' %}" class="btn btn-outline">My Events</a>
+        {% if user.is_staff %}<a href="{% url 'civil-settings-page' %}" class="btn btn-outline">Civil SSO</a>{% endif %}
     {% endif %}
 </div>
 

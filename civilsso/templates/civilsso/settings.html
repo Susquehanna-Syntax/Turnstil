@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Civil SSO settings</title>
+  <style>
+    :root { --surface:#1E1E2E; --card:#27273A; --text:#E6E6F0; --muted:#9C9CB0;
+            --sky:#89B4FA; --mint:#A6E3A1; --rose:#F38BA8; --line:#3A3A52; }
+    * { box-sizing:border-box; margin:0; }
+    body { background:var(--surface); color:var(--text);
+           font-family:"DM Sans",system-ui,sans-serif; min-height:100vh;
+           display:flex; justify-content:center; padding:40px 16px; }
+    .wrap { width:min(94vw,560px); }
+    h1 { font-size:1.4rem; margin-bottom:.3rem; }
+    p.sub { color:var(--muted); font-size:.9rem; margin-bottom:1.5rem; }
+    .card { background:var(--card); border-radius:12px; padding:24px; }
+    label { display:block; font-size:.82rem; color:var(--muted); margin:.9rem 0 .3rem; }
+    input[type=text] { width:100%; padding:.6rem .7rem; border-radius:8px;
+      border:1px solid var(--line); background:var(--surface); color:var(--text); }
+    .check { display:flex; align-items:center; gap:.5rem; margin-top:1rem; font-size:.9rem; color:var(--muted); }
+    .row { display:flex; gap:.6rem; margin-top:1.4rem; }
+    button { padding:.6rem 1rem; border:0; border-radius:8px; font-weight:600; cursor:pointer; }
+    .primary { background:var(--sky); color:#14141F; }
+    .ghost { background:transparent; border:1px solid var(--line); color:var(--text); }
+    .state { font-size:.85rem; color:var(--muted); margin-top:1rem; }
+    .warn { color:var(--rose); font-size:.82rem; margin-top:.6rem; }
+    a.back { color:var(--muted); font-size:.85rem; text-decoration:none; display:inline-block; margin-bottom:1rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← Back</a>
+    <h1>Civil SSO</h1>
+    <p class="sub">Opt in to one shared account across every SQSY app. Local login always keeps working; when Civil is down, existing sessions are unaffected. Leave disabled for a standalone install.</p>
+    <div class="card">
+      <p class="warn" id="env-note" hidden>⚠ CIVIL_URL is set by an environment variable, which overrides anything here.</p>
+      <label>Civil URL</label>
+      <input type="text" id="url" placeholder="http://civil.lan:8100">
+      <label>This app's slug (as registered in Civil's admin)</label>
+      <input type="text" id="slug" placeholder="APP_SLUG">
+      <label class="check"><input type="checkbox" id="enabled"> Enable Civil sign-in</label>
+      <p class="state" id="state"></p>
+      <div class="row">
+        <button class="primary" id="save">Save</button>
+        <button class="ghost" id="test">Test &amp; fetch key</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const $ = id => document.getElementById(id);
+    function csrf() { return (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || ''; }
+    function render(d) {
+      $('url').value = d.url || '';
+      $('slug').value = d.app_slug || '';
+      $('enabled').checked = !!d.enabled;
+      $('env-note').hidden = !d.env_override;
+      $('state').textContent = d.active
+        ? `Active against ${d.effective_url} — verification key ${d.key_cached ? 'cached' : 'not yet fetched'}.`
+        : 'Civil sign-in is off; using local accounts only.';
+    }
+    async function post(extra) {
+      const body = { url: $('url').value.trim(), app_slug: $('slug').value.trim(),
+                     enabled: $('enabled').checked, ...(extra || {}) };
+      const r = await fetch('/api/v1/civil/settings/', { method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},
+        credentials:'same-origin', body:JSON.stringify(body) });
+      const d = await r.json();
+      render(d);
+      if (extra && extra.test) alert(d.test_ok ? 'Reached Civil and fetched its key.' : 'Could not reach Civil.');
+    }
+    fetch('/api/v1/civil/settings/', { credentials:'same-origin' }).then(r => r.json()).then(render);
+    $('save').addEventListener('click', () => post());
+    $('test').addEventListener('click', () => post({ test:true, refresh_key:true }));
+  </script>
+</body>
+</html>

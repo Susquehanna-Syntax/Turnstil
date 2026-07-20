@@ -50,3 +50,20 @@ class CachedCivilKey(models.Model):
     def store(cls, pem: str, source: str) -> None:
         cls.objects.all().delete()
         cls.objects.create(public_key_pem=pem, fetched_from=source)
+
+
+class CivilConfig(models.Model):
+    """UI-configurable Civil connection — one row. CIVIL_URL env still wins."""
+
+    enabled = models.BooleanField(default=False)
+    url = models.URLField(blank=True, default="")
+    app_slug = models.SlugField(max_length=50, blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def current(cls) -> "CivilConfig":
+        row = cls.objects.first()
+        return row if row is not None else cls.objects.create()
+
+    def __str__(self) -> str:
+        return f"civil:{self.url or '(unset)'} ({'on' if self.enabled else 'off'})"
