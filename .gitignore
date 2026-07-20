@@ -9,3 +9,8 @@ staticfiles/
 dist/
 build/
 .DS_Store
+.claude/
+CLAUDE.md
+REXYMCP.md
+.rexymcp/
+rexymcp.toml
