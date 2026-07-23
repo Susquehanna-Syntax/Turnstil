@@ -137,3 +137,28 @@ class LoginStartTests(TestCase):
         self.client.get("/accounts/civil/login/",
                         {"next": "https://evil.example.com/"})
         self.assertNotIn("civilsso_next", self.client.session)
+
+
+class CivilConfigTests(TestCase):
+    def test_db_config_enables_without_env(self):
+        from civilsso import client
+        from civilsso.models import CivilConfig
+        admin = get_user_model().objects.create_superuser("cfgadmin_x", password="x")
+        self.client.force_login(admin)
+        self.assertFalse(client.enabled())
+        r = self.client.post("/api/v1/civil/settings/",
+                             '{"enabled": true, "url": "http://civil.lan:8100/"}',
+                             content_type="application/json")
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertTrue(r.json()["active"])
+        self.assertEqual(client.civil_url(), "http://civil.lan:8100")
+
+    def test_settings_page_requires_admin(self):
+        get_user_model().objects.create_user("pleb_x", password="x")
+        self.client.login(username="pleb_x", password="x")
+        self.assertEqual(self.client.get("/accounts/civil/config/").status_code, 403)
+
+    def test_settings_api_requires_admin(self):
+        get_user_model().objects.create_user("pleb_y", password="x")
+        self.client.login(username="pleb_y", password="x")
+        self.assertEqual(self.client.get("/api/v1/civil/settings/").status_code, 403)

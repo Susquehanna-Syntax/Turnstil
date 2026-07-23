@@ -102,3 +102,62 @@ def _provision_user(claims: dict):
     user.save()
     logger.info("provisioned local user %s for civil:%s", username, claims["sub"])
     return user
+
+
+def civil_settings_api(request):
+    """GET/POST the Civil connection config. Admin/staff only."""
+    import json as _json
+
+    from django.conf import settings as dj_settings
+    from django.http import JsonResponse
+
+    from .models import CachedCivilKey, CivilConfig
+
+    user = getattr(request, "user", None)
+    if not (user and user.is_authenticated and (user.is_staff or user.is_superuser)):
+        return JsonResponse({"detail": "Administrator access required."}, status=403)
+
+    cfg = CivilConfig.current()
+    data = {}
+    if request.method == "POST":
+        try:
+            data = _json.loads(request.body.decode() or "{}")
+        except ValueError:
+            return JsonResponse({"detail": "invalid JSON"}, status=400)
+        if "url" in data:
+            cfg.url = (data["url"] or "").strip().rstrip("/")
+        if "app_slug" in data:
+            cfg.app_slug = (data["app_slug"] or "").strip()
+        if "enabled" in data:
+            cfg.enabled = bool(data["enabled"])
+        cfg.save()
+
+    payload = {
+        "enabled": cfg.enabled,
+        "url": cfg.url,
+        "app_slug": cfg.app_slug or client.app_slug(),
+        "effective_url": client.civil_url(),
+        "env_override": bool(getattr(dj_settings, "CIVIL_URL", "")),
+        "active": client.enabled(),
+        "key_cached": bool(CachedCivilKey.current()),
+    }
+    if data.get("test") or data.get("refresh_key"):
+        pem = client.get_public_key(force_fetch=True) if client.enabled() else ""
+        payload["test_ok"] = bool(pem)
+        payload["key_cached"] = bool(CachedCivilKey.current())
+    return JsonResponse(payload)
+
+
+def civil_settings_page(request):
+    """Standalone admin-gated Civil config page (self-contained styling so it
+    ports across the SQSY family without touching each app's settings CSS)."""
+    from django.contrib.auth.views import redirect_to_login
+    from django.shortcuts import render
+
+    user = getattr(request, "user", None)
+    if not (user and user.is_authenticated):
+        return redirect_to_login(request.get_full_path())
+    if not (user.is_staff or user.is_superuser):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Administrator access required.")
+    return render(request, "civilsso/settings.html")
