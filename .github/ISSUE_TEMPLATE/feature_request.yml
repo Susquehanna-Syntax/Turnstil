@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest an improvement to Turnstil
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One request per issue. Describe the problem before the solution — it
+        helps us find the best fix, which isn't always the one first imagined.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to do, and what's missing or awkward today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Events
+        - Registration
+        - Check-in / QR scanning
+        - Contact sharing
+        - Admin portal
+        - REST API
+        - Civil SSO
+        - Email / notifications
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

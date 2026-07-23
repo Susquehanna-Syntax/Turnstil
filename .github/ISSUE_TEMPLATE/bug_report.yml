@@ -1,0 +1,68 @@
+name: Bug report
+description: Something in Turnstil isn't working as expected
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. One issue = one problem. Never paste secrets,
+        API keys, or attendee personal data — redact before posting.
+  - type: input
+    id: version
+    attributes:
+      label: Turnstil version
+      description: Release tag (e.g. v2026.2.0) or the deployed commit SHA.
+      placeholder: "v2026.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Area
+      options:
+        - Events
+        - Registration
+        - Check-in / QR scanning
+        - Contact sharing
+        - Admin portal
+        - REST API
+        - Civil SSO
+        - Email / notifications
+        - Deployment (Docker / proxy / CSRF)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment
+      options:
+        - Docker
+        - Manual / from source
+        - Other
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / traceback
+      description: Django logs or the traceback. Redact secrets and attendee data.
+      render: shell
+  - type: input
+    id: env
+    attributes:
+      label: Browser / device (for UI or scanner bugs)
+      placeholder: "iOS 18 Safari · iPhone 14"
