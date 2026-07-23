@@ -1,0 +1,21 @@
+# Keep the published image lean and reproducible: never copy local dev state,
+# the checked-in virtualenv, or VCS/CI metadata into the build.
+.git
+.github
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+.env
+.env.*
+!.env.example
+media/
+staticfiles/
+docs/
+*.md
+.idea/
+.vscode/
+.DS_Store
+.claude/
