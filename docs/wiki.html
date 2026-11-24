@@ -308,7 +308,7 @@
           </div>
           <div class="mockup-main">
             <div class="m-h2" style="margin-bottom:2px;">Welcome to <span style="color:var(--mint)">Turnstil</span></div>
-            <div class="m-muted" style="margin-bottom:12px;">One QR code. Every event. Seamless check-in and networking.</div>
+            <div class="m-muted" style="margin-bottom:12px;">One QR code for every event. Check in at events and exchange contacts while you network.</div>
             <div class="m-grid" style="margin-bottom:12px;">
               <div class="m-card"><div class="m-h3">For Attendees</div><div class="m-muted">Register once, get your personal QR code.</div><div style="margin-top:8px;"><span class="m-btn m-btn-lav">Get Started</span></div></div>
               <div class="m-card"><div class="m-h3">For Organizers</div><div class="m-muted">Create events, scan attendees at the door.</div><div style="margin-top:8px;"><span class="m-btn m-btn-outline">Sign In</span></div></div>
@@ -749,7 +749,7 @@
       <div class="section-title">Check-In &amp; <span style="color:var(--lavender)">Scanning</span></div>
       <div class="prose"><p>The scanner page (<code>/scanner/</code>) is the core operational interface for event staff. It supports two modes.</p></div>
       <h3>Attendance Mode (Staff Only)</h3>
-      <div class="prose"><p>Used to check attendees into an event. Staff selects an active event, scans an attendee's QR code (or enters a UUID manually, or searches by name), the system validates registration, and a <strong>ScanLog</strong> is recorded regardless of outcome.</p></div>
+      <div class="prose"><p>Check attendees into an event. Staff selects an active event, scans an attendee's QR code (or enters a UUID manually, or searches by name), the system validates registration, and a <strong>ScanLog</strong> is recorded regardless of outcome.</p></div>
       <div class="table-wrap"><table>
         <thead><tr><th>Result Code</th><th>Meaning</th></tr></thead>
         <tbody>
@@ -813,10 +813,10 @@
       <h3>Discovery Mode (All Users)</h3>
       <div class="prose"><p>Used for networking and contact exchange. Scanning a QR code in Discovery mode fetches the person's contact card, showing only the fields they've made visible. The result popup is styled in that person's <strong>signature color</strong> and shows their avatar. The scan is also saved as a <code>ScannedContact</code> record, building the scanner's contacts gallery over time.</p></div>
 
-      <h3>Scan Confirmation (Anti-Fraud)</h3>
+      <h3>Scan confirmation</h3>
       <div class="prose"><p>After every successful attendance check-in, a <code>ScanConfirmation</code> record is created for the attendee. The attendee's browser polls <code>/api/scan-confirmation/pending</code> every 5 seconds and — if a pending confirmation is found — displays a modal popup asking:</p>
         <blockquote style="margin:12px 0;padding:10px 16px;border-left:3px solid var(--lavender);color:var(--text-2);font-style:italic;">"Did an event worker just scan your ticket?"</blockquote>
-        <p>The attendee responds <strong>Yes</strong> (confirmed) or <strong>No</strong> (denied). A "No" response flags the <code>ScanLog</code> entry's metadata with <code>attendee_denied: true</code> for organizer review. This prevents screenshot-based fraud — a static screenshot can't respond to the popup in real time.</p>
+        <p>The attendee responds <strong>Yes</strong> (confirmed) or <strong>No</strong> (denied). A "No" response flags the <code>ScanLog</code> entry's metadata with <code>attendee_denied: true</code> for organizer review. A static screenshot cannot answer the popup in real time.</p>
         <p>Confirmations expire after 5 minutes if not responded to. The popup appears on any authenticated page, not just the QR display.</p>
       </div>
 

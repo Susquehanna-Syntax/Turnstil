@@ -73,19 +73,19 @@ turnstil/
 
 ## Key Features
 
-- **Persistent QR Identity** — One UUID per person, works across all events
-- **Two Scanner Modes** — Attendance (check-in) and Discovery (networking / contact exchange)
+- **Permanent QR code** — Each person has one QR code that works at every event
+- **Two scanner modes** — Attendance (check-in) and Discovery (exchanging contacts while networking)
 - **Scanned Contacts** — Discovery scans are saved; view your collected contacts as an avatar stack on your profile
 - **Profile Pictures** — Upload a photo; appears in the sidebar, profile page, and contact cards
-- **Card Colors** — Each user picks a pastel signature color used on their contact card and avatar
+- **Card colors** — Each user picks a pastel color for their contact card and avatar
 - **Event Photo Gallery** — Organizers upload up to 10 photos per event; shown in a scrollable gallery with drag-and-drop upload, captions, and cover selection
 - **Visibility Controls** — Users choose which contact fields to share
-- **Scan Confirmation** — After a successful check-in, the attendee's device receives a popup asking "Did an event worker just scan your ticket?" to prevent screenshot fraud
-- **Organizer Self-Promotion** — Any attendee can click "Create Event" in the sidebar to auto-promote to organizer
+- **Scan confirmation** — After a successful check-in, the attendee's device shows a popup that asks "Did an event worker just scan your ticket?" The attendee can answer yes or no, and a no is flagged in the log
+- **Become an organizer** — Any attendee can click "Create Event" in the sidebar to become an organizer
 - **Per-User Event Limits** — Admins can raise or lower each user's active event cap from the dashboard (0 = unlimited)
-- **Full Audit Trail** — Every scan attempt logged with timestamps
+- **Audit log** — Every scan attempt is logged with its time
 - **Role-Based Access** — Attendee → Staff → Organizer → Admin
-- **REST API + JWT** — Full API alongside server-rendered pages
+- **REST API with JWT** — A JSON API that uses JWT tokens. The web pages use the same backend
 
 ## API Endpoints
 
